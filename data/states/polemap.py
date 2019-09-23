@@ -20,8 +20,10 @@ class PoleMap(pg_root._State):
         self.sim = setup_sim.SimData(12000)
         self.poles = None
         # self.controller = [-2196.6, -4761.2, -51800, -18831]
-        self.controller = [-1296.6, -3161.2, -31800, -9831]
+        # self.controller = [-1296.6, -3161.2, -31800, -9831]
         # self.controller = [-1196.6, -3761.2, -11800, -8831]
+        # for testing fall of sphere
+        self.controller = [-9050, -3150, -4800, -9750]
         self.sliders = []
 
         slider_ranges = [(0, 10000), (0, 10000), (0, 80000), (0, 50000)]
