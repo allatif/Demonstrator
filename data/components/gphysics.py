@@ -14,7 +14,7 @@ class gPhysics:
         self.circle = kwargs.get('circle', None)
 
         states = kwargs.get('states', None)
-        self.pos = states[0]
+        self.loc = states[0]
         self.vel = states[1]
         self.ang = states[2]
         self.ang_vel = states[3]
@@ -22,8 +22,10 @@ class gPhysics:
         self.scale = pg_init.SCALE
 
         if self.circle is not None and self.trigon is not None:
+            # Last position of ball before fall
             self.x0, self.y0 = self.circle.get_center()
-            # slope accelerations if ball fall from the cone
+
+            # Slope accelerations if ball fall from the cone apex
             self.slope_ang = self.trigon.get_basis_angle()
             self.acc, self.ang_acc = self._calc_accel()
 
@@ -45,7 +47,7 @@ class gPhysics:
 
     def gen_slope(self):
         real_radius = self.circle.r / self.scale
-        # direction switch depending on angle of dip
+        # Direction switch depending on angle of dip
         switch = {'left': -1, 'right': 1}
         key = 'left' if self.ang < 0 else 'right'
         distance = (0.5*self.acc*self.t**2
@@ -55,7 +57,7 @@ class gPhysics:
         return round(x), round(y)
 
     def keep_rot(self):
-        return self.ang_vel * self.t + self.ang
+        return self.ang_vel*self.t + self.ang
 
     def gen_slope_rot(self):
         acc_rot = 0.5*self.ang_acc*self.t**2
@@ -68,7 +70,7 @@ class gPhysics:
         if self.trigon is not None:
             lef_x, lef_y, rig_x, rig_y, top_x, top_y = self.trigon.get_coords()
             slope_lef = (lef_x - top_x) / (lef_y - top_y)
-            slope_rig = (rig_x - top_x) / (rig_y - top_y)
+            slope_rig = -slope_lef
 
         if self.circle is not None and self.trigon is not None:
             base_y = lef_y
