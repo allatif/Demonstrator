@@ -1,0 +1,2 @@
+'bg.png':
+	https://www.wisc-online.com/assetrepository/getfile?id=954&getType=view&width=0&height=0
