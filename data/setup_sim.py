@@ -15,7 +15,7 @@ class SimData:
         x4 = np.zeros((self.sim_length+1, 1))
 
         # Initial Conditions
-        x1[0] = 0  # x -- position
+        x1[0] = 0  # x -- traveled distance
         x2[0] = 0  # x' -- velocity
         x3[0] = 0.05  # ω -- angle
         x4[0] = 0  # ω' -- angular veloctiy
