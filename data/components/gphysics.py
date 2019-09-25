@@ -25,7 +25,7 @@ class gPhysics:
             # Last position of ball before fall
             self.x0, self.y0 = self.circle.get_center()
 
-            # Slope accelerations if ball fall from the cone apex
+            # Slope accelerations when ball rolls down the cone
             self.slope_ang = self.trigon.get_basis_angle()
             self.acc, self.ang_acc = self._calc_accel()
 
@@ -38,6 +38,7 @@ class gPhysics:
         self.t = gPhysics.counter*(1/self.fps)
 
     def gen_trajectory(self):
+        # Not in use, still in beta stage
         vel = 0 if self.collided else self.vel
         x = (vel * self.t * m.cos(self.ang)) * self.scale + self.x0
         y = -(vel * self.t * m.sin(self.ang)
@@ -56,15 +57,35 @@ class gPhysics:
         y = m.sin(self.slope_ang)*distance*self.scale + self.y0
         return round(x), round(y)
 
-    def keep_rot(self):
-        return self.ang_vel*self.t + self.ang
-
     def gen_slope_rot(self):
-        acc_rot = 0.5*self.ang_acc*self.t**2
+        acc_rot = 0.5 * self.ang_acc * self.t**2
         if self.ang_vel < 0:
-            return -acc_rot + self.keep_rot()
+            self.circle.rt_ang_vel = -acc_rot*self.t + self.ang_vel
+            return -acc_rot + self.ang_vel*self.t + self.ang
         else:
-            return acc_rot + self.keep_rot()
+            self.circle.rt_ang_vel = acc_rot*self.t + self.ang_vel
+            return acc_rot + self.ang_vel*self.t + self.ang
+
+    def keep_rot(self, touchdown_x, touchdown_ang, touchdown_ang_v):
+        x0 = touchdown_x
+        ang0 = touchdown_ang
+        ang_v0 = touchdown_ang_v
+        real_radius = self.circle.r / self.scale
+        c_friction = 0.1
+
+        if ang0 < 0:
+            ang_decel = ((self.circle.mass*GRAVITY*c_friction*real_radius)
+                         / self.circle.J)
+        else:
+            ang_decel = -((self.circle.mass*GRAVITY*c_friction*real_radius)
+                          / self.circle.J)
+
+        decel_rot = 0.5 * ang_decel * self.t**2
+
+        ang = decel_rot + self.circle.rt_ang_vel*self.t + ang0
+        self.circle.rt_ang_vel = ang_decel * self.t + ang_v0
+        x = self.circle.rt_ang_vel * real_radius * self.t * self.scale + x0
+        return round(x), ang
 
     def check_collision(self):
         if self.trigon is not None:
@@ -92,3 +113,7 @@ class gPhysics:
         ) / self.circle.J
         accel = angular_accel * real_radius
         return accel, angular_accel
+
+    @classmethod
+    def reset_time(cls):
+        cls.counter = 0

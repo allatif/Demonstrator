@@ -24,7 +24,7 @@ class Cone:
         self._point_right = self._basis_c_x + (self.size/2), self._basis_y
         self._point_top = self._basis_c_x, self._basis_y - self.size*self.ratio
 
-    def move(self, x1, rate=None):
+    def move(self, x1):
         pass
 
     def get_points(self, point=None):
@@ -65,6 +65,7 @@ class Sphere:
         self._J = inertia
         self._start_pos_x = zero_pos_x
         self._ang = 0
+        self.rt_ang_vel = 0
         self.touchdown = False
 
     def update(self, apex_pos, angle):
@@ -83,6 +84,10 @@ class Sphere:
         if self._c_y+self._r >= ground:
             self._c_y = ground - self._r
             self.touchdown = True
+
+    def coast(self, x, ang):
+        self._c_x = x
+        self._ang = ang
 
     def get_center(self):
         return self._c_x, self._c_y

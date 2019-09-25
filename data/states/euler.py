@@ -37,9 +37,11 @@ class Euler(pg_root._State):
         self.wave = None
 
         self.physics = None
-
         self.state_values = (0, 0, 0, 0)
-        self.fail = False
+        self.falling = False
+        self.touchdown_x = 0
+        self.touchdown_ang = 0
+        self.touchdown_ang_v = 0
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.options = {"Hud position": 'right', "Angle unit": 'rad'}
@@ -47,6 +49,7 @@ class Euler(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.regs = self.persist["controller"]
+        self.sim.set_regs(*self.regs)
         print(self.regs)
 
         # Reset Euler algorithm
@@ -54,7 +57,7 @@ class Euler(pg_root._State):
 
     def cleanup(self):
         self.done = False
-        self.fail = False
+        self.falling = False
         self.ball.touchdown = False
         self.physics = None
         return self.persist
@@ -84,7 +87,6 @@ class Euler(pg_root._State):
                 print('Outside')
 
     def update(self, surface, mouse):
-        self.sim.set_regs(*self.regs)
         self.sim.update()
 
         A_sys = self.sim.system
@@ -96,9 +98,6 @@ class Euler(pg_root._State):
         if self.interference is not None:
             x4[k] += self.interference
         self.interference = None
-
-        if abs(x3[k]) > self.deg2rad(40):
-            self.fail = True
 
         # dt = 1 / pg_init.FPS
         dt = 0.01
@@ -123,26 +122,51 @@ class Euler(pg_root._State):
 
         t_vec[k+1] = t_vec[k] + dt
 
+        if abs(x3[k]) > self.deg2rad(30):
+            # if ball tilt angle > 30°
+            # system stops controlling, controller values set to zero
+            self.sim.set_regs(0, 0, 0, 0)
+
+        if abs(x3[k]) > self.deg2rad(60):
+            # if ball tilt angle > 60°
+            # ball will start falling and shall roll down the cone
+            self.falling = True
+
         self.state_values = (np.float(x1[k]), np.float(x2[k]),
                              np.float(x3[k]), np.float(x4[k]))
 
         # If-Path for Euler Method
-        if not self.fail:
+        if not self.falling:
             self.cone.update(np.float(x1[k]))
             self.ball.update(self.cone.get_points('top'), np.float(x3[k]))
             k += 1
             Euler.index = k
 
         # Else-Path for simulating ball drop
-        elif self.fail and not self.ball.touchdown:
+        elif self.falling:
             if self.physics is None:
                 self.physics = gphysics.gPhysics(trigon=self.cone,
                                                  circle=self.ball,
                                                  states=self.state_values)
-            self.physics.update()
-            x, y = self.physics.gen_slope()
-            ang = self.physics.gen_slope_rot()
-            self.ball.fall(x, y, ang, self.ground.pos)
+
+            if not self.ball.touchdown:
+                self.physics.update()
+                x, y = self.physics.gen_slope()
+                ang = self.physics.gen_slope_rot()
+                self.ball.fall(x, y, ang, self.ground.pos)
+                self.touchdown_x = x
+                self.touchdown_ang = ang
+                self.touchdown_ang_v = self.ball.rt_ang_vel
+                if self.ball.touchdown:
+                    self.physics.reset_time()
+
+            elif self.ball.touchdown:
+                self.physics.update()
+                x, ang = self.physics.keep_rot(self.touchdown_x,
+                                               self.touchdown_ang,
+                                               self.touchdown_ang_v)
+
+                self.ball.coast(x, ang)
 
         self.draw(surface)
 
@@ -153,7 +177,7 @@ class Euler(pg_root._State):
         self.draw_ball(surface, reflection=False)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
-        if self.wave is not None and not self.fail:
+        if self.wave is not None and not self.falling:
             self.draw_impulsewave(surface)
 
     def draw_ground(self, surface):
