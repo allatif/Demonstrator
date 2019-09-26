@@ -34,11 +34,10 @@ class gPhysics:
                                         self.ball.ang_vel,
                                         self.ball.get_props())
             self.coast.update()
-            x, ang = self.coast.generate()
+            x, ang, ang_Vel = self.coast.generate()
             self.ball.roll(x, ang)
-            print(self.ball.get_center())
 
-            if self.coast.is_stillstand():
+            if self.coast.is_stillstand(ang_Vel):
                 self.ball.stopped = True
 
     def check_collision(self):
@@ -68,6 +67,7 @@ class _State:
         self.x0, self.y0 = start_pos
         self.ang0 = start_ang
         self.ang_v0 = start_ang_vel
+
         # Ball properties - radius, mass, inertia
         self.ball_r, self.ball_m, self.ball_J = ball_props
 
@@ -124,12 +124,14 @@ class CoastModel(_State):
 
     def __init__(self, start_pos, start_ang, start_ang_vel, ball_props):
         _State.__init__(self, start_pos, start_ang, start_ang_vel, ball_props)
-        self.ang_vel = None
         self.ang_vel_1_2 = []
         self.stillstand = False
 
     def generate(self):
-        c_friction = 1.1
+        c_friction = 0.1
+
+        # Reduction of ang_vel due to touchdown
+        R = 0.4
 
         if self.ang_v0 < 0:
             ang_decel = ((self.ball_m*GRAVITY*c_friction*self.real_r)
@@ -140,18 +142,15 @@ class CoastModel(_State):
 
         decel_rot = 0.5 * ang_decel * self.t**2
 
-        ang = decel_rot + self.ang_v0*self.t + self.ang0
+        x = decel_rot*self.ball_r + R*self.ang_v0*self.ball_r*self.t + self.x0
+        ang = decel_rot + R*self.ang_v0*self.t + self.ang0
+        ang_vel = ang_decel*self.t + R*self.ang_v0
 
-        self.ang_vel = decel_rot*self.t + self.ang_v0
-        x = self.ang_vel * self.real_r * self.t * self.scale + self.x0
-        print(self.ang_vel)
+        return round(x), ang, ang_vel
 
-        return round(x), ang
-
-    def is_stillstand(self):
-        self.ang_vel_1_2.append(abs(self.ang_vel))
+    def is_stillstand(self, ang_vel):
+        self.ang_vel_1_2.append((abs(ang_vel)))
         if len(self.ang_vel_1_2) == 2:
-            print(self.ang_vel_1_2)
             if self.ang_vel_1_2[1] > self.ang_vel_1_2[0]:
                 return True
             self.ang_vel_1_2 = []

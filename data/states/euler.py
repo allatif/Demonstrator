@@ -233,7 +233,7 @@ class Euler(pg_root._State):
                                           self.ball.r - w*s, r_y - w*s, rgb)
 
         if reflection:
-            # reflection as an elliptical shape
+            # Still in beta
             radius_x = 24
             radius_y = 22
             center_x = int(self.cone.get_points('top')[0]) - round(_x_*40)
