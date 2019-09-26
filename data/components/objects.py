@@ -152,3 +152,34 @@ class Ground:
     @property
     def pos(self):
         return self._pos - (self.w//2)
+
+
+class Ruler:
+
+    def __init__(self, pos, zero, length):
+        self.pos = pos
+        self.zero = zero
+        self.len = length
+
+    def get_scales(self, main_scale_len, scale_len, scale_w):
+        self.scale_w = scale_w
+        self._numbers = []
+        self._positions = []
+        scales = []
+        start = (0, 0)
+        end = (0, 0)
+
+        for side in range(0, 2):
+            step = -SCALE if side == 0 else SCALE
+            num_sign = -1 if side == 0 else 1
+            for num, pos_x in enumerate(range(self.zero, side*self.len, step)):
+                start = pos_x, self.pos
+                end = pos_x, self.pos + main_scale_len
+                self._numbers.append(num_sign*num)
+                self._positions.append(pos_x)
+                scales.append((start, end))
+
+        return scales
+
+    def get_numbers(self):
+        return list(zip(self._numbers, self._positions))[1:]

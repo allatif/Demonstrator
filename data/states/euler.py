@@ -8,7 +8,7 @@ from .. import pg_init, pg_root, setup_sim
 
 from .. components import color
 from .. components import gphysics
-from .. components.objects import Cone, Sphere, Ground
+from .. components.objects import Cone, Sphere, Ground, Ruler
 from .. components.animations import Impulse
 
 
@@ -36,6 +36,10 @@ class Euler(pg_root._State):
                            mass=self.sim.k_k.mass_sphere,
                            inertia=self.sim.k_k.J,
                            zero_pos_x=self.cone.get_zero_pos())
+
+        self.ruler = Ruler(pos=self.ground.pos,
+                           zero=self.cone.get_zero_pos(),
+                           length=self.ground.len)
 
         self.interference = None
         self.wave = None
@@ -159,6 +163,7 @@ class Euler(pg_root._State):
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
         self.draw_ground(surface)
+        self.draw_ruler(surface)
         self.draw_cone(surface, reflection=True)
         self.draw_ball(surface, reflection=False)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
@@ -169,6 +174,28 @@ class Euler(pg_root._State):
     def draw_ground(self, surface):
         pg.draw.line(surface, color.BLACK,
                      *self.ground.get_line(), self.ground.w)
+
+    def draw_ruler(self, surface):
+        self.draw_trigon_marker(surface)
+
+        scales = self.ruler.get_scales(20, 5, 2)
+        for scale in scales:
+            pg.draw.line(surface, color.BLACK,
+                         *scale, self.ruler.scale_w)
+
+        print(self.ruler.get_numbers())
+
+    def draw_trigon_marker(self, surface):
+        point_bottom = (self.cone.get_points('top')[0],
+                        self.ground.pos + self.ground.w)
+        point_left = (self.cone.get_points('top')[0] - (self.ground.w//2),
+                      self.ground.pos+1)
+        point_right = (self.cone.get_points('top')[0] + (self.ground.w//2),
+                       self.ground.pos+1)
+
+        self._draw_aafilled_polygon(surface,
+                                    (point_bottom, point_left, point_right),
+                                    color.GREY)
 
     def draw_cone(self, surface, reflection=True):
         # real location of cone
