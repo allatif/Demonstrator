@@ -25,23 +25,24 @@ class Euler(pg_root._State):
         self.bg_img = pg_init.GFX['bg']
 
         self.sim = setup_sim.SimData(20000)
-        self.interference = None
+
         self.ground = Ground(510, self.width, thickness=10)
+
         self.cone = Cone(basis_length=200,
                          basis_center_x=self.width//2,
                          ratio=0.85)
+
         self.ball = Sphere(radius=round(self.sim.k_k.radius*pg_init.SCALE),
                            mass=self.sim.k_k.mass_sphere,
                            inertia=self.sim.k_k.J,
                            zero_pos_x=self.cone.get_zero_pos())
+
+        self.interference = None
         self.wave = None
 
         self.physics = None
         self.state_values = (0, 0, 0, 0)
         self.falling = False
-        self.touchdown_x = 0
-        self.touchdown_ang = 0
-        self.touchdown_ang_v = 0
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.options = {"Hud position": 'right', "Angle unit": 'rad'}
@@ -59,6 +60,7 @@ class Euler(pg_root._State):
         self.done = False
         self.falling = False
         self.ball.touchdown = False
+        self.ball.stopped = False
         self.physics = None
         return self.persist
 
@@ -138,35 +140,19 @@ class Euler(pg_root._State):
         # If-Path for Euler Method
         if not self.falling:
             self.cone.update(np.float(x1[k]))
-            self.ball.update(self.cone.get_points('top'), np.float(x3[k]))
+            self.ball.update(self.cone.get_points('top'),
+                             np.float(x3[k]),
+                             np.float(x4[k]))
             k += 1
             Euler.index = k
 
         # Else-Path for simulating ball drop
         elif self.falling:
             if self.physics is None:
-                self.physics = gphysics.gPhysics(trigon=self.cone,
-                                                 circle=self.ball,
-                                                 states=self.state_values)
-
-            if not self.ball.touchdown:
-                self.physics.update()
-                x, y = self.physics.gen_slope()
-                ang = self.physics.gen_slope_rot()
-                self.ball.fall(x, y, ang, self.ground.pos)
-                self.touchdown_x = x
-                self.touchdown_ang = ang
-                self.touchdown_ang_v = self.ball.rt_ang_vel
-                if self.ball.touchdown:
-                    self.physics.reset_time()
-
-            elif self.ball.touchdown:
-                self.physics.update()
-                x, ang = self.physics.keep_rot(self.touchdown_x,
-                                               self.touchdown_ang,
-                                               self.touchdown_ang_v)
-
-                self.ball.coast(x, ang)
+                self.physics = gphysics.gPhysics(cone=self.cone,
+                                                 ball=self.ball,
+                                                 ground=self.ground)
+            self.physics.update()
 
         self.draw(surface)
 

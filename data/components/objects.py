@@ -13,6 +13,7 @@ class Cone:
         self._basis_c_x = basis_center_x
         self._basis_y = basis_y
         self.ratio = ratio
+
         self._real_location = 0
 
     def update(self, x1):
@@ -64,12 +65,15 @@ class Sphere:
         self._mass = mass
         self._J = inertia
         self._start_pos_x = zero_pos_x
-        self._ang = 0
-        self.rt_ang_vel = 0
-        self.touchdown = False
 
-    def update(self, apex_pos, angle):
+        self._ang = 0
+        self._ang_vel = 0
+        self.touchdown = False
+        self.stopped = False
+
+    def update(self, apex_pos, angle, angle_vel):
         self._ang = angle
+        self._ang_vel = angle_vel
 
         # Swinging Sphere according to ss variable x3 (angle).
         # Moving Sphere according to cone apex.
@@ -77,15 +81,16 @@ class Sphere:
         self._c_x = round(apex_pos[0] + self._r*m.cos(polar_angle))
         self._c_y = round(apex_pos[1] - self._r*m.sin(polar_angle))
 
-    def fall(self, x, y, ang, ground):
+    def fall(self, x, y, ang, ang_vel, ground):
         self._c_x = x
         self._c_y = y
         self._ang = ang
+        self._ang_vel = ang_vel
         if self._c_y+self._r >= ground:
             self._c_y = ground - self._r
             self.touchdown = True
 
-    def coast(self, x, ang):
+    def roll(self, x, ang):
         self._c_x = x
         self._ang = ang
 
@@ -112,25 +117,24 @@ class Sphere:
     def inside(self, point):
         return (point[0]-self._c_x)**2 + (point[1]-self._c_y)**2 < self._r**2
 
+    def get_props(self):
+        return self.r, self._mass, self._J
+
     @property
     def r(self):
         return self._r
 
     @property
-    def mass(self):
-        return self._mass
-
-    @property
-    def J(self):
-        return self._J
+    def loc(self):
+        return (self.get_center()[0] - self._start_pos_x) / SCALE
 
     @property
     def ang(self):
         return self._ang
 
     @property
-    def loc(self):
-        return (self.get_center()[0] - self._start_pos_x) / SCALE
+    def ang_vel(self):
+        return self._ang_vel
 
 
 class Ground:

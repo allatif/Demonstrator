@@ -7,113 +7,151 @@ GRAVITY = 9.81
 
 class gPhysics:
 
-    counter = 0
-
     def __init__(self, **kwargs):
-        self.trigon = kwargs.get('trigon', None)
-        self.circle = kwargs.get('circle', None)
+        self.cone = kwargs.get('cone', None)
+        self.ball = kwargs.get('ball', None)
+        self.ground = kwargs.get('ground', None)
 
-        states = kwargs.get('states', None)
-        self.loc = states[0]
-        self.vel = states[1]
-        self.ang = states[2]
-        self.ang_vel = states[3]
-
-        self.scale = pg_init.SCALE
-
-        if self.circle is not None and self.trigon is not None:
-            # Last position of ball before fall
-            self.x0, self.y0 = self.circle.get_center()
-
-            # Slope accelerations when ball rolls down the cone
-            self.slope_ang = self.trigon.get_basis_angle()
-            self.acc, self.ang_acc = self._calc_accel()
-
-        self.t = 0
-        self.fps = 100
-        gPhysics.counter = 0
+        self.slope = None
+        self.coast = None
 
     def update(self):
-        gPhysics.counter += 1
-        self.t = gPhysics.counter*(1/self.fps)
+        if not self.ball.touchdown:
+            if self.slope is None:
+                self.slope = SlopeModel(self.ball.get_center(),
+                                        self.ball.ang,
+                                        self.ball.ang_vel,
+                                        self.ball.get_props(),
+                                        self.cone.get_basis_angle())
+            self.slope.update()
+            x, y, ang, ang_vel = self.slope.generate()
+            self.ball.fall(x, y, ang, ang_vel, self.ground.pos)
 
-    def gen_trajectory(self):
-        # Not in use, still in beta stage
-        vel = 0 if self.collided else self.vel
-        x = (vel * self.t * m.cos(self.ang)) * self.scale + self.x0
-        y = -(vel * self.t * m.sin(self.ang)
-              - (GRAVITY/2) * self.t**2) \
-            * self.scale + self.y0
-        return round(x), round(y)
+        elif self.ball.touchdown and not self.ball.stopped:
+            if self.coast is None:
+                self.coast = CoastModel(self.ball.get_center(),
+                                        self.ball.ang,
+                                        self.ball.ang_vel,
+                                        self.ball.get_props())
+            self.coast.update()
+            x, ang = self.coast.generate()
+            self.ball.roll(x, ang)
+            print(self.ball.get_center())
 
-    def gen_slope(self):
-        real_radius = self.circle.r / self.scale
-        # Direction switch depending on angle of dip
-        switch = {'left': -1, 'right': 1}
-        key = 'left' if self.ang < 0 else 'right'
-        distance = (0.5*self.acc*self.t**2
-                    + abs(self.ang_vel*real_radius)*self.t)
-        x = switch[key]*m.cos(self.slope_ang)*distance*self.scale + self.x0
-        y = m.sin(self.slope_ang)*distance*self.scale + self.y0
-        return round(x), round(y)
-
-    def gen_slope_rot(self):
-        acc_rot = 0.5 * self.ang_acc * self.t**2
-        if self.ang_vel < 0:
-            self.circle.rt_ang_vel = -acc_rot*self.t + self.ang_vel
-            return -acc_rot + self.ang_vel*self.t + self.ang
-        else:
-            self.circle.rt_ang_vel = acc_rot*self.t + self.ang_vel
-            return acc_rot + self.ang_vel*self.t + self.ang
-
-    def keep_rot(self, touchdown_x, touchdown_ang, touchdown_ang_v):
-        x0 = touchdown_x
-        ang0 = touchdown_ang
-        ang_v0 = touchdown_ang_v
-        real_radius = self.circle.r / self.scale
-        c_friction = 0.1
-
-        if ang0 < 0:
-            ang_decel = ((self.circle.mass*GRAVITY*c_friction*real_radius)
-                         / self.circle.J)
-        else:
-            ang_decel = -((self.circle.mass*GRAVITY*c_friction*real_radius)
-                          / self.circle.J)
-
-        decel_rot = 0.5 * ang_decel * self.t**2
-
-        ang = decel_rot + self.circle.rt_ang_vel*self.t + ang0
-        self.circle.rt_ang_vel = ang_decel * self.t + ang_v0
-        x = self.circle.rt_ang_vel * real_radius * self.t * self.scale + x0
-        return round(x), ang
+            if self.coast.is_stillstand():
+                self.ball.stopped = True
 
     def check_collision(self):
-        if self.trigon is not None:
-            lef_x, lef_y, rig_x, rig_y, top_x, top_y = self.trigon.get_coords()
+        if self.cone is not None:
+            lef_x, lef_y, rig_x, rig_y, top_x, top_y = self.cone.get_coords()
             slope_lef = (lef_x - top_x) / (lef_y - top_y)
             slope_rig = -slope_lef
 
-        if self.circle is not None and self.trigon is not None:
+        if self.ball is not None and self.cone is not None:
             base_y = lef_y
             for y in range(top_y, base_y):
                 x_lef = slope_lef*(y-top_y) + top_x
                 x_rig = slope_rig*(y-top_y) + top_x
-                if (self.circle.inside((x_lef, y))
-                        or self.circle.inside((x_rig, y))):
+                if (self.ball.inside((x_lef, y))
+                        or self.ball.inside((x_rig, y))):
                     return True
-
                 return False
-
         return
 
-    def _calc_accel(self):
-        real_radius = self.circle.r / self.scale
+
+class _State:
+
+    counter = 0
+
+    def __init__(self, start_pos, start_ang, start_ang_vel, ball_props):
+        # Ball states
+        self.x0, self.y0 = start_pos
+        self.ang0 = start_ang
+        self.ang_v0 = start_ang_vel
+        # Ball properties - radius, mass, inertia
+        self.ball_r, self.ball_m, self.ball_J = ball_props
+
+        self.t = 0
+        self.fps = 100
+        self.scale = pg_init.SCALE
+
+        self.real_r = self.ball_r / self.scale
+
+        _State.counter = 0
+
+    def update(self):
+        self.t = _State.counter*(1/self.fps)
+        _State.counter += 1
+
+
+class SlopeModel(_State):
+
+    def __init__(self, start_pos, start_ang, start_ang_vel, ball_props,
+                 slope_angle):
+        _State.__init__(self, start_pos, start_ang, start_ang_vel, ball_props)
+        self.slope_angle = slope_angle
+
+    def generate(self):
+        accel, ang_accel = self._calc_ball_accel()
+
+        travel = 0.5*accel*self.t**2 + abs(self.ang_v0*self.real_r)*self.t
+
+        # Direction switch depending on angle of dip
+        switch = {'left': -1, 'right': 1}
+        key = 'left' if self.ang0 < 0 else 'right'
+        x = switch[key]*m.cos(self.slope_angle)*travel*self.scale + self.x0
+        y = m.sin(self.slope_angle)*travel*self.scale + self.y0
+
+        accel_rot = 0.5 * ang_accel * self.t**2
+        if self.ang_v0 < 0:
+            ang = -accel_rot + self.ang_v0*self.t + self.ang0
+            ang_vel = -ang_accel*self.t + self.ang_v0
+        else:
+            ang = accel_rot + self.ang_v0*self.t + self.ang0
+            ang_vel = ang_accel*self.t + self.ang_v0
+
+        return round(x), round(y), ang, ang_vel
+
+    def _calc_ball_accel(self):
         angular_accel = (
-            self.circle.mass * GRAVITY * real_radius * m.sin(self.slope_ang)
-        ) / self.circle.J
-        accel = angular_accel * real_radius
+            self.ball_m * GRAVITY * self.real_r * m.sin(self.slope_angle)
+        ) / self.ball_J
+        accel = angular_accel * self.real_r
         return accel, angular_accel
 
-    @classmethod
-    def reset_time(cls):
-        cls.counter = 0
+
+class CoastModel(_State):
+
+    def __init__(self, start_pos, start_ang, start_ang_vel, ball_props):
+        _State.__init__(self, start_pos, start_ang, start_ang_vel, ball_props)
+        self.ang_vel = None
+        self.ang_vel_1_2 = []
+        self.stillstand = False
+
+    def generate(self):
+        c_friction = 1.1
+
+        if self.ang_v0 < 0:
+            ang_decel = ((self.ball_m*GRAVITY*c_friction*self.real_r)
+                         / self.ball_J)
+        else:
+            ang_decel = -((self.ball_m*GRAVITY*c_friction*self.real_r)
+                          / self.ball_J)
+
+        decel_rot = 0.5 * ang_decel * self.t**2
+
+        ang = decel_rot + self.ang_v0*self.t + self.ang0
+
+        self.ang_vel = decel_rot*self.t + self.ang_v0
+        x = self.ang_vel * self.real_r * self.t * self.scale + self.x0
+        print(self.ang_vel)
+
+        return round(x), ang
+
+    def is_stillstand(self):
+        self.ang_vel_1_2.append(abs(self.ang_vel))
+        if len(self.ang_vel_1_2) == 2:
+            print(self.ang_vel_1_2)
+            if self.ang_vel_1_2[1] > self.ang_vel_1_2[0]:
+                return True
+            self.ang_vel_1_2 = []
