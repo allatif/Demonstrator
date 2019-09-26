@@ -161,7 +161,7 @@ class Ruler:
         self.zero = zero
         self.len = length
 
-    def get_scales(self, main_scale_len, scale_len, scale_w):
+    def get_scales(self, main_scale_len, scale_len, scale_w, subs=5):
         self.scale_w = scale_w
         self._numbers = []
         self._positions = []
@@ -169,13 +169,20 @@ class Ruler:
         start = (0, 0)
         end = (0, 0)
 
-        for side in range(0, 2):
-            step = -SCALE if side == 0 else SCALE
-            num_sign = -1 if side == 0 else 1
+        for side in range(-1, 2, 2):
+            step = side*SCALE
+
+            # Sub-Scales
+            for pos_x in range(self.zero, side*self.len, step//subs):
+                start = pos_x, self.pos+1
+                end = pos_x, self.pos + scale_len
+                scales.append((start, end))
+
+            # Main-Scales with numbers
             for num, pos_x in enumerate(range(self.zero, side*self.len, step)):
-                start = pos_x, self.pos
+                start = pos_x, self.pos+1
                 end = pos_x, self.pos + main_scale_len
-                self._numbers.append(num_sign*num)
+                self._numbers.append(side*num)
                 self._positions.append(pos_x)
                 scales.append((start, end))
 

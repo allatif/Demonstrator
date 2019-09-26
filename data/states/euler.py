@@ -37,7 +37,7 @@ class Euler(pg_root._State):
                            inertia=self.sim.k_k.J,
                            zero_pos_x=self.cone.get_zero_pos())
 
-        self.ruler = Ruler(pos=self.ground.pos,
+        self.ruler = Ruler(pos=self.ground.pos+self.ground.w,
                            zero=self.cone.get_zero_pos(),
                            length=self.ground.len)
 
@@ -49,6 +49,7 @@ class Euler(pg_root._State):
         self.falling = False
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
+        self.rulefont = pg.font.SysFont('Liberation Sans', 18)
         self.options = {"Hud position": 'right', "Angle unit": 'rad'}
 
     def startup(self, persistant):
@@ -178,12 +179,17 @@ class Euler(pg_root._State):
     def draw_ruler(self, surface):
         self.draw_trigon_marker(surface)
 
-        scales = self.ruler.get_scales(20, 5, 2)
+        text_margin = 25
+
+        scales = self.ruler.get_scales(10, 5, 2, subs=10)
         for scale in scales:
             pg.draw.line(surface, color.BLACK,
                          *scale, self.ruler.scale_w)
 
-        print(self.ruler.get_numbers())
+        for num, pos_x in self.ruler.get_numbers():
+            text = self.rulefont.render(str(num), True, color.BLACK)
+            rect = text.get_rect(center=(pos_x+1, self.ruler.pos+text_margin))
+            surface.blit(text, rect)
 
     def draw_trigon_marker(self, surface):
         point_bottom = (self.cone.get_points('top')[0],
