@@ -1,3 +1,4 @@
+# NORMAL COLORS (RGB)
 WHITE = (240, 240, 240)
 BLACK = (0, 0, 0)
 
@@ -17,5 +18,10 @@ DBLUE = (0, 0, 139)
 
 ORANGE = (255, 127, 80)
 TOMATO = (255, 99, 71)
+
+# ALPHA COLORS (RGBA)
+TRAN100 = (0, 0, 0, 100)
+TRAN150 = (0, 0, 0, 150)
+TRAN200 = (0, 0, 0, 200)
 
 ARED = (225, 0, 0, 128)

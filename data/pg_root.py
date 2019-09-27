@@ -94,9 +94,11 @@ class _State:
         """Update method for state. Must be overrided in children."""
         pass
 
-    def render_font(self, font, msg, color, center):
+    def render_font(self, msg, name, size, color, center):
         """Returns the rendered font surface and its rect centered on center.
         """
+        path = pg_init.FPATH[name]
+        font = pg.font.Font(path, size)
         msg = font.render(msg, True, color)
         rect = msg.get_rect(center=center)
         return msg, rect
@@ -121,3 +123,14 @@ def load_all_gfx(directory, accept=(".png", ".jpg", ".bmp")):
                 img = img.convert()
             graphics[name] = img
     return graphics
+
+
+def get_all_fontpath(directory, accept=(".ttf", ".otf", ".fon", ".fnt")):
+    """Get all paths of fonts with extensions in the accept argument"""
+
+    paths = {}
+    for fnt in os.listdir(directory):
+        name, ext = os.path.splitext(fnt)
+        if ext.lower() in accept:
+            paths[name] = os.path.join(directory, fnt)
+    return paths

@@ -86,7 +86,7 @@ class Euler(pg_root._State):
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             if self.ball.inside(mouse):
                 diff = mouse[0] - self.cone.get_center_x()
-                self.interference = self.disturbing_func(diff)
+                self.interference = self._disturbing_func(diff)
 
                 self.wave = Impulse(args=(mouse[0], mouse[1], 8, 2, diff))
                 self.wave.start()
@@ -171,6 +171,9 @@ class Euler(pg_root._State):
 
         if self.wave is not None and not self.falling:
             self.draw_impulsewave(surface)
+
+        if self.ball.touchdown:
+            self.draw_gameover(surface)
 
     def draw_ground(self, surface):
         pg.draw.line(surface, color.BLACK,
@@ -324,7 +327,7 @@ class Euler(pg_root._State):
                 hud_pos_y = self.height - margin - wide
                 rect = (hud_pos_x, hud_pos_y, length, wide)
                 if num == 0:
-                    pg.gfxdraw.box(surface, rect, (0, 0, 0, 200))
+                    pg.gfxdraw.box(surface, rect, color.TRAN200)
                 surface.blit(text,
                              (hud_pos_x + text_margin,
                               hud_pos_y + text_margin + num*line_margin))
@@ -333,12 +336,22 @@ class Euler(pg_root._State):
                 hud_pos_y = self.height - margin - wide
                 rect = (hud_pos_x, hud_pos_y, length, wide)
                 if num == 0:
-                    pg.gfxdraw.box(surface, rect, (0, 0, 0, 200))
+                    pg.gfxdraw.box(surface, rect, color.TRAN200)
                 surface.blit(text,
                              (hud_pos_x + text_margin,
                               hud_pos_y + text_margin + num*line_margin))
 
-    def disturbing_func(self, intensity):
+    def draw_gameover(self, surface):
+        text = 'Game Over'
+        fontname = 'ARCADECLASSIC'
+        center = (self.width//2, self.height//2 - 100)
+        msg, rect = self.render_font(text, fontname, 128, color.LRED, center)
+        alpha_surface = pg.Surface((rect[2]+12, rect[3]-10), pg.SRCALPHA)
+        alpha_surface.fill(color.TRAN150)
+        alpha_surface.blit(msg, (8, -3))
+        surface.blit(alpha_surface, rect)
+
+    def _disturbing_func(self, intensity):
         return -intensity*1.0e-2
 
     @staticmethod
