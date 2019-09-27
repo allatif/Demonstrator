@@ -304,9 +304,12 @@ class Euler(pg_root._State):
             surface.blit(alpha_surface, (0, 0))
 
     def draw_hud(self, surface, length, wide, margin=4, pos='right'):
-        rect = (self.width//2, self.height//2, length, wide)
         text_margin = 5
         line_margin = 14
+
+        rect = self.render_hud(length, wide, margin, pos)
+        pg.gfxdraw.box(surface, rect, color.TRAN200)
+
         units = ['m', 'm/s', 'rad', 'rad/s']
         SI = True
         if self.options["Angle unit"] == 'deg':
@@ -314,32 +317,14 @@ class Euler(pg_root._State):
             SI = False
 
         for num, value in enumerate(self.state_values):
-            if num > 1 and not SI:
-                value = self.rad2deg(value)
-
-            value_str = f'x{num+1}: {value:.2f} {units[num]}'
-            if value > 0:
-                value_str = f'x{num+1}:  {value:.2f} {units[num]}'
+            value = self.rad2deg(value) if num > 1 and not SI else value
+            space = '  ' if value > 0 else ' '
+            value_str = f'x{num+1}:{space}{value:.2f} {units[num]}'
             text = self.hudfont.render(value_str, True, color.WHITE)
 
-            if pos == 'left':
-                hud_pos_x = margin
-                hud_pos_y = self.height - margin - wide
-                rect = (hud_pos_x, hud_pos_y, length, wide)
-                if num == 0:
-                    pg.gfxdraw.box(surface, rect, color.TRAN200)
-                surface.blit(text,
-                             (hud_pos_x + text_margin,
-                              hud_pos_y + text_margin + num*line_margin))
-            elif pos == 'right':
-                hud_pos_x = self.width - margin - length
-                hud_pos_y = self.height - margin - wide
-                rect = (hud_pos_x, hud_pos_y, length, wide)
-                if num == 0:
-                    pg.gfxdraw.box(surface, rect, color.TRAN200)
-                surface.blit(text,
-                             (hud_pos_x + text_margin,
-                              hud_pos_y + text_margin + num*line_margin))
+            surface.blit(text,
+                         (rect[0] + text_margin,
+                          rect[1] + text_margin + num*line_margin))
 
     def draw_gameover(self, surface):
         text = 'Game Over'

@@ -143,34 +143,20 @@ class PoleMap(pg_root._State):
             surface.blit(text, slider_.value_label.rect)
 
     def draw_hud(self, surface, length, wide, margin=4, pos='right'):
-        rect = (self.width//2, self.height//2, length, wide)
         text_margin = 5
         line_margin = 14
 
+        rect = self.render_hud(length, wide, margin, pos)
+        pg.gfxdraw.box(surface, rect, color.TRAN200)
+
         for num, pole in enumerate(self.poles):
             pole_str = f'{pole}'
-            text = self.hudfont.render(pole_str, True, color.WHITE)
-            if pole.is_unstable():
-                text = self.hudfont.render(pole_str, True, color.LRED)
+            textcolor = color.LRED if pole.is_unstable() else color.WHITE
+            text = self.hudfont.render(pole_str, True, textcolor)
 
-            if pos == 'left':
-                hud_pos_x = margin
-                hud_pos_y = self.height - margin - wide
-                rect = (hud_pos_x, hud_pos_y, length, wide)
-                if num == 0:
-                    pg.gfxdraw.box(surface, rect, color.TRAN200)
-                surface.blit(text,
-                             (hud_pos_x + text_margin,
-                              hud_pos_y + text_margin + num*line_margin))
-            elif pos == 'right':
-                hud_pos_x = self.width - margin - length
-                hud_pos_y = self.height - margin - wide
-                rect = (hud_pos_x, hud_pos_y, length, wide)
-                if num == 0:
-                    pg.gfxdraw.box(surface, rect, color.TRAN200)
-                surface.blit(text,
-                             (hud_pos_x + text_margin,
-                              hud_pos_y + text_margin + num*line_margin))
+            surface.blit(text,
+                         (rect[0] + text_margin,
+                          rect[1] + text_margin + num*line_margin))
 
     def gen_signal_by_loop(self, amplitude, length):
         self.loop_counter += 1

@@ -94,6 +94,17 @@ class _State:
         """Update method for state. Must be overrided in children."""
         pass
 
+    def render_hud(self, length, wide, margin, pos):
+        """Returns the rect of hud field"""
+        if pos == 'left':
+            hud_pos_x = margin
+            hud_pos_y = self.height - margin - wide
+        elif pos == 'right':
+            hud_pos_x = self.width - margin - length
+            hud_pos_y = self.height - margin - wide
+        rect = (hud_pos_x, hud_pos_y, length, wide)
+        return rect
+
     def render_font(self, msg, name, size, color, center):
         """Returns the rendered font surface and its rect centered on center.
         """
