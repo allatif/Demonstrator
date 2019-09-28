@@ -17,18 +17,19 @@ class Euler(pg_root._State):
 
     index = 0
 
-    def __init__(self):
-        pg_root._State.__init__(self)
+    def __init__(self, mother_init=True):
+        if mother_init:
+            pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
-        self.sim = setup_sim.SimData(20000)
+        self.sim = setup_sim.SimData(12000)
 
         self.ground = Ground(510, self.width, thickness=10)
 
-        self.cone = Cone(basis_length=200,
+        self.cone = Cone(basis_length=pg_init.SCALE,
                          basis_center_x=self.width//2,
                          ratio=0.85)
 
@@ -46,7 +47,7 @@ class Euler(pg_root._State):
 
         self.physics = None
         self.state_values = (0, 0, 0, 0)
-        self.falling = False
+        self.simdone = False
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.rulefont = pg.font.SysFont('Liberation Sans', 18)
@@ -54,6 +55,7 @@ class Euler(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.__init__(mother_init=False)
         self.regs = self.persist["controller"]
         self.sim.set_regs(*self.regs)
         print(self.regs)
@@ -63,10 +65,6 @@ class Euler(pg_root._State):
 
     def cleanup(self):
         self.done = False
-        self.falling = False
-        self.ball.touchdown = False
-        self.ball.stopped = False
-        self.physics = None
         return self.persist
 
     def get_event(self, event, mouse):
@@ -137,22 +135,26 @@ class Euler(pg_root._State):
         if abs(x3[k]) > self.deg2rad(60):
             # if ball tilt angle > 60°
             # ball will start falling and shall roll down the cone
-            self.falling = True
+            self.ball.falling = True
 
         self.state_values = (np.float(x1[k]), np.float(x2[k]),
                              np.float(x3[k]), np.float(x4[k]))
 
         # If-Path for Euler Method
-        if not self.falling:
+        if not self.ball.falling:
             self.cone.update(np.float(x1[k]))
             self.ball.update(self.cone.get_points('top'),
                              np.float(x3[k]),
                              np.float(x4[k]))
-            k += 1
-            Euler.index = k
+
+            if k >= self.sim.sim_length-1:
+                self.simdone = True
+            else:
+                k += 1
+                Euler.index = k
 
         # Else-Path for simulating ball drop
-        elif self.falling:
+        elif self.ball.falling:
             if self.physics is None:
                 self.physics = gphysics.gPhysics(cone=self.cone,
                                                  ball=self.ball,
@@ -169,11 +171,14 @@ class Euler(pg_root._State):
         self.draw_ball(surface, reflection=False)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
-        if self.wave is not None and not self.falling:
+        if self.wave is not None and not (self.ball.falling or self.simdone):
             self.draw_impulsewave(surface)
 
         if self.ball.touchdown:
-            self.draw_gameover(surface)
+            self.draw_message(surface, 'Game Over')
+
+        if self.simdone:
+            self.draw_message(surface, 'Finished')
 
     def draw_ground(self, surface):
         pg.draw.line(surface, color.BLACK,
@@ -326,10 +331,9 @@ class Euler(pg_root._State):
                          (rect[0] + text_margin,
                           rect[1] + text_margin + num*line_margin))
 
-    def draw_gameover(self, surface):
-        text = 'Game Over'
+    def draw_message(self, surface, text):
         fontname = 'ARCADECLASSIC'
-        center = (self.width//2, self.height//2 - 100)
+        center = (self.width//2, self.cone.get_points('top')[1]//2)
         msg, rect = self.render_font(text, fontname, 128, color.LRED, center)
         alpha_surface = pg.Surface((rect[2]+12, rect[3]-10), pg.SRCALPHA)
         alpha_surface.fill(color.TRAN150)

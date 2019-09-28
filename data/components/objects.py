@@ -68,6 +68,7 @@ class Sphere:
 
         self._ang = 0
         self._ang_vel = 0
+        self.falling = False
         self.touchdown = False
         self.stopped = False
 
