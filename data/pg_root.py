@@ -108,8 +108,11 @@ class _State:
     def render_font(self, msg, name, size, color, center):
         """Returns the rendered font surface and its rect centered on center.
         """
-        path = pg_init.FPATH[name]
-        font = pg.font.Font(path, size)
+        if name in pg_init.FPATH:
+            path = pg_init.FPATH[name]
+            font = pg.font.Font(path, size)
+        else:
+            font = pg.font.SysFont(name, size)
         msg = font.render(msg, True, color)
         rect = msg.get_rect(center=center)
         return msg, rect
