@@ -2,11 +2,12 @@ import math as m
 
 import pygame as pg
 import pygame.gfxdraw
+import matplotlib.pyplot as plt
 
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import color, gaussian
-from .. interface import slider
+from .. interface import slider, button
 
 
 class PoleMap(pg_root._State):
@@ -19,11 +20,12 @@ class PoleMap(pg_root._State):
         self.next = "EULER"
         self.sim = setup_sim.SimData(12000)
         self.poles = None
+        self.result = None
         # self.controller = [-2196.6, -4761.2, -51800, -18831]
-        # self.controller = [-1296.6, -3161.2, -31800, -9831]
+        self.controller = [-1296.6, -3161.2, -31800, -9831]
         # self.controller = [-1196.6, -3761.2, -11800, -8831]
         # for testing fall of sphere
-        self.controller = [-9050, -3150, -4800, -9750]
+        # self.controller = [-9050, -3150, -4800, -9750]
         self.sliders = []
 
         slider_ranges = [(0, 10000), (0, 10000), (0, 80000), (0, 50000)]
@@ -34,6 +36,10 @@ class PoleMap(pg_root._State):
         for slider_ in self.sliders:
             slider_.thumb.c_x = slider_.get_thumb_from_value()
 
+        self.button = button.Button((90, 30), 'Show Plot', color.LRED)
+        self.button.set_pos(self.width-self.button.width-15, 10)
+        self.button.init_reflection()
+
         font_size = self.sliders[0].value_label.size
         self.font = pg.font.SysFont('Liberation Sans', font_size)
         self.hudfont = pg.font.SysFont('Consolas', 12)
@@ -41,8 +47,13 @@ class PoleMap(pg_root._State):
         self.options = {"Hud position": 'left'}
         self.loop_counter = 0
 
+    def startup(self, persistant):
+        pg_root._State.startup(self, persistant)
+        self.result = self.persist["result"]
+
     def cleanup(self):
         self.done = False
+        self.button.virgin = True
         self.persist["controller"] = self.controller
         return self.persist
 
@@ -68,6 +79,18 @@ class PoleMap(pg_root._State):
                 if slider_.thumb.grabbed:
                     slider_.thumb.release()
                     break
+
+            if self.button.inside(mouse):
+                self.plot()
+                print('inside')
+            else:
+                print('outside')
+
+        if self.button.inside(mouse):
+            self.button.color = color.LLRED
+            self.button.virgin = False
+        else:
+            self.button.color = self.button.orgcolor
 
     def update(self, surface, mouse):
         self.poles = []
@@ -100,7 +123,7 @@ class PoleMap(pg_root._State):
             if pole.is_unstable():
                 dyn_color = color.RED
                 # animate unstable pole flicker
-                signal = self.gen_signal_by_loop(4, 80)
+                signal = self.gen_signal_by_loop(4, 80, forobj='Pole')
                 self._draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
                                            color.ARED)
@@ -142,6 +165,23 @@ class PoleMap(pg_root._State):
             text = self.font.render(str(slider_.value), True, color.ORANGE)
             surface.blit(text, slider_.value_label.rect)
 
+        if self.result is not None:
+            # Show Plot Button
+            pg.gfxdraw.box(surface, self.button.rect, self.button.color)
+
+            # Button Reflection
+            if self.button.virgin:
+                signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
+                self.button.run(signal)
+                self._draw_aafilled_polygon(surface,
+                                            self.button.get_refl_poly(),
+                                            color.LLRED)
+
+            # Button Text
+            text, rect = self.render_font(self.button.text, 'Liberation Sans',
+                                          16, color.WHITE, self.button.center)
+            surface.blit(text, rect)
+
     def draw_hud(self, surface, length, wide, margin=4, pos='right'):
         text_margin = 5
         line_margin = 14
@@ -158,11 +198,25 @@ class PoleMap(pg_root._State):
                          (rect[0] + text_margin,
                           rect[1] + text_margin + num*line_margin))
 
-    def gen_signal_by_loop(self, amplitude, length):
+    def plot(self):
+        if self.result is not None:
+            x, time = self.result
+            plt.plot(time, x)
+            plt.show()
+
+    def gen_signal_by_loop(self, amplitude, length, forobj='Pole'):
         self.loop_counter += 1
-        return amplitude * m.sin((self.loop_counter/length) * m.pi)**2
+        if forobj == 'Pole':
+            return amplitude * m.sin((self.loop_counter/length) * m.pi)**2
+        elif forobj == 'But_Refl':
+            return not (self.loop_counter % 1)
 
     @staticmethod
     def _draw_aafilled_circle(surface, x, y, r, color):
         pg.gfxdraw.aacircle(surface, x, y, r, color)
         pg.gfxdraw.filled_circle(surface, x, y, r, color)
+
+    @staticmethod
+    def _draw_aafilled_polygon(surface, points, color):
+        pg.gfxdraw.aapolygon(surface, points, color)
+        pg.gfxdraw.filled_polygon(surface, points, color)

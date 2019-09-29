@@ -17,8 +17,8 @@ class Euler(pg_root._State):
 
     index = 0
 
-    def __init__(self, mother_init=True):
-        if mother_init:
+    def __init__(self, mother=True):
+        if mother:
             pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
@@ -48,6 +48,7 @@ class Euler(pg_root._State):
         self.physics = None
         self.state_values = (0, 0, 0, 0)
         self.simdone = False
+        self.result = None
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.rulefont = pg.font.SysFont('Liberation Sans', 18)
@@ -55,7 +56,7 @@ class Euler(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-        self.__init__(mother_init=False)
+        self.__init__(mother=False)
         self.regs = self.persist["controller"]
         self.sim.set_regs(*self.regs)
         print(self.regs)
@@ -65,6 +66,7 @@ class Euler(pg_root._State):
 
     def cleanup(self):
         self.done = False
+        self.persist["result"] = self.result
         return self.persist
 
     def get_event(self, event, mouse):
@@ -161,6 +163,7 @@ class Euler(pg_root._State):
                                                  ground=self.ground)
             self.physics.update()
 
+        self.result = x1[:k], t_vec[:k]
         self.draw(surface)
 
     def draw(self, surface):
