@@ -42,6 +42,7 @@ class PoleMap(pg_root._State):
 
         font_size = self.sliders[0].value_label.size
         self.font = pg.font.SysFont('Liberation Sans', font_size)
+        self.smallfont = pg.font.SysFont('Liberation Sans', 14)
         self.hudfont = pg.font.SysFont('Consolas', 12)
 
         self.options = {"Hud position": 'left', "Euler corr": True}
@@ -176,7 +177,7 @@ class PoleMap(pg_root._State):
         if self.options["Euler corr"]:
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
-            text = self.font.render(msg, True, color.BLACK)
+            text = self.smallfont.render(msg, True, color.BLACK)
             left, top, w, h = last_slider_rect
             surface.blit(text, (left, top+15, w, h))
 
