@@ -20,7 +20,7 @@ class PoleMap(pg_root._State):
         self.next = "EULER"
         self.sim = setup_sim.SimData(12000)
         self.poles = None
-        self.result = None
+        self.results = None
         # self.controller = [-2196.6, -4761.2, -51800, -18831]
         self.controller = [-1296.6, -3161.2, -31800, -9831]
         # self.controller = [-1196.6, -3761.2, -11800, -8831]
@@ -37,7 +37,7 @@ class PoleMap(pg_root._State):
             slider_.thumb.c_x = slider_.get_thumb_from_value()
 
         self.button = button.Button((90, 30), 'Show Plot', color.LRED)
-        self.button.set_pos(self.width-self.button.width-15, 10)
+        self.button.set_pos((self.width-self.button.width-15, 10))
         self.button.init_reflection()
 
         font_size = self.sliders[0].value_label.size
@@ -49,7 +49,7 @@ class PoleMap(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-        self.result = self.persist["result"]
+        self.results = self.persist["result"]
 
     def cleanup(self):
         self.done = False
@@ -165,7 +165,7 @@ class PoleMap(pg_root._State):
             text = self.font.render(str(slider_.value), True, color.ORANGE)
             surface.blit(text, slider_.value_label.rect)
 
-        if self.result is not None:
+        if self.results is not None:
             # Show Plot Button
             pg.gfxdraw.box(surface, self.button.rect, self.button.color)
 
@@ -194,14 +194,25 @@ class PoleMap(pg_root._State):
             textcolor = color.LRED if pole.is_unstable() else color.WHITE
             text = self.hudfont.render(pole_str, True, textcolor)
 
-            surface.blit(text,
-                         (rect[0] + text_margin,
-                          rect[1] + text_margin + num*line_margin))
+            surface.blit(text, (rect[0] + text_margin,
+                                rect[1] + text_margin + num*line_margin))
 
     def plot(self):
-        if self.result is not None:
-            x, time = self.result
+        if self.results is not None:
+            x, ang, time = self.results
+            plt.figure(figsize=(12, 8), dpi=80)
+
+            plt.subplot(211)
             plt.plot(time, x)
+            plt.xlabel('Time [s]')
+            plt.ylabel('Distance [m]')
+            plt.grid(True)
+
+            plt.subplot(212)
+            plt.plot(time, ang, 'r')
+            plt.xlabel('Time [s]')
+            plt.ylabel('Angle [°]')
+            plt.grid(True)
             plt.show()
 
     def gen_signal_by_loop(self, amplitude, length, forobj='Pole'):
