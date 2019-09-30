@@ -66,10 +66,7 @@ class PoleMap(pg_root._State):
             if event.key == pg.K_F2:
                 self.options["Hud position"] = 'right'
             if event.key == pg.K_c:
-                if self.options["Euler corr"]:
-                    self.options["Euler corr"] = False
-                else:
-                    self.options["Euler corr"] = True
+                self.options["Euler corr"] = not self.options["Euler corr"]
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             print(self.plane.get_point(mouse))
@@ -102,8 +99,8 @@ class PoleMap(pg_root._State):
         self.controller = []
 
         # Euler method causes a little error per step k
-        # Need of correction offset crr to correct marginal stable poles
-        crr = 0.0487 if self.options['Euler corr'] else 0.0
+        # Need of correction offset 'crr' to correct marginal stable poles
+        crr = 0.0485 if self.options['Euler corr'] else 0.0
 
         for slider_ in self.sliders:
             if slider_.thumb.grabbed:
@@ -162,6 +159,7 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
+        last_slider_rect = None
         for slider_ in self.sliders:
             pg.gfxdraw.box(surface, slider_.track.rect, color.GREY)
             pg.gfxdraw.box(surface, slider_.get_slid_rect(), color.ORANGE)
@@ -173,6 +171,14 @@ class PoleMap(pg_root._State):
 
             text = self.font.render(str(slider_.value), True, color.ORANGE)
             surface.blit(text, slider_.value_label.rect)
+            last_slider_rect = slider_.track.rect
+
+        if self.options["Euler corr"]:
+            # Show if option Euler method correction offset is activated
+            msg = '*Imaginary axis offset'
+            text = self.font.render(msg, True, color.BLACK)
+            left, top, w, h = last_slider_rect
+            surface.blit(text, (left, top+15, w, h))
 
         if self.results is not None:
             # Show Plot Button
