@@ -48,7 +48,7 @@ class Euler(pg_root._State):
         self.physics = None
         self.state_values = (0, 0, 0, 0)
         self.simdone = False
-        self.result = None
+        self.results = None
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.rulefont = pg.font.SysFont('Liberation Sans', 18)
@@ -66,7 +66,7 @@ class Euler(pg_root._State):
 
     def cleanup(self):
         self.done = False
-        self.persist["result"] = self.result
+        self.persist["result"] = self.results
         return self.persist
 
     def get_event(self, event, mouse):
@@ -163,7 +163,7 @@ class Euler(pg_root._State):
                                                  ground=self.ground)
             self.physics.update()
 
-        self.result = x1[:k], t_vec[:k]
+        self.results = x1[:k], self.rad2deg(x3[:k]), t_vec[:k]
         self.draw(surface)
 
     def draw(self, surface):
