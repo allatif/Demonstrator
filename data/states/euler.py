@@ -171,7 +171,7 @@ class Euler(pg_root._State):
         self.draw_ground(surface)
         self.draw_ruler(surface)
         self.draw_cone(surface, reflection=True)
-        self.draw_ball(surface, reflection=False)
+        self.draw_ball(surface)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
         if self.wave is not None and not (self.ball.falling or self.simdone):
@@ -237,7 +237,7 @@ class Euler(pg_root._State):
                                  self.cone.get_points('right'),
                                  self.cone.get_points('top')))
 
-    def draw_ball(self, surface, reflection=False):
+    def draw_ball(self, surface):
         # real location of ball
         _x_ = self.ball.loc
 
@@ -250,6 +250,7 @@ class Euler(pg_root._State):
         for s in range(shades):
             r_y = self.ball.r
             c_x, c_y = self.ball.get_center()
+            apex_y = self.cone.get_points('top')[1]
             red = color.DRED[0]
             red = red + 5*s
             rgb = (red, 0, 0)
@@ -262,8 +263,15 @@ class Euler(pg_root._State):
                                           self.ball.r - w*s, r_y - w*s, rgb)
 
             else:
-                lightest_spot_c_x = c_x + round(-14*_x_)
-                lightest_spot_c_y = c_y + round(-14*_x_*m.sin(self.ball.ang))
+                offzero = apex_y - c_y - self.ball.r
+                change = m.sqrt(1.26*((abs(offzero)/200) + 1))
+                lightest_spot_c_x = c_x + round(-10*_x_)
+                lightest_spot_c_y = round(change*(apex_y - self.ball.r))
+                light_offcenter_y = abs(lightest_spot_c_y - c_y)
+
+                # Value to squeeze elliptical shades in y-direction
+                # when lightest spot is off-center
+                sqz_y = 2*round((s/((shades-1)*10)) * light_offcenter_y)
 
                 if s == shades-1:
                     c_x = lightest_spot_c_x
@@ -274,29 +282,9 @@ class Euler(pg_root._State):
                 pg.gfxdraw.filled_ellipse(surface,
                                           c_x + round(gap_x*s),
                                           c_y + round(gap_y*s),
-                                          self.ball.r - w*s, r_y - w*s, rgb)
-
-        if reflection:
-            # Still in beta
-            radius_x = 24
-            radius_y = 22
-            center_x = int(self.cone.get_points('top')[0]) - round(_x_*40)
-            center_y = int(self.cone.get_points('top')[1]) - self.ball.r//2
-
-            alpha_surface = pg.Surface((self.width, self.height), pg.SRCALPHA)
-            for r in range(radius_y):
-                alpha = 168 * m.sqrt(r/radius_y)
-                rgba = (255, 255, 255, alpha)
-                dyn_radius_x = radius_x - r - int(abs(_x_*3))
-                dyn_radius_y = radius_y - r
-                if dyn_radius_x < 1:
-                    dyn_radius_x = 1
-
-                pg.gfxdraw.filled_ellipse(alpha_surface,
-                                          center_x, center_y,
-                                          dyn_radius_x, dyn_radius_y,
-                                          rgba)
-            surface.blit(alpha_surface, (0, 0))
+                                          self.ball.r - w*s,
+                                          r_y - w*s - sqz_y,
+                                          rgb)
 
         # pg.draw.line(surface, color.DGREY, *self.ball.get_equator_line(10)
         self._draw_aafilled_polygon(surface,
