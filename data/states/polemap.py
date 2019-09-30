@@ -44,7 +44,7 @@ class PoleMap(pg_root._State):
         self.font = pg.font.SysFont('Liberation Sans', font_size)
         self.hudfont = pg.font.SysFont('Consolas', 12)
 
-        self.options = {"Hud position": 'left'}
+        self.options = {"Hud position": 'left', "Euler corr": True}
         self.loop_counter = 0
 
     def startup(self, persistant):
@@ -65,6 +65,11 @@ class PoleMap(pg_root._State):
                 self.options["Hud position"] = 'left'
             if event.key == pg.K_F2:
                 self.options["Hud position"] = 'right'
+            if event.key == pg.K_c:
+                if self.options["Euler corr"]:
+                    self.options["Euler corr"] = False
+                else:
+                    self.options["Euler corr"] = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             print(self.plane.get_point(mouse))
@@ -96,6 +101,10 @@ class PoleMap(pg_root._State):
         self.poles = []
         self.controller = []
 
+        # Euler method causes a little error per step k
+        # Need of correction offset crr to correct marginal stable poles
+        crr = 0.0487 if self.options['Euler corr'] else 0.0
+
         for slider_ in self.sliders:
             if slider_.thumb.grabbed:
                 slider_.slide(mouse)
@@ -106,8 +115,8 @@ class PoleMap(pg_root._State):
         self.sim.update()
 
         for pole in self.sim.get_poles():
-            pos = self.plane.get_pos_from_point((pole.real, pole.imag))
-            self.poles.append(gaussian.Pole(pos, 15, pole.real, pole.imag))
+            pos = self.plane.get_pos_from_point((pole.real+crr, pole.imag))
+            self.poles.append(gaussian.Pole(pos, 15, pole.real+crr, pole.imag))
 
         self.draw(surface)
 

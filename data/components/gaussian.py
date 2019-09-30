@@ -107,7 +107,7 @@ class Pole:
         return self._Re > 0
 
     def is_marginal_stable(self):
-        return self._Re <= 0 and self._Re > -0.022
+        return self._Re <= 0 and self._Re > -0.016
 
     def __str__(self):
         if self._Im > 0:
