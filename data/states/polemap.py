@@ -85,9 +85,6 @@ class PoleMap(pg_root._State):
 
             if self.button.inside(mouse):
                 self.plot()
-                print('inside')
-            else:
-                print('outside')
 
         if self.button.inside(mouse):
             self.button.color = color.LLRED
