@@ -119,7 +119,6 @@ class PoleMap(pg_root._State):
         surface.fill(color.WHITE)
         self.draw_coordlines(surface, self.plane.Re_axis, self.plane.Im_axis)
         self.draw_axes(surface, self.plane.Re_axis, self.plane.Im_axis)
-        self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
         for pole in self.poles:
             pos = pole.get_center()
@@ -136,6 +135,7 @@ class PoleMap(pg_root._State):
             self._draw_aafilled_circle(surface, *pos, pole.r, dyn_color)
 
         self.draw_interface(surface)
+        self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
     def draw_axes(self, surface, axis_1, axis_2):
         d = {0: axis_1, 1: axis_2}
