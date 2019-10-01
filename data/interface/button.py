@@ -77,7 +77,7 @@ class Reflection:
         # m is the margin between button edge and reflection
         self._m = 2
 
-        # R is the Ratio of height to deferments
+        # R is the Ratio of height to deferment
         self._R = height / deferment
 
         # Polygon starts on the top right of button rect
