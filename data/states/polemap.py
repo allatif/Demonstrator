@@ -218,7 +218,8 @@ class PoleMap(pg_root._State):
     def plot(self):
         if self.results is not None:
             x, ang, time = self.results
-            plt.figure(figsize=(12, 8), dpi=80)
+            plt.figure(figsize=(12, 8), dpi=80,
+                       facecolor=(color.get_pp(color.WHITE)))
 
             plt.subplot(211)
             plt.plot(time, x)
