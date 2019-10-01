@@ -177,7 +177,7 @@ class PoleMap(pg_root._State):
         if self.options["Euler corr"]:
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
-            text = self.smallfont.render(msg, True, color.BLACK)
+            text = self.smallfont.render(msg, True, color.DBLUE)
             left, top, w, h = last_slider_rect
             surface.blit(text, (left, top+15, w, h))
 
@@ -203,7 +203,9 @@ class PoleMap(pg_root._State):
         line_margin = 14
 
         rect = self.render_hud(length, wide, margin, pos)
-        pg.gfxdraw.box(surface, rect, color.TRAN200)
+        hudcolor = color.A200DDBLUE if self.options['Euler corr'] \
+            else color.TRAN200
+        pg.gfxdraw.box(surface, rect, hudcolor)
 
         for num, pole in enumerate(self.poles):
             pole_str = f'{pole}'
