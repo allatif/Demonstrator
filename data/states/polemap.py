@@ -222,16 +222,17 @@ class PoleMap(pg_root._State):
                        facecolor=(color.get_pp(color.WHITE)))
 
             plt.subplot(211)
-            plt.plot(time, x)
+            plt.plot(time, x, color=color.get_pp(color.LBLUE))
             plt.xlabel('Time [s]')
             plt.ylabel('Distance [m]')
             plt.grid(True)
 
             plt.subplot(212)
-            plt.plot(time, ang, 'r')
+            plt.plot(time, ang, color=color.get_pp(color.TOMATO))
             plt.xlabel('Time [s]')
             plt.ylabel('Angle [°]')
             plt.grid(True)
+
             plt.show()
 
     def gen_signal_by_loop(self, amplitude, length, forobj='Pole'):
