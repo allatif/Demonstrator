@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import color, gaussian
-from .. interface import slider, button
+from .. interface import slider, button, checkbox
 
 
 class PoleMap(pg_root._State):
@@ -36,6 +36,8 @@ class PoleMap(pg_root._State):
         for slider_ in self.sliders:
             slider_.thumb.c_x = slider_.get_thumb_from_value()
 
+        self.checkbox = checkbox.CheckBox(16, 2, color.BLACK)
+
         self.button = button.Button((90, 30), 'Show Plot', color.LRED)
         self.button.set_pos((self.width-self.button.width-15, 10))
         self.button.init_reflection()
@@ -45,7 +47,7 @@ class PoleMap(pg_root._State):
         self.smallfont = pg.font.SysFont('Liberation Sans', 14)
         self.hudfont = pg.font.SysFont('Consolas', 12)
 
-        self.options = {"Hud position": 'left', "Euler corr": True}
+        self.options = {"Hud position": 'left', "Euler corr": False}
         self.loop_counter = 0
 
     def startup(self, persistant):
@@ -72,19 +74,25 @@ class PoleMap(pg_root._State):
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             print(self.plane.get_point(mouse))
 
-            for slider_ in self.sliders:
-                if slider_.thumb.mouse_inside(mouse):
-                    slider_.thumb.grab()
-                    break
+            if not self.checkbox.checked:
+                for slider_ in self.sliders:
+                    if slider_.thumb.mouse_inside(mouse):
+                        slider_.thumb.grab()
+                        break
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            for slider_ in self.sliders:
-                if slider_.thumb.grabbed:
-                    slider_.thumb.release()
-                    break
+
+            if not self.checkbox.checked:
+                for slider_ in self.sliders:
+                    if slider_.thumb.grabbed:
+                        slider_.thumb.release()
+                        break
 
             if self.button.inside(mouse):
                 self.plot()
+
+            if self.checkbox.inside(mouse):
+                self.checkbox.checked = not self.checkbox.checked
 
         if self.button.inside(mouse):
             self.button.color = color.LLRED
@@ -105,6 +113,9 @@ class PoleMap(pg_root._State):
                 slider_.slide(mouse)
             slider_.update()
             self.controller.append(-slider_.value)
+
+        if self.checkbox.checked:
+            self.controller = [0, 0, 0, 0]
 
         self.sim.set_regs(*self.controller)
         self.sim.update()
@@ -159,49 +170,86 @@ class PoleMap(pg_root._State):
     def draw_interface(self, surface):
         last_slider_rect = None
         for slider_ in self.sliders:
+            # Slider Track
             pg.gfxdraw.box(surface, slider_.track.rect, color.GREY)
-            pg.gfxdraw.box(surface, slider_.get_slid_rect(), color.ORANGE)
 
+            # Slider filled Track
+            slid_col = color.DGREY if self.checkbox.checked else color.ORANGE
+            pg.gfxdraw.box(surface, slider_.get_slid_rect(), slid_col)
+
+            # Slider Thumb
+            thumb_col = color.BLACK if self.checkbox.checked else color.TOMATO
             self._draw_aafilled_circle(surface, slider_.thumb.c_x,
                                        slider_.thumb.c_y,
                                        slider_.thumb.r,
-                                       color.TOMATO)
+                                       thumb_col)
 
-            text = self.font.render(str(slider_.value), True, color.ORANGE)
+            # Value Label Text
+            text_col = color.LGREY if self.checkbox.checked else color.TOMATO
+            text = self.font.render(str(slider_.value), True, text_col)
             surface.blit(text, slider_.value_label.rect)
             last_slider_rect = slider_.track.rect
 
-        if self.options["Euler corr"]:
-            # Show if option Euler method correction offset is activated
-            msg = '*Imaginary axis offset'
-            text = self.smallfont.render(msg, True, color.DBLUE)
-            left, top, w, h = last_slider_rect
-            surface.blit(text, (left, top+15, w, h))
+        self.draw_checkbox(surface, last_slider_rect)
 
         if self.results is not None:
-            # Show Plot Button
-            pg.gfxdraw.box(surface, self.button.rect, self.button.color)
+            self.draw_button(surface)
 
-            # Button Reflection
-            if self.button.virgin:
-                signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
-                self.button.run(signal)
-                self._draw_aafilled_polygon(surface,
-                                            self.button.get_refl_poly(),
-                                            color.LLRED)
+    def draw_checkbox(self, surface, last_slider_rect):
+        left, top, w, h = last_slider_rect
+        self.checkbox.set_pos((left, top+20))
+        self.checkbox.set_label('Switch off Controller', margin=5)
 
-            # Button Text
-            text, rect = self.render_font(self.button.text, 'Liberation Sans',
-                                          16, color.WHITE, self.button.center)
-            surface.blit(text, rect)
+        rect = self.checkbox.rect
+        width = self.checkbox.border_width
+
+        if self.checkbox.box_color is None:
+            pg.draw.rect(surface, self.checkbox.border_color, rect, width)
+        else:
+            pg.draw.rect(surface, self.checkbox.box_color, rect)
+            pg.draw.rect(surface, self.checkbox.border_color, rect, width)
+
+        # Label Text
+        text = self.font.render(self.checkbox.label.text, True, color.BLACK)
+        surface.blit(text, self.checkbox.label.rect)
+
+        if self.checkbox.checked:
+            # Checkbox Cross
+            for line in self.checkbox.gen_cross(margin=5):
+                pg.draw.line(surface, self.checkbox.border_color,
+                             *line, self.checkbox.cross_width)
+
+    def draw_button(self, surface):
+        pg.gfxdraw.box(surface, self.button.rect, self.button.color)
+
+        # Button Reflection
+        if self.button.virgin:
+            signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
+            self.button.run(signal)
+            self._draw_aafilled_polygon(surface,
+                                        self.button.get_refl_poly(),
+                                        color.LLRED)
+
+        # Button Text
+        text, rect = self.render_font(self.button.text, 'Liberation Sans',
+                                      16, color.WHITE, self.button.center)
+        surface.blit(text, rect)
 
     def draw_hud(self, surface, length, wide, margin=4, pos='right'):
         text_margin = 5
         line_margin = 14
 
         rect = self.render_hud(length, wide, margin, pos)
-        hudcolor = color.A200DDBLUE if self.options['Euler corr'] \
-            else color.TRAN200
+        hudcolor = color.TRAN200
+
+        if self.options["Euler corr"]:
+            # Show if option Euler method correction offset is activated
+            msg = '*Imaginary axis offset'
+            text = self.smallfont.render(msg, True, color.DBLUE)
+            surface.blit(text, (rect[0]+length+2, rect[1]+wide-18))
+
+            hudcolor = color.A200DDBLUE
+
         pg.gfxdraw.box(surface, rect, hudcolor)
 
         for num, pole in enumerate(self.poles):
