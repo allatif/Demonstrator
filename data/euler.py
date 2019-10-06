@@ -45,6 +45,13 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
 
 
 class Euler(Thread):
+    """Subclass of Thread
+
+    join-Method shall return the result of the Euler-Method after every big
+    step. Every big step represent one frame. Within every frame a thread of
+    Euler-Method shall calculate the state values x1, x2, x3, x4 due very tiny
+    time steps.
+    """
 
     def __init__(self, group=None, target=None, name='EulerThread',
                  args=(), kwargs={}, verbose=None):
