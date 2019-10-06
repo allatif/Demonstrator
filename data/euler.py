@@ -15,7 +15,9 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
 
         if k >= sim_length-1:
             over = True
-            return over, x1[k], x2[k], x3[k], x4[k]
+            return over, \
+                (x1[k], x2[k], x3[k], x4[k]), \
+                (x1[:k], (x3[:k]), t_vec[:k])
 
         step += 1
         if step == 1:
@@ -41,7 +43,9 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
         t_vec[k+1] = t_vec[k] + dt
 
         if step >= steps_per_frame:
-            return over, x1[k], x2[k], x3[k], x4[k]
+            return over, \
+                (x1[k], x2[k], x3[k], x4[k]), \
+                (x1[:k], (x3[:k]), t_vec[:k])
 
 
 class Euler(Thread):

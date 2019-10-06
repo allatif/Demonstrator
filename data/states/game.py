@@ -117,7 +117,8 @@ class Game(pg_root._State):
                                               self.sim.sim_length,
                                               interference))
         self.euler_thread.start()
-        self.simdone, x1, x2, x3, x4 = self.euler_thread.join()
+        self.simdone, current_state, result_vec = self.euler_thread.join()
+        x1, x2, x3, x4 = current_state
 
         if not self.simdone:
             Game.step += self.big_step
@@ -150,7 +151,8 @@ class Game(pg_root._State):
                                                  ground=self.ground)
             self.physics.update()
 
-        # self.results = x1[:k], self.rad2deg(x3[:k]), t_vec[:k]
+        x1_vec, x3_vec, t_vec = result_vec
+        self.results = x1_vec, self.rad2deg(x3_vec), t_vec
         self.draw(surface)
 
     def draw(self, surface):
