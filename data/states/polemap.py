@@ -17,7 +17,7 @@ class PoleMap(pg_root._State):
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
         self.plane = gaussian.Plane(self.width, self.height)
-        self.next = "EULER"
+        self.next = "GAME"
         self.sim = setup_sim.SimData(12000)
         self.poles = None
         self.results = None

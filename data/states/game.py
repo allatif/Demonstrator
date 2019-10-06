@@ -4,7 +4,7 @@ import pygame as pg
 import pygame.gfxdraw
 import numpy as np
 
-from .. import pg_init, pg_root, setup_sim
+from .. import pg_init, pg_root, setup_sim, euler
 
 from .. components import color
 from .. components import gphysics
@@ -12,10 +12,10 @@ from .. components.objects import Cone, Sphere, Ground, Ruler
 from .. components.animations import Impulse
 
 
-class Euler(pg_root._State):
+class Game(pg_root._State):
     """This state could represent the actual gameplay phase."""
 
-    index = 0
+    step = 0
 
     def __init__(self, mother=True):
         if mother:
@@ -25,8 +25,13 @@ class Euler(pg_root._State):
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
-        self.sim = setup_sim.SimData(12000)
+        self.sim = setup_sim.SimData(1_200_000)
+        self.euler_step = 0.0001
 
+        # 0.01 for 100 fps
+        self.big_step = round(0.01 / 0.0001)
+
+        # Initialize Objects
         self.ground = Ground(510, self.width, thickness=10)
 
         self.cone = Cone(basis_length=pg_init.SCALE,
@@ -62,7 +67,7 @@ class Euler(pg_root._State):
         print(self.regs)
 
         # Reset Euler algorithm
-        Euler.index = 0
+        Game.step = 0
 
     def cleanup(self):
         self.done = False
@@ -94,66 +99,48 @@ class Euler(pg_root._State):
                 print('Outside')
 
     def update(self, surface, mouse):
+        interference = 0.0
+        if self.interference is not None:
+            interference = self.interference
+            self.interference = None
+
         self.sim.update()
 
-        A_sys = self.sim.system
-        x1, x2, x3, x4 = self.sim.state_vec
+        system = self.sim.system
+        state_vec = self.sim.state_vec
         t_vec = self.sim.t_vec
 
-        k = Euler.index
+        self.euler_thread = euler.Euler(target=euler.euler_method,
+                                        args=(Game.step, system,
+                                              state_vec, t_vec,
+                                              self.euler_step,
+                                              self.sim.sim_length,
+                                              interference))
+        self.euler_thread.start()
+        self.simdone, x1, x2, x3, x4 = self.euler_thread.join()
 
-        if self.interference is not None:
-            x4[k] += self.interference
-        self.interference = None
+        if not self.simdone:
+            Game.step += self.big_step
 
-        # dt = 1 / pg_init.FPS
-        dt = 0.01
-
-        # Euler Method
-        x1[k+1] = x1[k] + dt*(
-            x1[k]*A_sys[0, 0] + x2[k]*A_sys[0, 1]
-            + x3[k]*A_sys[0, 2] + x4[k]*A_sys[0, 3]
-        )
-        x2[k+1] = x2[k] + dt*(
-            x1[k]*A_sys[1, 0] + x2[k]*A_sys[1, 1]
-            + x3[k]*A_sys[1, 2] + x4[k]*A_sys[1, 3]
-        )
-        x3[k+1] = x3[k] + dt*(
-            x1[k]*A_sys[2, 0] + x2[k]*A_sys[2, 1]
-            + x3[k]*A_sys[2, 2] + x4[k]*A_sys[2, 3]
-        )
-        x4[k+1] = x4[k] + dt*(
-            x1[k]*A_sys[3, 0] + x2[k]*A_sys[3, 1]
-            + x3[k]*A_sys[3, 2] + x4[k]*A_sys[3, 3]
-        )
-
-        t_vec[k+1] = t_vec[k] + dt
-
-        if abs(x3[k]) > self.deg2rad(30):
+        if abs(x3) > self.deg2rad(30):
             # if ball tilt angle > 30°
             # system stops controlling, controller values set to zero
             self.sim.set_regs(0, 0, 0, 0)
 
-        if abs(x3[k]) > self.deg2rad(60):
+        if abs(x3) > self.deg2rad(60):
             # if ball tilt angle > 60°
             # ball will start falling and shall roll down the cone
             self.ball.falling = True
 
-        self.state_values = (np.float(x1[k]), np.float(x2[k]),
-                             np.float(x3[k]), np.float(x4[k]))
+        self.state_values = (np.float(x1), np.float(x2),
+                             np.float(x3), np.float(x4))
 
         # If-Path for Euler Method
         if not self.ball.falling:
-            self.cone.update(np.float(x1[k]))
+            self.cone.update(np.float(x1))
             self.ball.update(self.cone.get_points('top'),
-                             np.float(x3[k]),
-                             np.float(x4[k]))
-
-            if k >= self.sim.sim_length-1:
-                self.simdone = True
-            else:
-                k += 1
-                Euler.index = k
+                             np.float(x3),
+                             np.float(x4))
 
         # Else-Path for simulating ball drop
         elif self.ball.falling:
@@ -163,7 +150,7 @@ class Euler(pg_root._State):
                                                  ground=self.ground)
             self.physics.update()
 
-        self.results = x1[:k], self.rad2deg(x3[:k]), t_vec[:k]
+        # self.results = x1[:k], self.rad2deg(x3[:k]), t_vec[:k]
         self.draw(surface)
 
     def draw(self, surface):
