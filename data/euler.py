@@ -43,7 +43,7 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
             return over, x1[k], x2[k], x3[k], x4[k]
 
 
-class Euler(Thread):
+class EulerThread(Thread):
     """Subclass of Thread
 
     join-Method shall return the result of the Euler-Method after every big

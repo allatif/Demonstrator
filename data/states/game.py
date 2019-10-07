@@ -25,7 +25,7 @@ class Game(pg_root._State):
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
-        self.sim = setup_sim.SimData(12000)
+        self.sim = setup_sim.SimData(1_200_000)
         self.euler_stepsize = 0.0001
 
         # 0.01 for 100 fps
@@ -111,11 +111,11 @@ class Game(pg_root._State):
             interference = self.interference
             self.interference = None
 
-        self.euler_thread = euler.Euler(args=(Game.step, system,
-                                              self.sim.state_vec, t_vec,
-                                              self.euler_stepsize,
-                                              self.sim.sim_length,
-                                              interference))
+        self.euler_thread = euler.EulerThread(args=(Game.step, system,
+                                                    self.sim.state_vec, t_vec,
+                                                    self.euler_stepsize,
+                                                    self.sim.sim_length,
+                                                    interference))
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 
