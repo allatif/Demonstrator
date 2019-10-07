@@ -12,12 +12,9 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
 
     while True:
         k = big_step + step
-
         if k >= sim_length-1:
             over = True
-            return over, \
-                (x1[k], x2[k], x3[k], x4[k]), \
-                (x1[:k], (x3[:k]), t_vec[:k])
+            return over, x1[k], x2[k], x3[k], x4[k]
 
         step += 1
         if step == 1:
@@ -43,9 +40,7 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
         t_vec[k+1] = t_vec[k] + dt
 
         if step >= steps_per_frame:
-            return over, \
-                (x1[k], x2[k], x3[k], x4[k]), \
-                (x1[:k], (x3[:k]), t_vec[:k])
+            return over, x1[k], x2[k], x3[k], x4[k]
 
 
 class Euler(Thread):
@@ -57,12 +52,10 @@ class Euler(Thread):
     time steps.
     """
 
-    def __init__(self, group=None, target=None, name='EulerThread',
+    def __init__(self, group=None, target=euler_method, name='EulerThread',
                  args=(), kwargs={}, verbose=None):
         Thread.__init__(self, group=group, target=target, name=name,
                         args=args, kwargs=kwargs)
-        self.running = False
-        self._steps_per_frame = 10
         self._return = None
 
     def run(self):

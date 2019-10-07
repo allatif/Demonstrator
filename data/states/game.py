@@ -25,11 +25,11 @@ class Game(pg_root._State):
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
-        self.sim = setup_sim.SimData(1_200_000)
-        self.euler_step = 0.0001
+        self.sim = setup_sim.SimData(12000)
+        self.euler_stepsize = 0.0001
 
         # 0.01 for 100 fps
-        self.big_step = round(0.01 / self.euler_step)
+        self.big_step = round(0.01 / self.euler_stepsize)
 
         # Initialize Objects
         self.ground = Ground(510, self.width, thickness=10)
@@ -52,7 +52,8 @@ class Game(pg_root._State):
 
         self.physics = None
         self.state_values = (0, 0, 0, 0)
-        self.simdone = False
+        self.simover = False
+        self.predone = False
         self.results = None
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
@@ -77,7 +78,7 @@ class Game(pg_root._State):
     def get_event(self, event, mouse):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
-                self.done = True
+                self.predone = True
             if event.key == pg.K_F1:
                 self.options["Hud position"] = 'left'
             if event.key == pg.K_F2:
@@ -99,26 +100,24 @@ class Game(pg_root._State):
                 print('Outside')
 
     def update(self, surface, mouse):
+        self.sim.update()
+
+        system = self.sim.system
+        vec_x1, vec_x2, vec_x3, vec_x4 = self.sim.state_vec
+        t_vec = self.sim.t_vec
+
         interference = 0.0
         if self.interference is not None:
             interference = self.interference
             self.interference = None
 
-        self.sim.update()
-
-        system = self.sim.system
-        state_vec = self.sim.state_vec
-        t_vec = self.sim.t_vec
-
-        self.euler_thread = euler.Euler(target=euler.euler_method,
-                                        args=(Game.step, system,
-                                              state_vec, t_vec,
-                                              self.euler_step,
+        self.euler_thread = euler.Euler(args=(Game.step, system,
+                                              self.sim.state_vec, t_vec,
+                                              self.euler_stepsize,
                                               self.sim.sim_length,
                                               interference))
         self.euler_thread.start()
-        self.simdone, current_state, result_vec = self.euler_thread.join()
-        x1, x2, x3, x4 = current_state
+        self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 
         if abs(x3) > self.deg2rad(30):
             # If ball tilt angle > 30°
@@ -140,7 +139,7 @@ class Game(pg_root._State):
                              np.float(x3),
                              np.float(x4))
 
-            if not self.simdone:
+            if not self.simover:
                 Game.step += self.big_step
 
         # Else-Path for simulating ball drop
@@ -151,8 +150,15 @@ class Game(pg_root._State):
                                                  ground=self.ground)
             self.physics.update()
 
-        x1_vec, x3_vec, t_vec = result_vec
-        self.results = x1_vec, self.rad2deg(x3_vec), t_vec
+        # When event key [ESC]
+        # Before state is going to close it will save the results
+        if self.predone:
+            result_vec_len = self.sim.sim_length if self.simover else Game.step
+            self.results = (vec_x1[:result_vec_len],
+                            self.rad2deg(vec_x3[:result_vec_len]),
+                            t_vec[:result_vec_len])
+            self.done = True
+
         self.draw(surface)
 
     def draw(self, surface):
@@ -163,13 +169,13 @@ class Game(pg_root._State):
         self.draw_ball(surface)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
 
-        if self.wave is not None and not (self.ball.falling or self.simdone):
+        if self.wave is not None and not (self.ball.falling or self.simover):
             self.draw_impulsewave(surface)
 
         if self.ball.touchdown:
             self.draw_message(surface, 'Game Over')
 
-        if self.simdone:
+        if self.simover:
             self.draw_message(surface, 'Finished')
 
     def draw_ground(self, surface):
