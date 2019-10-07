@@ -29,7 +29,7 @@ class Game(pg_root._State):
         self.euler_step = 0.0001
 
         # 0.01 for 100 fps
-        self.big_step = round(0.01 / 0.0001)
+        self.big_step = round(0.01 / self.euler_step)
 
         # Initialize Objects
         self.ground = Ground(510, self.width, thickness=10)
