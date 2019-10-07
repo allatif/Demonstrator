@@ -104,7 +104,7 @@ class PoleMap(pg_root._State):
         self.poles = []
         self.controller = []
 
-        # Euler method causes a little error per step k
+        # Euler method causes a little error per step k when dt is too big
         # Need of correction offset 'crr' to correct marginal stable poles
         crr = 0.0485 if self.options['Euler corr'] else 0.0
 
@@ -235,7 +235,7 @@ class PoleMap(pg_root._State):
                                       16, color.WHITE, self.button.center)
         surface.blit(text, rect)
 
-    def draw_hud(self, surface, length, wide, margin=4, pos='right'):
+    def draw_hud(self, surface, length, wide, margin=4, pos='left'):
         text_margin = 5
         line_margin = 14
 
@@ -246,7 +246,8 @@ class PoleMap(pg_root._State):
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
             text = self.smallfont.render(msg, True, color.DBLUE)
-            surface.blit(text, (rect[0]+length+2, rect[1]+wide-18))
+            var_x_pos = rect[0]+length+2 if pos == 'left' else rect[0]-110
+            surface.blit(text, (var_x_pos, rect[1]+wide-18))
 
             hudcolor = color.A200DDBLUE
 
