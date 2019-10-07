@@ -120,17 +120,14 @@ class Game(pg_root._State):
         self.simdone, current_state, result_vec = self.euler_thread.join()
         x1, x2, x3, x4 = current_state
 
-        if not self.simdone:
-            Game.step += self.big_step
-
         if abs(x3) > self.deg2rad(30):
-            # if ball tilt angle > 30°
-            # system stops controlling, controller values set to zero
+            # If ball tilt angle > 30°
+            # System stops controlling, controller values set to zero
             self.sim.set_regs(0, 0, 0, 0)
 
         if abs(x3) > self.deg2rad(60):
-            # if ball tilt angle > 60°
-            # ball will start falling and shall roll down the cone
+            # If ball tilt angle > 60°
+            # Ball will start falling and shall roll down the cone
             self.ball.falling = True
 
         self.state_values = (np.float(x1), np.float(x2),
@@ -142,6 +139,9 @@ class Game(pg_root._State):
             self.ball.update(self.cone.get_points('top'),
                              np.float(x3),
                              np.float(x4))
+
+            if not self.simdone:
+                Game.step += self.big_step
 
         # Else-Path for simulating ball drop
         elif self.ball.falling:
@@ -204,10 +204,10 @@ class Game(pg_root._State):
                                     color.GREY)
 
     def draw_cone(self, surface, reflection=True):
-        # real location of cone
+        # Real location of cone
         _x_ = self.cone.loc
 
-        # antialiased outline
+        # Antialiased outline
         pg.gfxdraw.aatrigon(surface, *self.cone.get_coords(), color.GREY)
 
         if not reflection:
@@ -227,14 +227,14 @@ class Game(pg_root._State):
                                  self.cone.get_points('top')))
 
     def draw_ball(self, surface):
-        # real location of ball
+        # Real location of ball
         _x_ = self.ball.loc
 
-        # antialiased outline
+        # Antialiased outline
         pg.gfxdraw.aacircle(surface, *self.ball.get_center(),
                             self.ball.r, color.DRED)
 
-        # shading
+        # Shading
         shades = 21
         for s in range(shades):
             r_y = self.ball.r
@@ -244,7 +244,7 @@ class Game(pg_root._State):
             red = red + 5*s
             rgb = (red, 0, 0)
 
-            # shade width
+            # Shade width
             w = 3
 
             if s == 0:
