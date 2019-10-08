@@ -41,6 +41,7 @@ class gPhysics:
                 self.ball.stopped = True
 
     def check_collision(self):
+        # Not used for now
         if self.cone is not None:
             lef_x, lef_y, rig_x, rig_y, top_x, top_y = self.cone.get_coords()
             slope_lef = (lef_x - top_x) / (lef_y - top_y)
