@@ -58,6 +58,7 @@ class PoleMap(pg_root._State):
         self.done = False
         self.button.virgin = True
         self.persist["controller"] = self.controller
+        self.persist["control off"] = self.checkbox.checked
         return self.persist
 
     def get_event(self, event, mouse):

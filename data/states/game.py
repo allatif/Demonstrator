@@ -8,6 +8,7 @@ from .. import pg_init, pg_root, setup_sim, euler
 
 from .. components import color
 from .. components import gphysics
+from .. components import mousecontrol
 from .. components.objects import Cone, Sphere, Ground, Ruler
 from .. components.animations import Impulse
 
@@ -50,6 +51,7 @@ class Game(pg_root._State):
         self.interference = None
         self.wave = None
 
+        self.user = None
         self.physics = None
         self.state_values = (0, 0, 0, 0)
         self.simover = False
@@ -64,6 +66,10 @@ class Game(pg_root._State):
         pg_root._State.startup(self, persistant)
         self.__init__(mother=False)
         self.regs = self.persist["controller"]
+        self.user_cont = self.persist["control off"]
+        if self.user_cont:
+            print(" -- User in control now -- ")
+            self.user = mousecontrol.MouseControl(100)
         self.sim.set_regs(*self.regs)
         print(self.regs)
 
@@ -99,8 +105,20 @@ class Game(pg_root._State):
             else:
                 print('Outside')
 
+            if self.user is not None:
+                self.user.incontrol = True
+
+        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
+            if self.user is not None:
+                self.user.incontrol = False
+
     def update(self, surface, mouse):
         self.sim.update()
+
+        userspeed = 0.0
+        if self.user is not None and self.user.incontrol:
+            self.user.update(mouse)
+            userspeed = self.user.get_horz_speed()
 
         system = self.sim.system
         vec_x1, vec_x2, vec_x3, vec_x4 = self.sim.state_vec
@@ -115,7 +133,7 @@ class Game(pg_root._State):
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
                                                     self.sim.sim_length,
-                                                    interference))
+                                                    interference, userspeed))
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 

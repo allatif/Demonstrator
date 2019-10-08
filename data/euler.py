@@ -2,7 +2,7 @@ from threading import Thread
 
 
 def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
-                 interference):
+                 interference, userspeed):
     over = False
     step = 0
     steps_per_frame = round(0.01 / dt)
