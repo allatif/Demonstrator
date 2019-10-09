@@ -83,14 +83,14 @@ class Demonstrator(object):
 
 class Prefilter:
 
-    def __init__(self, ss_A, ss_B, ss_C, ss_Controller):
+    def __init__(self, ss_A, ss_B, ss_C, ss_K):
         self.ss_A = ss_A
         self.ss_B = ss_B
         self.ss_C = ss_C
-        self.ss_Cnt = ss_Controller
+        self.ss_K = ss_K
 
     def calc_P_prefilter(self):
         P = -(
-            (self.ss_C * (self.ss_A + self.ss_B*self.ss_Cnt).I) * self.ss_B
+            (self.ss_C * (self.ss_A + self.ss_B*self.ss_K).I) * self.ss_B
         ).I
         return P[0, 0]

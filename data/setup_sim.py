@@ -17,8 +17,8 @@ class SimData:
         # Initial Conditions
         x1[0] = 0  # x -- traveled distance
         x2[0] = 0  # x' -- velocity
-        x3[0] = 0.05  # ω -- angle
-        x4[0] = 0  # ω' -- angular veloctiy
+        x3[0] = 0  # ω -- angle
+        x4[0] = 0.3  # ω' -- angular veloctiy
 
         self.state_vec = x1, x2, x3, x4
         self.t_vec = np.zeros((self.sim_length+1, 1))
@@ -38,14 +38,26 @@ class SimData:
         )
         self.k_k.statespace()
 
-        default_regs = -1296.6, -3161.2, -31800, -9831
-        self.controller = cnt.StateSpaceCnt(*default_regs)
+        default_Kregs = -1296.6, -3161.2, -31800, -9831
+        self.controller = cnt.StateSpaceController(*default_Kregs)
 
     def update(self):
-        self.system = (self.k_k.ss_A - self.k_k.ss_B*self.controller.ss_Cnt)
+        self.system = (self.k_k.ss_A - self.k_k.ss_B*self.controller.ss_K)
 
-    def set_regs(self, c1, c2, c3, c4):
-        self.controller = cnt.StateSpaceCnt(c1, c2, c3, c4)
+    def set_Kregs(self, k1, k2, k3, k4):
+        self.controller = cnt.StateSpaceController(k1, k2, k3, k4)
 
     def get_poles(self):
         return np.linalg.eig(self.system)[0]
+
+    @property
+    def A(self):
+        return self.k_k.ss_A
+
+    @property
+    def B(self):
+        return self.k_k.ss_B
+
+    @property
+    def K(self):
+        return self.controller.ss_K
