@@ -21,17 +21,18 @@ class PoleMap(pg_root._State):
         self.sim = setup_sim.SimData(12000)
         self.poles = None
         self.results = None
-        # self.controller = [-2196.6, -4761.2, -51800, -18831]
-        self.controller = [-1296.6, -3161.2, -31800, -9831]
-        # self.controller = [-1196.6, -3761.2, -11800, -8831]
+        # self.Kregs = [-2196.6, -4761.2, -51800, -18831]
+        self.Kregs = [-1296.6, -3161.2, -31800, -9831]
+        # self.Kregs = [-1196.6, -3761.2, -11800, -8831]
         # for testing fall of sphere
-        # self.controller = [-9050, -3150, -4800, -9750]
+        # self.Kregs = [-9050, -3150, -4800, -9750]
         self.sliders = []
 
-        slider_ranges = [(0, 10000), (0, 10000), (0, 80000), (0, 50000)]
+        slider_ranges = [(-50000, 20000), (-100000, 40000),
+                         (-800000, 100000), (-500000, 100000)]
 
-        for slider_range, c in zip(slider_ranges, self.controller):
-            self.sliders.append(slider.Slider(-c, 20, 20, 200, slider_range))
+        for slider_range, c in zip(slider_ranges, self.Kregs):
+            self.sliders.append(slider.Slider(c, 20, 20, 200, slider_range))
 
         for slider_ in self.sliders:
             slider_.thumb.c_x = slider_.get_thumb_from_value()
@@ -57,7 +58,7 @@ class PoleMap(pg_root._State):
     def cleanup(self):
         self.done = False
         self.button.virgin = True
-        self.persist["controller"] = self.controller
+        self.persist["controller"] = self.Kregs
         self.persist["control off"] = self.checkbox.checked
         return self.persist
 
@@ -103,7 +104,7 @@ class PoleMap(pg_root._State):
 
     def update(self, surface, mouse):
         self.poles = []
-        self.controller = []
+        self.Kregs = []
 
         # Euler method causes a little error per step k when dt is too big
         # Need of correction offset 'crr' to correct marginal stable poles
@@ -113,12 +114,12 @@ class PoleMap(pg_root._State):
             if slider_.thumb.grabbed:
                 slider_.slide(mouse)
             slider_.update()
-            self.controller.append(-slider_.value)
+            self.Kregs.append(slider_.value)
 
         if self.checkbox.checked:
-            self.controller = [0, 0, 0, 0]
+            self.Kregs = [0, 0, 0, 0]
 
-        self.sim.set_regs(*self.controller)
+        self.sim.set_Kregs(*self.Kregs)
         self.sim.update()
 
         for pole in self.sim.get_poles():
@@ -271,7 +272,7 @@ class PoleMap(pg_root._State):
             plt.subplot(211)
             plt.plot(time, x, color=color.get_pp(color.LBLUE))
             plt.xlabel('Time [s]')
-            plt.ylabel('Distance [m]')
+            plt.ylabel('Velocity [m/s]')
             plt.grid(True)
 
             plt.subplot(212)
