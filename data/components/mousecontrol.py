@@ -11,11 +11,15 @@ class MouseControl:
         if len(MouseControl._pos_list) >= 3:
             del MouseControl._pos_list[0]
 
-    def get_horz_speed(self):
+    def get_horz_force(self):
+        max_force = 100_000
         if len(MouseControl._pos_list) == 2:
             old_pos_x = MouseControl._pos_list[0][0]
             new_pos_x = MouseControl._pos_list[1][0]
-            return ((new_pos_x-old_pos_x) / 100)*self._sens
+            force = (new_pos_x-old_pos_x)*self._sens
+            if abs(force) > max_force:
+                return (force/abs(force))*max_force
+            return force
         return 0.0
 
     def get_positions(self):
