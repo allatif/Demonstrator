@@ -1,12 +1,11 @@
 from threading import Thread
 
 
-def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
-                 interference, userspeed):
+def euler_method(A, B, user_control, state_vec, time_vec, dt, sim_length,
+                 big_step, interference, force):
     over = False
     step = 0
     steps_per_frame = round(0.01 / dt)
-    A_sys = system
     x1, x2, x3, x4 = state_vec
     t_vec = time_vec
 
@@ -20,22 +19,44 @@ def euler_method(big_step, system, state_vec, time_vec, dt, sim_length,
         if step == 1:
             x4[k] += interference
 
-        x1[k+1] = x1[k] + dt*(
-            x1[k]*A_sys[0, 0] + x2[k]*A_sys[0, 1]
-            + x3[k]*A_sys[0, 2] + x4[k]*A_sys[0, 3]
-        )
-        x2[k+1] = x2[k] + dt*(
-            x1[k]*A_sys[1, 0] + x2[k]*A_sys[1, 1]
-            + x3[k]*A_sys[1, 2] + x4[k]*A_sys[1, 3]
-        )
-        x3[k+1] = x3[k] + dt*(
-            x1[k]*A_sys[2, 0] + x2[k]*A_sys[2, 1]
-            + x3[k]*A_sys[2, 2] + x4[k]*A_sys[2, 3]
-        )
-        x4[k+1] = x4[k] + dt*(
-            x1[k]*A_sys[3, 0] + x2[k]*A_sys[3, 1]
-            + x3[k]*A_sys[3, 2] + x4[k]*A_sys[3, 3]
-        )
+        reference_pos = 0.5
+        reference_ang = 0.0
+
+        if user_control:
+            x1[k+1] = x1[k] + dt*(
+                x1[k]*A[0, 0] + x2[k]*A[0, 1] + x3[k]*A[0, 2] + x4[k]*A[0, 3]
+                + B[0]*force
+            )
+            x2[k+1] = x2[k] + dt*(
+                x1[k]*A[1, 0] + x2[k]*A[1, 1] + x3[k]*A[1, 2] + x4[k]*A[1, 3]
+                + B[1]*force
+            )
+            x3[k+1] = x3[k] + dt*(
+                x1[k]*A[2, 0] + x2[k]*A[2, 1] + x3[k]*A[2, 2] + x4[k]*A[2, 3]
+                + B[2]*force
+            )
+            x4[k+1] = x4[k] + dt*(
+                x1[k]*A[3, 0] + x2[k]*A[3, 1] + x3[k]*A[3, 2] + x4[k]*A[3, 3]
+                + B[3]*force
+            )
+
+        else:
+            x1[k+1] = x1[k] + dt*(
+                x1[k]*A[0, 0] + x2[k]*A[0, 1] + x3[k]*A[0, 2] + x4[k]*A[0, 3]
+                - reference_pos*A[0, 0] - reference_ang*A[0, 2]
+            )
+            x2[k+1] = x2[k] + dt*(
+                x1[k]*A[1, 0] + x2[k]*A[1, 1] + x3[k]*A[1, 2] + x4[k]*A[1, 3]
+                - reference_pos*A[1, 0] - reference_ang*A[1, 2]
+            )
+            x3[k+1] = x3[k] + dt*(
+                x1[k]*A[2, 0] + x2[k]*A[2, 1] + x3[k]*A[2, 2] + x4[k]*A[2, 3]
+                - reference_pos*A[2, 0] - reference_ang*A[2, 2]
+            )
+            x4[k+1] = x4[k] + dt*(
+                x1[k]*A[3, 0] + x2[k]*A[3, 1] + x3[k]*A[3, 2] + x4[k]*A[3, 3]
+                - reference_pos*A[3, 0] - reference_ang*A[3, 2]
+            )
 
         t_vec[k+1] = t_vec[k] + dt
 
