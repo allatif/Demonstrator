@@ -62,7 +62,7 @@ class PygameApp:
             self.state.get_event(event)
 
     def mouse_handler(self, mouse):
-        """Process mouse movement and pass it down to current State"""
+        """Process mouse position and pass it down to current State"""
         self.state.mouse_logic(mouse)
 
     def toggle_show_fps(self, key):
@@ -120,7 +120,7 @@ class _State:
         return self.persist
 
     def mouse_logic(self, mouse):
-        """Processes mouse postion that were passed from the main event loop.
+        """Process mouse position that were passed from the main event loop.
         Must be overrided in children."""
         pass
 
@@ -152,6 +152,8 @@ class _State:
         pass
 
     def draw_slider_group(self, surface, slider_obj_list):
+        """Draws all sliders as a group with thumb and value label that where
+        passed through a list."""
         for slider in slider_obj_list:
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
@@ -179,7 +181,7 @@ class _State:
             surface.blit(text, slider.value_label.rect)
 
     def draw_checkbox(self, surface, checkbox_obj):
-        """Draws button with text label and cross if checked."""
+        """Draws checkbox with text label and cross if checked."""
         rect = checkbox_obj.rect
         width = checkbox_obj.border_width
 
