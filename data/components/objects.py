@@ -71,6 +71,7 @@ class Sphere:
         self.falling = False
         self.touchdown = False
         self.stopped = False
+        self.mouseover = False
 
     def update(self, apex_pos, angle, angle_vel):
         self._ang = angle

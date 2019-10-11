@@ -16,4 +16,4 @@ SCREEN_RECT = SCREEN.get_rect()
 
 # Resource loading
 GFX = pg_root.load_all_gfx(os.path.join("resources", "images"))
-FPATH = pg_root.get_all_fontpath(os.path.join("resources", "fonts"))
+FONTS = pg_root.load_all_fonts(os.path.join("resources", "fonts"))

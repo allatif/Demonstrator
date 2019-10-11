@@ -27,12 +27,17 @@ class Axis:
 
     positions = []
 
-    def __init__(self, pos, length, wide, direc='x', scale=50, thickness=2):
+    def __init__(self, pos, length, wide, direc='x', scale_lvl=2, thickness=2):
         self.pos = pos
         self.length = length
         self.wide = wide
         self.direction = direc
-        self._scale = scale  # pixels that represent 1 unit length
+
+        # pixels that represent 1 unit length
+        self._scale_lvl = scale_lvl
+        self._scales = [12, 25, 50, 100]
+        self._scale = self._scales[scale_lvl]
+
         self.thickness = thickness
         self._start = (0, 0)
         self._end = (0, 0)
@@ -52,6 +57,8 @@ class Axis:
         start = (0, 0)
         end = (0, 0)
 
+        self._scale = self._scales[self._scale_lvl]
+
         for side in range(0, 2):
             step = -self._scale if side == 0 else self._scale
             zero = Axis.positions[1] if self.direction == 'x' else Axis.positions[0]
@@ -66,11 +73,21 @@ class Axis:
 
         return coordlines
 
+    def zoom(self, dir='in'):
+        lvl_amts = len(self._scales)
+        if dir == 'in':
+            if self._scale_lvl >= lvl_amts-1:
+                self._scale_lvl = lvl_amts-1
+            else:
+                self._scale_lvl += 1
+        elif dir == 'out':
+            if self._scale_lvl < 1:
+                self._scale_lvl = 0
+            else:
+                self._scale_lvl -= 1
+
     def get_line(self):
         return self._start, self._end
-
-    def set_scale(self, scale):
-        self._scale = scale
 
     def get_scale(self):
         return self._scale
@@ -84,12 +101,19 @@ class Pole:
 
     def __init__(self, center, radius, Re, Im):
         self._c_x, self._c_y = center
-        self.r = radius
+        self._orig_r = radius
+        self._r = radius
         self._Re = Re
         self._Im = Im
 
     def update(self):
         pass
+
+    def shrink(self):
+        self._r = round(0.5*self._r)
+
+    def norm(self):
+        self._r = self._orig_r
 
     def pickup(self):
         pass
@@ -101,13 +125,17 @@ class Pole:
         return self._c_x, self._c_y
 
     def mouse_inside(self, mouse):
-        return (mouse[0]-self._c_x)**2 + (mouse[1]-self._c_y)**2 < self.r**2
+        return (mouse[0]-self._c_x)**2 + (mouse[1]-self._c_y)**2 < self._r**2
 
     def is_unstable(self):
         return self._Re > 0
 
     def is_marginal_stable(self):
         return self._Re <= 0 and self._Re > -0.016
+
+    @property
+    def r(self):
+        return self._r
 
     def __str__(self):
         if self._Im > 0:

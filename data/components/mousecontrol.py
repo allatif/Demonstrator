@@ -1,17 +1,28 @@
 class MouseControl:
 
+    # List of the current and last position of mouse cursor
+    # See update() logic
     _pos_list = []
 
     def __init__(self, sensibility):
         self._sens = sensibility
-        self.incontrol = False
+
+        self._mouse = (0, 0)
+        self._force = 0.0
+        self.input = False
 
     def update(self, mouse):
+        self._mouse = mouse
         MouseControl._pos_list.append(mouse)
+
         if len(MouseControl._pos_list) >= 3:
             del MouseControl._pos_list[0]
+        if self.input:
+            self._force = self._calc_horizontal_force()
+        else:
+            self._force = 0.0
 
-    def get_horz_force(self):
+    def _calc_horizontal_force(self):
         max_force = 100_000
         if len(MouseControl._pos_list) == 2:
             old_pos_x = MouseControl._pos_list[0][0]
@@ -22,5 +33,10 @@ class MouseControl:
             return force
         return 0.0
 
-    def get_positions(self):
-        return MouseControl._pos_list
+    @property
+    def mouse(self):
+        return self._mouse
+
+    @property
+    def force(self):
+        return self._force

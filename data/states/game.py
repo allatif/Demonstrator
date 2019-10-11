@@ -48,10 +48,10 @@ class Game(pg_root._State):
                            zero=self.cone.get_zero_pos(),
                            length=self.ground.len)
 
+        self.user = mousecontrol.MouseControl(2000)
+
         self.interference = None
         self.wave = None
-
-        self.user = None
         self.physics = None
         self.state_values = (0, 0, 0, 0)
         self.simover = False
@@ -69,7 +69,6 @@ class Game(pg_root._State):
         self.user_cont = self.persist["control off"]
         if self.user_cont:
             print(" -- User in control now -- ")
-            self.user = mousecontrol.MouseControl(1500)
         print(self.Kregs)
 
         # Reset Euler algorithm
@@ -80,7 +79,7 @@ class Game(pg_root._State):
         self.persist["result"] = self.results
         return self.persist
 
-    def get_event(self, event, mouse):
+    def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 self.predone = True
@@ -95,33 +94,30 @@ class Game(pg_root._State):
                     self.options["Angle unit"] = 'rad'
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            if self.ball.inside(mouse):
-                diff = mouse[0] - self.cone.get_center_x()
+            self.user.input = True
+
+            if self.ball.mouseover:
+                diff = self.user.mouse[0] - self.cone.get_center_x()
                 self.interference = self._disturbing_func(diff)
 
-                self.wave = Impulse(args=(mouse[0], mouse[1], 8, 2, diff))
+                self.wave = Impulse(args=(self.user.mouse[0],
+                                          self.user.mouse[1],
+                                          8, 2, diff))
                 self.wave.start()
 
-            if self.user is not None:
-                self.user.incontrol = True
-
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            if self.user is not None:
-                self.user.incontrol = False
+            self.user.input = False
 
-    def update(self, surface, mouse):
+    def mouse_logic(self, mouse):
+        self.hover_object_logic(mouse, self.ball)
+        self.user.update(mouse)
+
+    def update(self, surface):
         self.sim.update()
         self.sim.set_Kregs(*self.Kregs)
 
-        force_by_user = 0.0
-        if self.user is not None and self.user.incontrol:
-            self.user.update(mouse)
-            force_by_user = self.user.get_horz_force()
-            print(force_by_user)
-
         A = self.sim.system
         B = self.sim.B
-        K = self.sim.K
         x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
         t_vec = self.sim.t_vec
 
@@ -136,7 +132,8 @@ class Game(pg_root._State):
                                                     self.sim.sim_length,
                                                     Game.step,
                                                     interference,
-                                                    force_by_user))
+                                                    (0.5, 0.0),
+                                                    self.user.force))
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 

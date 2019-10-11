@@ -2,7 +2,7 @@ from threading import Thread
 
 
 def euler_method(A, B, user_control, state_vec, time_vec, dt, sim_length,
-                 big_step, interference, force):
+                 big_step, interference, reference, force):
     over = False
     step = 0
     steps_per_frame = round(0.01 / dt)
@@ -19,8 +19,8 @@ def euler_method(A, B, user_control, state_vec, time_vec, dt, sim_length,
         if step == 1:
             x4[k] += interference
 
-        reference_pos = 0.5
-        reference_ang = 0.0
+        reference_pos = reference[0]
+        reference_ang = reference[1]
 
         if user_control:
             x1[k+1] = x1[k] + dt*(
