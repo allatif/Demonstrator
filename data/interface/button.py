@@ -1,22 +1,23 @@
-class Button:
+from . box import Box
 
-    def __init__(self, size, text, color):
+
+class Button(Box):
+
+    def __init__(self, text, obj_color, hov_color, text_color, size=(90, 30)):
+        Box.__init__(self)
+        self.text = text
+        self._obj_color = obj_color
+        self._hov_color = hov_color
+        self._text_color = text_color
         self._width = size[0]
         self._height = size[1]
-        self.text = text
-        self.color = color
 
-        self._orgcolor = color
-        self._pos_x = 0
-        self._pos_y = 0
+        self.color = self._obj_color
+        self._has_refl = False
         self.virgin = True
 
-    def set_pos(self, pos):
-        self._pos_x = pos[0]
-        self._pos_y = pos[1]
-        self._pos = pos
-
-    def init_reflection(self):
+    def activate_reflection(self):
+        self._has_refl = True
         self._refl = Reflection(self.pos, 10, self.height)
 
     def run(self, signal):
@@ -33,37 +34,28 @@ class Button:
                             self._refl.get_points()[3][1])):
             self._refl.build_control(task='reset')
 
-    def inside(self, point):
-        in_x = point[0] >= self._pos_x and point[0] <= self._pos_x+self._width
-        in_y = point[1] >= self._pos_y and point[1] <= self._pos_y+self._height
-        return in_x and in_y
-
     def get_refl_poly(self):
         return self._refl.get_points()
 
     @property
-    def width(self):
-        return self._width
+    def obj_color(self):
+        return self._obj_color
 
     @property
-    def height(self):
-        return self._height
+    def hov_color(self):
+        return self._hov_color
 
     @property
-    def pos(self):
-        return self._pos
-
-    @property
-    def rect(self):
-        return self._pos_x, self._pos_y, self._width, self._height
+    def text_color(self):
+        return self._text_color
 
     @property
     def center(self):
         return self._pos_x + (self._width//2), self._pos_y + (self.height//2)
 
     @property
-    def orgcolor(self):
-        return self._orgcolor
+    def has_refl(self):
+        return self._has_refl
 
 
 class Reflection:
