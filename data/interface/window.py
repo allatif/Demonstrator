@@ -17,6 +17,8 @@ class MenuWindow(Box):
 
         # Content position (used for text or objects inside menu box)
         self._con_pos = self._pos_x + self._margin, self._pos_y + self._margin
+        self._con_right = self._pos_x + self._width - self._margin
+        self._con_bottom = self._pos_y + self._height - self._margin
 
     @property
     def header(self):
@@ -25,3 +27,11 @@ class MenuWindow(Box):
     @property
     def con_pos(self):
         return self._con_pos
+
+    @property
+    def con_right(self):
+        return self._con_right
+
+    @property
+    def con_bottom(self):
+        return self._con_bottom
