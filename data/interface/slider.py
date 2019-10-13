@@ -1,3 +1,6 @@
+from . label import Label
+
+
 class Slider:
 
     _slider_amt = 0
@@ -6,10 +9,10 @@ class Slider:
     def __init__(self, value, pos_x, pos_y, length, range_, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, width=2, margin=20, radius=3, gap=10):
+                 dea_value_color=None, width=2, gap=20, radius=3, margin=10):
         self.value = value
         self.pos_x = pos_x
-        self.pos_y = pos_y + margin*Slider._slider_amt
+        self.pos_y = pos_y + gap*Slider._slider_amt
         self.length = length + 2*radius
         self.width = width
         self.start, self.end = range_
@@ -26,9 +29,8 @@ class Slider:
         # Subclasses
         self.track = Track(self.pos_x, self.pos_y, self.length, self.width)
         self.thumb = Thumb(self.pos_x + radius, self.pos_y, radius)
-        self.value_label = Label(self.pos_x + self.length + gap,
-                                 self.pos_y,
-                                 font_size=16)
+        self.value_label = Label(self.pos_x + self.length, self.pos_y,
+                                 8*self.width, margin, center=True)
 
         self._min = self.pos_x + radius
         self._max = self.pos_x + self.length - radius
@@ -42,6 +44,10 @@ class Slider:
 
     def set(self):
         self.thumb._c_x = self.get_thumb_from_value()
+
+    def set_name_label(self, text, left, margin=0):
+        self.name_label = Label(self._pos_x-left, self._pos_y,
+                                self._size, margin, text)
 
     def slide(self, mouse):
         self.thumb._c_x = mouse[0]
@@ -114,18 +120,3 @@ class Thumb:
     @property
     def grabbed(self):
         return self._grabbed
-
-
-class Label:
-
-    def __init__(self, pos_x, pos_y, font_size):
-        self._size = font_size
-        self._rect = pos_x, pos_y - self._size//2
-
-    @property
-    def size(self):
-        return self._size
-
-    @property
-    def rect(self):
-        return self._rect

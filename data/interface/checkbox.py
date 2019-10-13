@@ -1,10 +1,11 @@
 from . box import Box
+from . label import Label
 
 
 class CheckBox(Box):
 
     def __init__(self, size, border_width, border_color,
-                 text_color=None, box_color=None):
+                 box_color=None, text_color=None):
         Box.__init__(self)
         self._size = size
         self._width = size
@@ -16,9 +17,8 @@ class CheckBox(Box):
         self.checked = False
 
     def set_label(self, text, margin=2):
-        self._label = Label(self._pos_x + self._width,
-                            self._pos_y,
-                            text, margin)
+        self._label = Label(self._pos_x+self._width, self._pos_y,
+                            self._size, margin, text)
 
     def gen_cross(self, margin):
         self.cross_width = self._border_width+1
@@ -48,14 +48,3 @@ class CheckBox(Box):
     @property
     def label(self):
         return self._label
-
-
-class Label:
-
-    def __init__(self, pos_x, pos_y, text, margin):
-        self._rect = pos_x + margin, pos_y
-        self.text = text
-
-    @property
-    def rect(self):
-        return self._rect
