@@ -1,6 +1,6 @@
 import math as m
 
-from .. import pg_init
+from .. import pg_init, pg_root
 
 SCALE = pg_init.SCALE
 

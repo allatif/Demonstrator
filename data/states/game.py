@@ -58,8 +58,6 @@ class Game(pg_root._State):
         self.predone = False
         self.results = None
 
-        self.hudfont = pg.font.SysFont('Consolas', 12)
-        self.rulefont = pg.font.SysFont('Liberation Sans', 18)
         self.options = {"Hud position": 'right', "Angle unit": 'rad'}
 
     def startup(self, persistant):
@@ -219,7 +217,8 @@ class Game(pg_root._State):
                          *scale, self.ruler.scale_w)
 
         for num, pos_x in self.ruler.get_numbers():
-            text = self.rulefont.render(str(num), True, color.BLACK)
+            text = self.render_font(str(num), 'Liberation Sans',
+                                    18, color.BLACK)
             rect = text.get_rect(center=(pos_x+1, self.ruler.pos+text_margin))
             surface.blit(text, rect)
 

@@ -6,13 +6,14 @@ class Button(Box):
     def __init__(self, text, obj_color, hov_color, text_color, size=(90, 30)):
         Box.__init__(self)
         self.text = text
+        self._width = size[0]
+        self._height = size[1]
         self._obj_color = obj_color
         self._hov_color = hov_color
         self._text_color = text_color
-        self._width = size[0]
-        self._height = size[1]
 
         self.color = self._obj_color
+        self._text_size = round(0.6*self._height)
         self._has_refl = False
         self.virgin = True
 
@@ -37,6 +38,9 @@ class Button(Box):
     def get_refl_poly(self):
         return self._refl.get_points()
 
+    def set_text_size(self, value):
+        self._text_size = value
+
     @property
     def obj_color(self):
         return self._obj_color
@@ -48,6 +52,10 @@ class Button(Box):
     @property
     def text_color(self):
         return self._text_color
+
+    @property
+    def text_size(self):
+        return self._text_size
 
     @property
     def center(self):

@@ -62,12 +62,6 @@ class PoleMap(pg_root._State):
         self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
         self.but_plot.activate_reflection()
 
-        # Used fonts
-        font_size = self.sliders[0].value_label.size
-        self.font = pg.font.SysFont('Liberation Sans', font_size)
-        self.smallfont = pg.font.SysFont('Liberation Sans', 14)
-        self.hudfont = pg.font.SysFont('Consolas', 12)
-
         self.options = {"Hud position": 'left', "Euler corr": False}
         self.loop_counter = 0
 
@@ -211,6 +205,7 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
+        print(self.checkbox.label.width)
         self.draw_slider_group(surface, self.sliders)
         self.draw_checkbox(surface, self.checkbox)
         self.draw_button(surface, self.but_set)
@@ -228,7 +223,7 @@ class PoleMap(pg_root._State):
         if self.options["Euler corr"]:
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
-            text = self.smallfont.render(msg, True, color.DBLUE)
+            text = self.render_font(msg, 'Liberation Sans', 14, color.DBLUE)
             var_x_pos = rect[0]+length+2 if pos == 'left' else rect[0]-110
             surface.blit(text, (var_x_pos, rect[1]+wide-18))
 
@@ -238,8 +233,8 @@ class PoleMap(pg_root._State):
 
         for num, pole in enumerate(self.poles):
             pole_str = f'{pole}'
-            textcolor = color.LRED if pole.is_unstable() else color.WHITE
-            text = self.hudfont.render(pole_str, True, textcolor)
+            text_color = color.LRED if pole.is_unstable() else color.WHITE
+            text = self.hudfont.render(pole_str, True, text_color)
 
             surface.blit(text, (rect[0] + text_margin,
                                 rect[1] + text_margin + num*line_margin))

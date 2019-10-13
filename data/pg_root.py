@@ -104,6 +104,8 @@ class _State:
         self.previous = None
         self.persist = {}
 
+        self.hudfont = pg.font.SysFont('Consolas', 12)
+
     def get_event(self, event):
         """Processes events that were passed from the main event loop.
         Must be overrided in children."""
@@ -177,7 +179,12 @@ class _State:
             text_color = slider.act_value_color
             if not slider.active:
                 text_color = slider.dea_value_color
-            text = self.font.render(str(slider.value), True, text_color)
+            slider.value_label.cache_font('Liberation Sans',
+                                          slider.value_label.size,
+                                          only_font=True)
+            font = slider.value_label.font_cache
+            text = font.render(str(slider.value), True, text_color)
+
             surface.blit(text, slider.value_label.rect)
 
     def draw_checkbox(self, surface, checkbox_obj):
@@ -196,8 +203,10 @@ class _State:
         text_color = checkbox_obj.text_color
         if text_color is None:
             text_color = checkbox_obj.border_color
-        text = self.font.render(checkbox_obj.label.text, True, text_color)
-        surface.blit(text, checkbox_obj.label.rect)
+
+        checkbox_obj.cache_font(checkbox_obj.label.text, 'Liberation Sans',
+                                checkbox_obj.height, text_color)
+        surface.blit(checkbox_obj.font_cache, checkbox_obj.label.rect)
 
         if checkbox_obj.checked:
             # Checkbox Cross
@@ -219,9 +228,10 @@ class _State:
                                             button_obj.hov_color)
 
         # Button Text
-        text, rect = self.render_font(button_obj.text, 'Liberation Sans', 16,
-                                      button_obj.text_color, button_obj.center)
-        surface.blit(text, rect)
+        size = button_obj.text_size
+        button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
+                              button_obj.text_color, center=button_obj.center)
+        surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
 
     def render_hud(self, length, wide, margin, pos):
         """Returns the rect of hud field"""
@@ -234,17 +244,24 @@ class _State:
         rect = (hud_pos_x, hud_pos_y, length, wide)
         return rect
 
-    def render_font(self, msg, name, size, color, center):
-        """Returns the rendered font surface and its rect centered on center.
-        """
+    @staticmethod
+    def get_font(name, size):
+        """Returns a font only."""
         if name in pg_init.FONTS:
             font = pg_init.FONTS[name]
-            font = pg.font.Font(font, size)
-        else:
-            font = pg.font.SysFont(name, size)
-        msg = font.render(msg, True, color)
-        rect = msg.get_rect(center=center)
-        return msg, rect
+            return pg.font.Font(font, size)
+        return pg.font.SysFont(name, size)
+
+    @staticmethod
+    def render_font(text, name, size, color, center=None):
+        """Returns the rendered font surface and its rect centered on center,
+        if required."""
+        font = _State.get_font(name, size)
+        text = font.render(text, True, color)
+        if center is not None:
+            rect = text.get_rect(center=center)
+            return text, rect
+        return text
 
 
 def load_all_gfx(directory, accept=(".png", ".jpg", ".bmp")):
