@@ -22,7 +22,8 @@ class SetMenu(pg_root._State):
         self.win.cache_font(self.win.header, 'Liberation Sans', 26, color.WHITE)
 
         self.but_ok = button.Button('OK', color.LRED, color.LLRED, color.WHITE)
-        self.but_ok.set_pos(500, 500)
+        self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
+                            self.win.con_bottom-self.but_ok.height)
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
@@ -42,7 +43,8 @@ class SetMenu(pg_root._State):
             pass
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            pass
+            if self.but_ok.mouseover:
+                self.done = True
 
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.but_ok)
