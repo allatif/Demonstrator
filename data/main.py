@@ -7,6 +7,6 @@ def main():
     pgapp = pg_root.PygameApp(pg_init.ORIGINAL_CAPTION)
     state_dict = {"POLEMAP": polemap.PoleMap(),
                   "GAME": game.Game(),
-                  "SETTINGS": menu.SetMenu()}
+                  "SETTINGS": menu.SetupMenu()}
     pgapp.setup_states(state_dict, "POLEMAP")
     pgapp.run()

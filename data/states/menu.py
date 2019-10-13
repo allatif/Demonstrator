@@ -10,7 +10,7 @@ from .. components import color
 from .. interface import window, slider, button
 
 
-class SetMenu(pg_root._State):
+class SetupMenu(pg_root._State):
 
     def __init__(self):
         pg_root._State.__init__(self)

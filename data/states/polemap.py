@@ -205,7 +205,6 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
-        print(self.checkbox.label.width)
         self.draw_slider_group(surface, self.sliders)
         self.draw_checkbox(surface, self.checkbox)
         self.draw_button(surface, self.but_set)
