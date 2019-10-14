@@ -7,7 +7,7 @@ import pygame.gfxdraw
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import color
-from .. interface import window, slider, button
+from .. interface import window, slider_group, slider, button
 
 
 class SetupMenu(pg_root._State):
@@ -33,16 +33,16 @@ class SetupMenu(pg_root._State):
         # Initialize sliders
         self.sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
-
         for slider_range, val in zip(slider_ranges, [0, 0, 0, 4]):
-            self.sliders.append(slider.Slider(val, 4, 200,
-                                              pos_x=self.win.con_pos[0]+20,
-                                              pos_y=self.win.con_pos[1]+20,
+            self.sliders.append(slider.Slider(val, 4, 250,
                                               range_=slider_range, margin=25,
                                               track_color=color.WHITE,
                                               act_filled_color=color.LLGREEN,
                                               act_thumb_color=color.LGREEN,
                                               act_value_color=color.LGREEN))
+        self.slider_group = slider_group.SliderGroup(self.sliders)
+        self.slider_group.arrange(self.win.con_pos[0],
+                                  self.win.con_pos[1]+75)
 
         self.bg_img = pg.image.fromstring(self.persist["bg_image"],
                                           (self.width, self.height), 'RGB')
@@ -75,7 +75,7 @@ class SetupMenu(pg_root._State):
         pg.gfxdraw.box(surface, self.win.rect, color.TRAN225)
 
         self.draw_heading(surface)
-        self.draw_slider_group(surface, self.sliders)
+        self.draw_slider_group(surface, self.slider_group)
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):

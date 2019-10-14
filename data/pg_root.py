@@ -155,10 +155,10 @@ class _State:
         """Update method for state. Must be overrided in children."""
         pass
 
-    def draw_slider_group(self, surface, slider_obj_list):
+    def draw_slider_group(self, surface, slider_group_obj):
         """Draws all sliders as a group with thumb and value label that where
         passed through a list."""
-        for slider in slider_obj_list:
+        for slider in slider_group_obj.sliders:
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
 

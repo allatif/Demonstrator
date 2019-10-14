@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import color, gaussian
-from .. interface import slider, button, checkbox
+from .. interface import slider_group, slider, button, checkbox
 
 
 class PoleMap(pg_root._State):
@@ -33,8 +33,7 @@ class PoleMap(pg_root._State):
         self.sliders = []
         slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
         for slider_range, val in zip(slider_ranges, self.Kregs):
-            self.sliders.append(slider.Slider(val, 2, 200, pos_x=20, pos_y=20,
-                                              range_=slider_range,
+            self.sliders.append(slider.Slider(val, 2, 200, range_=slider_range,
                                               track_color=color.GREY,
                                               act_filled_color=color.ORANGE,
                                               act_thumb_color=color.TOMATO,
@@ -42,6 +41,8 @@ class PoleMap(pg_root._State):
                                               dea_filled_color=color.DGREY,
                                               dea_thumb_color=color.BLACK,
                                               dea_value_color=color.LGREY))
+        self.slider_group = slider_group.SliderGroup(self.sliders)
+        self.slider_group.arrange(20, 20)
 
         # Used checkbox
         # Checkbox position depends on the last slider
@@ -143,7 +144,7 @@ class PoleMap(pg_root._State):
         else:
             for sldr in self.sliders:
                 sldr.active = True
-            self.Kregs = slider.Slider.values
+            self.Kregs = self.slider_group.get_values()
 
         print(self.Kregs)
         self.sim.set_Kregs(*self.Kregs)
@@ -213,7 +214,7 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
-        self.draw_slider_group(surface, self.sliders)
+        self.draw_slider_group(surface, self.slider_group)
         self.draw_checkbox(surface, self.checkbox)
         self.draw_button(surface, self.but_set)
 

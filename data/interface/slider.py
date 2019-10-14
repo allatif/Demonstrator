@@ -3,23 +3,15 @@ from . label import Label
 
 class Slider:
 
-    _slider_amt = 0
-    values = []
-
-    def __init__(self, value, width, length, pos_x, pos_y, range_, track_color,
+    def __init__(self, value, width, length, range_, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, margin=10):
-        self.value = value
-
-        self.width = width
-        self.thumb_r = round(1.5*self.width)
-        self.gap = 10*self.width
-
+                 dea_value_color=None, pos_x=0, pos_y=0, margin=10):
+        self._value = value
+        self._width = width
+        self.thumb_r = round(1.5*self._width)
         self.length = length + 2*self.thumb_r
-        self.pos_x = pos_x
-        self.pos_y = pos_y + self.gap*Slider._slider_amt
-        self.start, self.end = range_
+        self._start, self._end = range_
 
         # Color attrs
         self.track_color = track_color
@@ -30,56 +22,93 @@ class Slider:
         self.dea_thumb_color = dea_thumb_color
         self.dea_value_color = dea_value_color
 
-        # Subclasses
-        self.track = Track(self.pos_x, self.pos_y, self.length, self.width)
+        self._pos_x = pos_x
+        self._pos_y = pos_y
+        self.margin = margin
 
-        thumb_y_corr = 1 if self.width > 2 else 0
-        self.thumb = Thumb(self.pos_x + self.thumb_r, self.pos_y+thumb_y_corr,
-                           self.thumb_r)
-        self.value_label = Label(self.pos_x + self.length, self.pos_y,
-                                 8*self.width, margin, center=True)
+        self._init_components()
 
-        self._min = self.pos_x + self.thumb_r
-        self._max = self.pos_x + self.length - self.thumb_r
-
-        self._number = Slider._slider_amt
         self.active = True
 
+    def _init_components(self):
+        # Subclasses
+        self._track = Track(self._pos_x, self._pos_y, self.length, self._width)
+
+        thumb_y_corr = 1 if self._width > 2 else 0
+        self._thumb = Thumb(self._pos_x + self.thumb_r,
+                            self._pos_y+thumb_y_corr,
+                            self.thumb_r)
+
+        self._value_label = Label(self._pos_x + self.length, self._pos_y,
+                                  8*self._width, self.margin, center=True)
+
+        self._min = self._pos_x + self.thumb_r
+        self._max = self._pos_x + self.length - self.thumb_r
+
         self.set()
-        Slider._slider_amt += 1
-        Slider.values.append(self.value)
 
     def set(self):
-        self.thumb._c_x = self.get_thumb_from_value()
+        self._thumb._c_x = self.get_thumb_from_value()
+
+    def set_pos(self, x, y):
+        self._pos_x = x
+        self._pos_y = y
 
     def set_name_label(self, text, left, margin=0):
-        self.name_label = Label(self._pos_x-left, self._pos_y,
-                                self._size, margin, text)
+        self._name_label = Label(self._pos_x-left, self._pos_y,
+                                 self._size, margin, text)
 
     def slide(self, mouse):
-        self.thumb._c_x = mouse[0]
+        self._thumb._c_x = mouse[0]
         if mouse[0] < self._min:
-            self.thumb._c_x = self._min
+            self._thumb._c_x = self._min
         if mouse[0] > self._max:
-            self.thumb._c_x = self._max
+            self._thumb._c_x = self._max
 
     def update(self):
-        pixel_value = self.thumb.c_x - self._min
-        ratio = (self.end-self.start) / (self._max-self._min)
-        self.value = pixel_value*ratio + self.start
-        Slider.values[self.number] = self.value
+        pixel_value = self._thumb.c_x - self._min
+        ratio = (self._end-self._start) / (self._max-self._min)
+        self._value = pixel_value*ratio + self._start
 
     def get_thumb_from_value(self):
-        ratio = (self.end-self.start) / (self._max-self._min)
-        return int(round((self.value-self.start) / ratio + self._min))
+        ratio = (self._end-self._start) / (self._max-self._min)
+        return int(round((self._value-self._start) / ratio + self._min))
 
     def get_slid_rect(self):
-        dyn_length = self.thumb.c_x - self.pos_x
-        return self.pos_x, self.pos_y, dyn_length, self.width
+        dyn_length = self._thumb.c_x - self._pos_x
+        return self._pos_x, self._pos_y, dyn_length, self._width
 
     @property
     def number(self):
         return self._number
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def pos(self):
+        return self._pos_x, self._pos_y
+
+    @property
+    def track(self):
+        return self._track
+
+    @property
+    def thumb(self):
+        return self._thumb
+
+    @property
+    def value_label(self):
+        return self._value_label
+
+    @property
+    def name_label(self):
+        return self._name_label
 
 
 class Track:
