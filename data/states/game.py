@@ -47,6 +47,9 @@ class Game(pg_root._State):
         self.ruler = Ruler(pos=self.ground.pos+self.ground.w,
                            zero=self.cone.get_zero_pos(),
                            length=self.ground.len)
+        self.ruler.set_scales(10, 5, scale_w=2, subs=10)
+        self.ruler.set_labels(top=25, size=18)
+        # print(self.ruler.scales)
 
         self.user = mousecontrol.MouseControl(2000)
 
@@ -209,18 +212,13 @@ class Game(pg_root._State):
     def draw_ruler(self, surface):
         self.draw_trigon_marker(surface)
 
-        text_margin = 25
+        for scale in self.ruler.scales:
+            pg.draw.line(surface, color.BLACK, *scale, self.ruler.scale_w)
 
-        scales = self.ruler.get_scales(10, 5, 2, subs=10)
-        for scale in scales:
-            pg.draw.line(surface, color.BLACK,
-                         *scale, self.ruler.scale_w)
-
-        for num, pos_x in self.ruler.get_numbers():
-            text = self.render_font(str(num), 'Liberation Sans',
-                                    18, color.BLACK)
-            rect = text.get_rect(center=(pos_x+1, self.ruler.pos+text_margin))
-            surface.blit(text, rect)
+        for label in self.ruler.num_labels:
+            label.cache_font(label.text, 'Liberation Sans', label.height,
+                             color.BLACK, center=(label.pos[0], label.pos[1]))
+            surface.blit(label.font_cache[0], label.font_cache[1])
 
     def draw_trigon_marker(self, surface):
         point_bottom = (self.cone.get_points('top')[0],

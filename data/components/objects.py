@@ -1,6 +1,7 @@
 import math as m
 
 from .. import pg_init, pg_root
+from .. interface.label import Label
 
 SCALE = pg_init.SCALE
 
@@ -162,33 +163,39 @@ class Ruler:
         self.pos = pos
         self.zero = zero
         self.len = length
+        self.scales = []
+        self.num_labels = []
 
-    def get_scales(self, main_scale_len, scale_len, scale_w, subs=5):
+    def set_scales(self, main_scale_len, scale_len, scale_w, subs=5):
         self.scale_w = scale_w
         self._numbers = []
         self._positions = []
-        scales = []
         start = (0, 0)
         end = (0, 0)
 
         for side in range(-1, 2, 2):
             step = side*SCALE
 
+            range_end = 0 if side < 0 else self.len
+
             # Sub-Scales
-            for pos_x in range(self.zero, side*self.len, step//subs):
+            for pos_x in range(self.zero, range_end, step//subs):
                 start = pos_x, self.pos+1
                 end = pos_x, self.pos + scale_len
-                scales.append((start, end))
+                self.scales.append((start, end))
 
             # Main-Scales with numbers
-            for num, pos_x in enumerate(range(self.zero, side*self.len, step)):
+            for num, pos_x in enumerate(range(self.zero, range_end, step)):
                 start = pos_x, self.pos+1
                 end = pos_x, self.pos + main_scale_len
                 self._numbers.append(side*num)
                 self._positions.append(pos_x)
-                scales.append((start, end))
+                self.scales.append((start, end))
 
-        return scales
+    def set_labels(self, top, size, margin=0):
+        for num, pos_x in self.get_numbers():
+            self.num_labels.append(Label(pos_x+1, self.pos+top, size,
+                                         margin, str(num)))
 
     def get_numbers(self):
         return list(zip(self._numbers, self._positions))[1:]
