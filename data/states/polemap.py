@@ -18,9 +18,11 @@ class PoleMap(pg_root._State):
         self.height = pg_init.SCREEN_RECT[3]
         self.plane = gaussian.Plane(self.width, self.height)
         self.next = "GAME"
-        self.sim = setup_sim.SimData(12000)
+        self.sim_init_state = (0, 0, 0, 0.3)
+        self.sim = setup_sim.SimData(12000, initial_state=self.sim_init_state)
         self.poles = None
         self.results = None
+
         # self.Kregs = [-2196.6, -4761.2, -51800, -18831]
         self.Kregs = [-1296.6, -3161.2, -31800, -9831]
         # self.Kregs = [-1196.6, -3761.2, -11800, -8831]
@@ -30,8 +32,9 @@ class PoleMap(pg_root._State):
         # Initialize sliders
         self.sliders = []
         slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
-        for slider_range, c in zip(slider_ranges, self.Kregs):
-            self.sliders.append(slider.Slider(c, 20, 20, 200, slider_range,
+        for slider_range, val in zip(slider_ranges, self.Kregs):
+            self.sliders.append(slider.Slider(val, 2, 200, pos_x=20, pos_y=20,
+                                              range_=slider_range,
                                               track_color=color.GREY,
                                               act_filled_color=color.ORANGE,
                                               act_thumb_color=color.TOMATO,
@@ -69,6 +72,9 @@ class PoleMap(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        # self.sim_init_state = self.persist["sim initial state"]
+        # self.sim = setup_sim.SimData(12000, initial_state=self.sim_init_state)
+
         self.next = "GAME"
         if "result" in self.persist:
             self.results = self.persist["result"]
@@ -76,6 +82,7 @@ class PoleMap(pg_root._State):
     def cleanup(self):
         self.done = False
         self.but_plot.virgin = True
+        # self.persist["sim initial state"] = self.sim_init_state
         self.persist["controller"] = self.Kregs
         self.persist["control off"] = self.checkbox.checked
         self.persist["bg_image"] = self.polemap_imagestr
@@ -138,11 +145,12 @@ class PoleMap(pg_root._State):
                 sldr.active = True
             self.Kregs = slider.Slider.values
 
+        print(self.Kregs)
         self.sim.set_Kregs(*self.Kregs)
         self.sim.update()
 
         # Euler method causes a little error per step k when dt is too big
-        # Need of correction offset 'crr' to correct marginal stable poles
+        # Need of correction offset 'corr' to correct marginal stable poles
         crr = 0.0485 if self.options['Euler corr'] else 0.0
         self.poles = []
         for pole in self.sim.get_poles():
@@ -264,13 +272,3 @@ class PoleMap(pg_root._State):
             return amplitude * m.sin((self.loop_counter/length) * m.pi)**2
         elif forobj == 'But_Refl':
             return not (self.loop_counter % 1)
-
-    @staticmethod
-    def _draw_aafilled_circle(surface, x, y, r, color):
-        pg.gfxdraw.aacircle(surface, x, y, r, color)
-        pg.gfxdraw.filled_circle(surface, x, y, r, color)
-
-    @staticmethod
-    def _draw_aafilled_polygon(surface, points, color):
-        pg.gfxdraw.aapolygon(surface, points, color)
-        pg.gfxdraw.filled_polygon(surface, points, color)

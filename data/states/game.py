@@ -351,16 +351,3 @@ class Game(pg_root._State):
 
     def _disturbing_func(self, intensity):
         return -intensity*1.0e-2
-
-    @staticmethod
-    def _draw_aafilled_polygon(surface, points, color):
-        pg.gfxdraw.aapolygon(surface, points, color)
-        pg.gfxdraw.filled_polygon(surface, points, color)
-
-    @staticmethod
-    def deg2rad(deg):
-        return deg * (m.pi/180)
-
-    @staticmethod
-    def rad2deg(rad):
-        return (rad*180) / m.pi

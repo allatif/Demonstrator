@@ -1,4 +1,6 @@
 import os
+import math as m
+
 import pygame as pg
 import pygame.gfxdraw
 
@@ -262,6 +264,24 @@ class _State:
             rect = text.get_rect(center=center)
             return text, rect
         return text
+
+    @staticmethod
+    def _draw_aafilled_polygon(surface, points, color):
+        pg.gfxdraw.aapolygon(surface, points, color)
+        pg.gfxdraw.filled_polygon(surface, points, color)
+
+    @staticmethod
+    def _draw_aafilled_circle(surface, x, y, r, color):
+        pg.gfxdraw.aacircle(surface, x, y, r, color)
+        pg.gfxdraw.filled_circle(surface, x, y, r, color)
+
+    @staticmethod
+    def deg2rad(deg):
+        return deg * (m.pi/180)
+
+    @staticmethod
+    def rad2deg(rad):
+        return (rad*180) / m.pi
 
 
 def load_all_gfx(directory, accept=(".png", ".jpg", ".bmp")):

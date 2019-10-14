@@ -21,17 +21,35 @@ class SetupMenu(pg_root._State):
         self.win = window.MenuWindow('Settings Menu')
         self.win.cache_font(self.win.header, 'Liberation Sans', 26, color.WHITE)
 
+        # Initialize button
         self.but_ok = button.Button('OK', color.LRED, color.LLRED, color.WHITE)
         self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
                             self.win.con_bottom-self.but_ok.height)
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        # self.sim_init_state = self.persist["sim initial state"]
+
+        # Initialize sliders
+        self.sliders = []
+        slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
+
+        for slider_range, val in zip(slider_ranges, [0, 0, 0, 4]):
+            self.sliders.append(slider.Slider(val, 4, 200,
+                                              pos_x=self.win.con_pos[0]+20,
+                                              pos_y=self.win.con_pos[1]+20,
+                                              range_=slider_range, margin=25,
+                                              track_color=color.WHITE,
+                                              act_filled_color=color.LLGREEN,
+                                              act_thumb_color=color.LGREEN,
+                                              act_value_color=color.LGREEN))
+
         self.bg_img = pg.image.fromstring(self.persist["bg_image"],
                                           (self.width, self.height), 'RGB')
 
     def cleanup(self):
         self.done = False
+        # self.persist["sim initial state"] = self.sim_init_state
         return self.persist
 
     def get_event(self, event):
@@ -57,15 +75,8 @@ class SetupMenu(pg_root._State):
         pg.gfxdraw.box(surface, self.win.rect, color.TRAN225)
 
         self.draw_heading(surface)
+        self.draw_slider_group(surface, self.sliders)
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):
         surface.blit(self.win.font_cache, self.win.con_pos)
-
-    @staticmethod
-    def deg2rad(deg):
-        return deg * (m.pi/180)
-
-    @staticmethod
-    def rad2deg(rad):
-        return (rad*180) / m.pi
