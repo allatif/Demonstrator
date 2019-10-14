@@ -6,7 +6,7 @@ from data.components import controller as cnt
 
 class SimData:
 
-    def __init__(self, sim_length):
+    def __init__(self, sim_length, initial_state=(0, 0, 0, 0.3)):
         self.sim_length = sim_length
 
         x1 = np.zeros((self.sim_length+1, 1))
@@ -15,10 +15,10 @@ class SimData:
         x4 = np.zeros((self.sim_length+1, 1))
 
         # Initial Conditions
-        x1[0] = 0  # x -- traveled distance
-        x2[0] = 0  # x' -- velocity
-        x3[0] = 0  # ω -- angle
-        x4[0] = 0.3  # ω' -- angular veloctiy
+        x1[0] = initial_state[0]  # x -- traveled distance
+        x2[0] = initial_state[1]  # x' -- velocity
+        x3[0] = initial_state[2]  # ω -- angle
+        x4[0] = initial_state[3]  # ω' -- angular veloctiy
 
         self.state_vec = x1, x2, x3, x4
         self.t_vec = np.zeros((self.sim_length+1, 1))
