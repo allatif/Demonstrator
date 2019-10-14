@@ -28,12 +28,15 @@ class SetupMenu(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-        # self.sim_init_state = self.persist["sim initial state"]
+        self.sim_init_state = self.persist["sim initial state"]
 
         # Initialize sliders
         self.sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
-        for slider_range, val in zip(slider_ranges, [0, 0, 0, 4]):
+        zipped = zip(slider_ranges, self.sim_init_state)
+        for num, (slider_range, val) in enumerate(zipped):
+            if num > 1:
+                val = self.rad2deg(val)
             self.sliders.append(slider.Slider(val, 4, 250,
                                               range_=slider_range, margin=25,
                                               track_color=color.WHITE,
@@ -49,7 +52,7 @@ class SetupMenu(pg_root._State):
 
     def cleanup(self):
         self.done = False
-        # self.persist["sim initial state"] = self.sim_init_state
+        self.persist["sim initial state"] = self.sim_init_state
         return self.persist
 
     def get_event(self, event):
@@ -58,13 +61,22 @@ class SetupMenu(pg_root._State):
                 self.done = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            pass
+            for sldr in self.sliders:
+                if sldr.thumb.mouseover:
+                    sldr.thumb.grab()
+                    break
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
+            for sldr in self.sliders:
+                if sldr.thumb.grabbed:
+                    sldr.thumb.release()
+                    break
+
             if self.but_ok.mouseover:
                 self.done = True
 
     def mouse_logic(self, mouse):
+        self.slider_group_logic(mouse, self.sliders)
         self.hover_object_logic(mouse, self.but_ok)
 
     def update(self, surface):
