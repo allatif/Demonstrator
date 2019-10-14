@@ -6,15 +6,19 @@ class Slider:
     _slider_amt = 0
     values = []
 
-    def __init__(self, value, pos_x, pos_y, length, range_, track_color,
+    def __init__(self, value, width, length, pos_x, pos_y, range_, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, width=2, gap=20, radius=3, margin=10):
+                 dea_value_color=None, margin=10):
         self.value = value
-        self.pos_x = pos_x
-        self.pos_y = pos_y + gap*Slider._slider_amt
-        self.length = length + 2*radius
+
         self.width = width
+        self.thumb_r = round(1.5*self.width)
+        self.gap = 10*self.width
+
+        self.length = length + 2*self.thumb_r
+        self.pos_x = pos_x
+        self.pos_y = pos_y + self.gap*Slider._slider_amt
         self.start, self.end = range_
 
         # Color attrs
@@ -28,12 +32,15 @@ class Slider:
 
         # Subclasses
         self.track = Track(self.pos_x, self.pos_y, self.length, self.width)
-        self.thumb = Thumb(self.pos_x + radius, self.pos_y, radius)
+
+        thumb_y_corr = 1 if self.width > 2 else 0
+        self.thumb = Thumb(self.pos_x + self.thumb_r, self.pos_y+thumb_y_corr,
+                           self.thumb_r)
         self.value_label = Label(self.pos_x + self.length, self.pos_y,
                                  8*self.width, margin, center=True)
 
-        self._min = self.pos_x + radius
-        self._max = self.pos_x + self.length - radius
+        self._min = self.pos_x + self.thumb_r
+        self._max = self.pos_x + self.length - self.thumb_r
 
         self._number = Slider._slider_amt
         self.active = True
