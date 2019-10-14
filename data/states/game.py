@@ -26,7 +26,8 @@ class Game(pg_root._State):
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
-        self.sim = setup_sim.SimData(1_200_000)
+        self.sim = setup_sim.SimData(120_000)
+        self.model = setup_sim.StateSpaceModel()
         self.euler_stepsize = 0.001
 
         # 0.01 for 100 fps
@@ -39,9 +40,9 @@ class Game(pg_root._State):
                          basis_center_x=self.width//2,
                          ratio=0.85)
 
-        self.ball = Sphere(radius=round(self.sim.k_k.radius*pg_init.SCALE),
-                           mass=self.sim.k_k.mass_sphere,
-                           inertia=self.sim.k_k.J,
+        self.ball = Sphere(radius=round(self.model.k_k.radius*pg_init.SCALE),
+                           mass=self.model.k_k.mass_sphere,
+                           inertia=self.model.k_k.J,
                            zero_pos_x=self.cone.get_zero_pos())
 
         self.ruler = Ruler(pos=self.ground.pos+self.ground.w,
@@ -114,11 +115,11 @@ class Game(pg_root._State):
         self.user.update(mouse)
 
     def update(self, surface):
-        self.sim.update()
-        self.sim.set_Kregs(*self.Kregs)
+        self.model.update()
+        self.model.set_Kregs(*self.Kregs)
 
-        A = self.sim.system
-        B = self.sim.B
+        A = self.model.system
+        B = self.model.B
         x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
         t_vec = self.sim.t_vec
 
@@ -144,12 +145,12 @@ class Game(pg_root._State):
             # and x position close to zero,
             # system stops controlling
             # That shall simulate interference and inaccuracy
-            self.sim.set_Kregs(0, 0, 0, 0)
+            self.model.set_Kregs(0, 0, 0, 0)
 
         if abs(x3) > self.deg2rad(30):
             # If ball tilt angle > 30°
             # System stops controlling, controller values set to zero
-            self.sim.set_Kregs(0, 0, 0, 0)
+            self.model.set_Kregs(0, 0, 0, 0)
 
         if abs(x3) > self.deg2rad(60):
             # If ball tilt angle > 60°

@@ -23,6 +23,10 @@ class SimData:
         self.state_vec = x1, x2, x3, x4
         self.t_vec = np.zeros((self.sim_length+1, 1))
 
+
+class StateSpaceModel:
+
+    def __init__(self):
         # Initialize Kegel-Kugel-Demonstrator as k_k
         self.k_k = demo.Demonstrator(
             mass_sphere=19.5,

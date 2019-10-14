@@ -19,7 +19,7 @@ class PoleMap(pg_root._State):
         self.plane = gaussian.Plane(self.width, self.height)
         self.next = "GAME"
         self.sim_init_state = (0, 0, 0, 0.3)
-        self.sim = setup_sim.SimData(12000, initial_state=self.sim_init_state)
+        self.model = setup_sim.StateSpaceModel()
         self.poles = None
         self.results = None
 
@@ -146,14 +146,14 @@ class PoleMap(pg_root._State):
                 sldr.active = True
             self.Kregs = self.slider_group.get_values()
 
-        self.sim.set_Kregs(*self.Kregs)
-        self.sim.update()
+        self.model.set_Kregs(*self.Kregs)
+        self.model.update()
 
         # Euler method causes a little error per step k when dt is too big
         # Need of correction offset 'corr' to correct marginal stable poles
         crr = 0.0485 if self.options['Euler corr'] else 0.0
         self.poles = []
-        for pole in self.sim.get_poles():
+        for pole in self.model.get_poles():
             pos = self.plane.get_pos_from_point((pole.real+crr, pole.imag))
             self.poles.append(gaussian.Pole(pos, 15, pole.real+crr, pole.imag))
 
