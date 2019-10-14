@@ -27,7 +27,7 @@ class PoleMap(pg_root._State):
         self.Kregs = [-1296.6, -3161.2, -31800, -9831]
         # self.Kregs = [-1196.6, -3761.2, -11800, -8831]
         # for testing fall of sphere
-        # self.Kregs = [-9050, -3150, -4800, -9750]
+        # # self.Kregs = [-9050, -3150, -4800, -9750]
 
         # Initialize sliders
         self.sliders = []
@@ -45,7 +45,7 @@ class PoleMap(pg_root._State):
         self.slider_group.arrange(20, 20)
 
         # Used checkbox
-        # Checkbox position depends on the last slider
+        # # Checkbox position depends on last slider
         cb_pos_x = self.sliders[len(self.sliders)-1].track.rect[0]
         cb_pos_y = self.sliders[len(self.sliders)-1].track.rect[1] + 20
         self.checkbox = checkbox.CheckBox(16, 2, color.BLACK)
@@ -146,7 +146,6 @@ class PoleMap(pg_root._State):
                 sldr.active = True
             self.Kregs = self.slider_group.get_values()
 
-        print(self.Kregs)
         self.sim.set_Kregs(*self.Kregs)
         self.sim.update()
 
@@ -181,7 +180,7 @@ class PoleMap(pg_root._State):
             if pole.is_unstable():
                 dyn_color = color.RED
 
-                # animate unstable pole flicker
+                # Animate unstable pole flicker
                 signal = self.gen_signal_by_loop(4, 80, forobj='Pole')
                 self._draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
