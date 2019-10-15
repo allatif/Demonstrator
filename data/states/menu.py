@@ -19,7 +19,7 @@ class SetupMenu(pg_root._State):
         self.next = "POLEMAP"
 
         self.win = window.MenuWindow('Settings Menu')
-        self.win.cache_font(self.win.header, 'Liberation Sans', 26, color.WHITE)
+        self.win.cache_font(self.win.header, 'Liberation Sans', 32, color.WHITE)
 
         # Initialize button
         self.but_ok = button.Button('OK', color.LRED, color.LLRED, color.WHITE)
@@ -34,7 +34,7 @@ class SetupMenu(pg_root._State):
         self.slider_group = slider_group \
             .SliderGroup(self.sliders, header_text='Initial Conditions',
                          header_size=26)
-        self.slider_group.arrange(self.win.con_pos[0],
+        self.slider_group.arrange(self.win.con_pos[0]+10,
                                   self.win.con_pos[1]+75)
 
         self.bg_img = pg.image.fromstring(self.persist["bg_image"],
