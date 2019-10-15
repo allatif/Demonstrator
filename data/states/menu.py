@@ -17,6 +17,7 @@ class SetupMenu(pg_root._State):
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
         self.next = "POLEMAP"
+        self.predone = False
 
         self.win = window.MenuWindow('Settings Menu')
         self.win.cache_font(self.win.header, 'Liberation Sans', 32, color.WHITE)
@@ -28,8 +29,8 @@ class SetupMenu(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-
         self.sim_init_state = self.persist["sim initial state"]
+
         self._init_sliders()
         self.slider_group = slider_group \
             .SliderGroup(self.sliders, header_text='Initial Conditions',
@@ -42,9 +43,8 @@ class SetupMenu(pg_root._State):
 
     def cleanup(self):
         self.done = False
-
-        state = self.slider_group.get_values()
-        self.persist["sim initial state"] = list(self._state_in_rad(state))
+        self.predone = False
+        self.persist["sim initial state"] = self.sim_init_state
         return self.persist
 
     def _init_sliders(self):
@@ -81,7 +81,7 @@ class SetupMenu(pg_root._State):
                     break
 
             if self.but_ok.mouseover:
-                self.done = True
+                self.predone = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
             for sldr in self.sliders:
@@ -94,6 +94,13 @@ class SetupMenu(pg_root._State):
 
     def update(self, surface):
         self.draw(surface)
+
+        # When press OK-button
+        # Before state is going to close it will save the new initial cond.
+        if self.predone:
+            init_state = self.slider_group.get_values()
+            self.sim_init_state = list(self._state_in_rad(init_state))
+            self.done = True
 
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
