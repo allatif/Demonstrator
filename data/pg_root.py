@@ -158,15 +158,15 @@ class _State:
     def draw_slider_group(self, surface, slider_group_obj):
         """Draws all sliders as a group with thumb and value label that where
         passed through a list."""
-        for slider in slider_group_obj.sliders:
-            # Group Header
-            header = slider_group_obj.header_label
-            if header is not None:
-                header.cache_font(slider_group_obj.header_text,
-                                  'Liberation Sans', header.size,
-                                  slider_group_obj.header_color)
-                surface.blit(header.font_cache, header.rect)
 
+        # Group Header
+        header = slider_group_obj.header_label
+        if header is not None:
+            header.cache_font(slider_group_obj.header_text, 'Liberation Sans',
+                              header.size, slider_group_obj.header_color)
+            surface.blit(header.font_cache, header.rect)
+
+        for slider in slider_group_obj.sliders:
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
 
