@@ -83,6 +83,11 @@ class SetupMenu(pg_root._State):
             if self.but_ok.mouseover:
                 self.done = True
 
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
+            for sldr in self.sliders:
+                if sldr.thumb.mouseover:
+                    sldr.zeroize()
+
     def mouse_logic(self, mouse):
         self.slider_group_logic(mouse, self.slider_group)
         self.hover_object_logic(mouse, self.but_ok)
