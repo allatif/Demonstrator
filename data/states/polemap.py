@@ -76,6 +76,8 @@ class PoleMap(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.next = "GAME"
+
+        self.sim_init_state = self.persist["sim initial state"]
         if "result" in self.persist:
             self.results = self.persist["result"]
 

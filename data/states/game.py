@@ -27,6 +27,9 @@ class Game(pg_root._State):
         self.bg_img = pg_init.GFX['bg']
 
         self.sim = setup_sim.SimData(120_000)
+        if hasattr(self, 'sim_init_state'):
+            self.sim = setup_sim.SimData(120_000, self.sim_init_state)
+
         self.model = setup_sim.StateSpaceModel()
         self.euler_stepsize = 0.001
 
@@ -66,6 +69,7 @@ class Game(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.sim_init_state = self.persist["sim initial state"]
         self.__init__(mother=False)
         self.Kregs = self.persist["controller"]
         self.user_cont = self.persist["control off"]

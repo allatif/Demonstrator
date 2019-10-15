@@ -42,7 +42,9 @@ class SetupMenu(pg_root._State):
 
     def cleanup(self):
         self.done = False
-        self.persist["sim initial state"] = self.sim_init_state
+
+        state = self.slider_group.get_values()
+        self.persist["sim initial state"] = list(self._state_in_rad(state))
         return self.persist
 
     def _init_sliders(self):
@@ -98,3 +100,9 @@ class SetupMenu(pg_root._State):
 
     def draw_heading(self, surface):
         surface.blit(self.win.font_cache, self.win.con_pos)
+
+    def _state_in_rad(self, state):
+        for num, value in enumerate(state):
+            if num > 1:
+                value = self.deg2rad(value)
+            yield value
