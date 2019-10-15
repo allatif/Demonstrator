@@ -29,25 +29,10 @@ class SetupMenu(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.sim_init_state = self.persist["sim initial state"]
-
-        # Initialize sliders
-        self.sliders = []
-        slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
-        zipped = zip(slider_ranges, self.sim_init_state)
-        units = ['m', 'm/s', '°', '°/s']
-        for num, (slider_range, val) in enumerate(zipped):
-            if num > 1:
-                val = self.rad2deg(val)
-            self.sliders.append(slider.Slider(val, 4, 250, unit=units[num],
-                                              range_=slider_range, margin=25,
-                                              track_color=color.WHITE,
-                                              act_filled_color=color.LLGREEN,
-                                              act_thumb_color=color.LGREEN,
-                                              act_value_color=color.LGREEN))
+        self._init_sliders()
         self.slider_group = slider_group.SliderGroup(self.sliders)
         self.slider_group.arrange(self.win.con_pos[0],
                                   self.win.con_pos[1]+75)
-
         self.bg_img = pg.image.fromstring(self.persist["bg_image"],
                                           (self.width, self.height), 'RGB')
 
@@ -82,6 +67,22 @@ class SetupMenu(pg_root._State):
 
     def update(self, surface):
         self.draw(surface)
+
+    def _init_sliders(self):
+        # Initialize sliders
+        self.sliders = []
+        slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
+        zipped = zip(slider_ranges, self.sim_init_state)
+        units = ['m', 'm/s', '°', '°/s']
+        for num, (slider_range, val) in enumerate(zipped):
+            if num > 1:
+                val = self.rad2deg(val)
+            self.sliders.append(slider.Slider(val, 4, 250, unit=units[num],
+                                              range_=slider_range, margin=25,
+                                              track_color=color.LGREY,
+                                              act_filled_color=color.LLGREEN,
+                                              act_thumb_color=color.LGREEN,
+                                              act_value_color=color.LGREEN))
 
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
