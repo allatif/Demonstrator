@@ -266,6 +266,7 @@ class _State:
             return pg.font.Font(font, size)
         return pg.font.SysFont(name, size)
 
+    @staticmethod
     def render_font(text, name, size, color, center=None):
         """Returns the rendered font surface and its rect centered on center,
         if required."""
