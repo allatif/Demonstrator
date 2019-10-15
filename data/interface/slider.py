@@ -37,7 +37,7 @@ class Slider:
 
         thumb_y_corr = 1 if self._width > 2 else 0
         self._thumb = Thumb(self._pos_x + self.thumb_r,
-                            self._pos_y+thumb_y_corr,
+                            self._pos_y + thumb_y_corr,
                             self.thumb_r)
 
         self._value_label = Label(self._pos_x + self.length + self.margin,
@@ -65,6 +65,9 @@ class Slider:
             self._thumb._c_x = self._min
         if mouse[0] > self._max:
             self._thumb._c_x = self._max
+
+    def zeroize(self):
+        self._thumb._c_x = self.get_thumb_from_value(0)
 
     def update(self):
         pixel_value = self._thumb.c_x - self._min
