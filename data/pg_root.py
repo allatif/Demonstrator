@@ -141,9 +141,9 @@ class _State:
             if hasattr(obj, 'color'):
                 obj.color = obj.obj_color
 
-    def slider_group_logic(self, mouse, slider_obj_list):
+    def slider_group_logic(self, mouse, slider_group_obj):
         """Slider logic when mouse grabs any thumb of one of the sliders."""
-        for slider in slider_obj_list:
+        for slider in slider_group_obj.sliders:
             thumb = slider.thumb
             self.hover_object_logic(mouse, thumb)
 

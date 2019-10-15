@@ -84,7 +84,7 @@ class SetupMenu(pg_root._State):
                 self.done = True
 
     def mouse_logic(self, mouse):
-        self.slider_group_logic(mouse, self.sliders)
+        self.slider_group_logic(mouse, self.slider_group)
         self.hover_object_logic(mouse, self.but_ok)
 
     def update(self, surface):

@@ -132,7 +132,7 @@ class PoleMap(pg_root._State):
                 self.plot()
 
     def mouse_logic(self, mouse):
-        self.slider_group_logic(mouse, self.sliders)
+        self.slider_group_logic(mouse, self.slider_group)
         self.hover_object_logic(mouse, self.checkbox)
         self.hover_object_logic(mouse, self.but_set)
         self.hover_object_logic(mouse, self.but_plot)
