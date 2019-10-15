@@ -192,10 +192,10 @@ class Ruler:
                 self._positions.append(pos_x)
                 self.scales.append((start, end))
 
-    def set_labels(self, top, size, margin=0):
+    def set_labels(self, top, size, margin=1):
         for num, pos_x in self.get_numbers():
-            self.num_labels.append(Label(pos_x+1, self.pos+top, size,
-                                         margin, str(num)))
+            self.num_labels.append(Label(pos_x+margin, self.pos+top,
+                                         size, text=str(num)))
 
     def get_numbers(self):
         return list(zip(self._numbers, self._positions))[1:]

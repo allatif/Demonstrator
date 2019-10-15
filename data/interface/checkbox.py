@@ -17,8 +17,8 @@ class CheckBox(Box):
         self.checked = False
 
     def set_label(self, text, margin=2):
-        self._label = Label(self._pos_x+self._width, self._pos_y,
-                            self._size, margin, text)
+        self._label = Label(self._pos_x+self._width+margin, self._pos_y,
+                            self._size, text=text)
 
     def gen_cross(self, margin):
         self.cross_width = self._border_width+1

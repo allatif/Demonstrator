@@ -41,7 +41,9 @@ class PoleMap(pg_root._State):
                                               dea_filled_color=color.DGREY,
                                               dea_thumb_color=color.BLACK,
                                               dea_value_color=color.LGREY))
-        self.slider_group = slider_group.SliderGroup(self.sliders)
+        self.slider_group = slider_group \
+            .SliderGroup(self.sliders, header_text='Controller Settings',
+                         header_size=16)
         self.slider_group.arrange(20, 20)
 
         # Used checkbox

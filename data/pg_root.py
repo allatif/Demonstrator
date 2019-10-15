@@ -159,6 +159,14 @@ class _State:
         """Draws all sliders as a group with thumb and value label that where
         passed through a list."""
         for slider in slider_group_obj.sliders:
+            # Group Header
+            header = slider_group_obj.header_label
+            if header is not None:
+                header.cache_font(slider_group_obj.header_text,
+                                  'Liberation Sans', header.size,
+                                  slider_group_obj.header_color)
+                surface.blit(header.font_cache, header.rect)
+
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
 
@@ -258,7 +266,6 @@ class _State:
             return pg.font.Font(font, size)
         return pg.font.SysFont(name, size)
 
-    @staticmethod
     def render_font(text, name, size, color, center=None):
         """Returns the rendered font surface and its rect centered on center,
         if required."""

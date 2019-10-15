@@ -40,8 +40,8 @@ class Slider:
                             self._pos_y+thumb_y_corr,
                             self.thumb_r)
 
-        self._value_label = Label(self._pos_x + self.length, self._pos_y,
-                                  8*self._width, self.margin, center=True)
+        self._value_label = Label(self._pos_x + self.length + self.margin,
+                                  self._pos_y, 8*self._width, center=True)
 
         self._min = self._pos_x + self.thumb_r
         self._max = self._pos_x + self.length - self.thumb_r
@@ -55,9 +55,9 @@ class Slider:
         self._pos_x = x
         self._pos_y = y
 
-    def set_name_label(self, text, left, margin=0):
+    def set_name_label(self, text, left):
         self._name_label = Label(self._pos_x-left, self._pos_y,
-                                 self._size, margin, text)
+                                 self._size, text=text)
 
     def slide(self, mouse):
         self._thumb._c_x = mouse[0]
@@ -137,6 +137,9 @@ class Thumb:
         self._c_x = c_x
         self._c_y = c_y
         self._r = radius
+        if radius == 6:
+            self._r = radius-1
+        self._r0 = self._r
         self._grabbed = False
         self.mouseover = False
 
@@ -145,7 +148,7 @@ class Thumb:
         self._grabbed = True
 
     def release(self):
-        self._r -= round(self._r / 3)
+        self._r = self._r0
         self._grabbed = False
 
     def inside(self, mouse):
