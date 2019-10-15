@@ -6,7 +6,7 @@ class Slider:
     def __init__(self, value, width, length, range_, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, pos_x=0, pos_y=0, margin=10):
+                 dea_value_color=None, pos_x=0, pos_y=0, margin=10, unit=None):
         self._value = value
         self._width = width
         self.thumb_r = round(1.5*self._width)
@@ -25,6 +25,7 @@ class Slider:
         self._pos_x = pos_x
         self._pos_y = pos_y
         self.margin = margin
+        self._unit = unit
 
         self._init_components()
 
@@ -70,13 +71,18 @@ class Slider:
         ratio = (self._end-self._start) / (self._max-self._min)
         self._value = pixel_value*ratio + self._start
 
-    def get_thumb_from_value(self):
+    def get_thumb_from_value(self, value=None):
         ratio = (self._end-self._start) / (self._max-self._min)
+        if value is not None:
+            return int(round((value-self._start) / ratio + self._min))
         return int(round((self._value-self._start) / ratio + self._min))
 
     def get_slid_rect(self):
-        dyn_length = self._thumb.c_x - self._pos_x
-        return self._pos_x, self._pos_y, dyn_length, self._width
+        zero_pos = self.get_thumb_from_value(0)
+        if self._start == 0 or self._end == 0:
+            zero_pos = self._pos_x
+        dyn_length = self._thumb.c_x - zero_pos
+        return zero_pos, self._pos_y, dyn_length, self._width
 
     @property
     def number(self):
@@ -93,6 +99,10 @@ class Slider:
     @property
     def pos(self):
         return self._pos_x, self._pos_y
+
+    @property
+    def unit(self):
+        return self._unit
 
     @property
     def track(self):

@@ -185,7 +185,11 @@ class _State:
                                           slider.value_label.size,
                                           only_font=True)
             font = slider.value_label.font_cache
-            text = font.render(f'{round(slider.value, 1)}', True, text_color)
+
+            text_str = f'{round(slider.value, 1)}'
+            if slider.unit is not None:
+                text_str = f'{round(slider.value, 1)} {slider.unit}'
+            text = font.render(text_str, True, text_color)
 
             surface.blit(text, slider.value_label.rect)
 

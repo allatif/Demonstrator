@@ -34,10 +34,11 @@ class SetupMenu(pg_root._State):
         self.sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
         zipped = zip(slider_ranges, self.sim_init_state)
+        units = ['m', 'm/s', '°', '°/s']
         for num, (slider_range, val) in enumerate(zipped):
             if num > 1:
                 val = self.rad2deg(val)
-            self.sliders.append(slider.Slider(val, 4, 250,
+            self.sliders.append(slider.Slider(val, 4, 250, unit=units[num],
                                               range_=slider_range, margin=25,
                                               track_color=color.WHITE,
                                               act_filled_color=color.LLGREEN,
