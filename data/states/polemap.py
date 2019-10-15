@@ -35,7 +35,7 @@ class PoleMap(pg_root._State):
         for slider_range, val in zip(slider_ranges, self.Kregs):
             self.sliders.append(slider.Slider(val, 2, 200, range_=slider_range,
                                               track_color=color.GREY,
-                                              act_filled_color=color.ORANGE,
+                                              act_filled_color=color.CORAL,
                                               act_thumb_color=color.TOMATO,
                                               act_value_color=color.TOMATO,
                                               dea_filled_color=color.DGREY,
@@ -187,7 +187,7 @@ class PoleMap(pg_root._State):
                                            pole.r + round(signal),
                                            color.ARED)
             elif pole.is_marginal_stable():
-                dyn_color = color.ORANGE
+                dyn_color = color.CORAL
 
             self._draw_aafilled_circle(surface, *pos, pole.r, dyn_color)
 
