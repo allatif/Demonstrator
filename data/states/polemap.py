@@ -76,14 +76,14 @@ class PoleMap(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.next = "GAME"
-
+        if self.previous == 'GAME':
+            self.but_plot.virgin = True
         self.sim_init_state = self.persist["sim initial state"]
         if "result" in self.persist:
             self.results = self.persist["result"]
 
     def cleanup(self):
         self.done = False
-        self.but_plot.virgin = True
         self.persist["sim initial state"] = self.sim_init_state
         self.persist["controller"] = self.Kregs
         self.persist["control off"] = self.checkbox.checked
