@@ -33,7 +33,7 @@ class PoleMap(pg_root._State):
         self.sliders = []
         slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
         for slider_range, val in zip(slider_ranges, self.Kregs):
-            self.sliders.append(slider.Slider(val, 2, 200, range_=slider_range,
+            self.sliders.append(slider.Slider(val, slider_range, 2, 200,
                                               track_color=color.GREY,
                                               act_filled_color=color.CORAL,
                                               act_thumb_color=color.TOMATO,

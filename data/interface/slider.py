@@ -3,7 +3,7 @@ from . label import Label
 
 class Slider:
 
-    def __init__(self, value, width, length, range_, track_color,
+    def __init__(self, value, range_, width, length, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
                  dea_value_color=None, pos_x=0, pos_y=0, margin=10, unit=None):

@@ -56,8 +56,8 @@ class SetupMenu(pg_root._State):
         for num, (slider_range, val) in enumerate(zipped):
             if num > 1:
                 val = self.rad2deg(val)
-            self.sliders.append(slider.Slider(val, 4, 250, unit=units[num],
-                                              range_=slider_range, margin=25,
+            self.sliders.append(slider.Slider(val, slider_range, 4, 250,
+                                              unit=units[num], margin=25,
                                               track_color=color.GREY,
                                               act_filled_color=color.LLGREEN,
                                               act_thumb_color=color.LGREEN,
