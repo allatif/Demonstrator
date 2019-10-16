@@ -23,7 +23,7 @@ class SliderGroup:
         self._pos_y = pos_y
 
         if gap is None:
-            self.gap = 10*self._sliders[0].width
+            self.gap = 10*self._sliders[0]._width
         else:
             self.gap = gap
 
