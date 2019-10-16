@@ -10,8 +10,9 @@ class Slider:
         self._value = value
         self._start, self._end = range_
         self._width = width
-        self.thumb_r = round(1.5*self._width)
-        self.length = length + 2*self.thumb_r
+        self._length0 = length
+        self._thumb_r = round(1.5*self._width)
+        self._length = self._length0 + 2*self._thumb_r
 
         # Color attrs
         self.track_color = track_color
@@ -33,18 +34,18 @@ class Slider:
 
     def _init_components(self):
         # Subclasses
-        self._track = Track(self._pos_x, self._pos_y, self.length, self._width)
+        self._track = Track(self._pos_x, self._pos_y, self._length, self._width)
 
         thumb_y_corr = 1 if self._width > 2 else 0
-        self._thumb = Thumb(self._pos_x + self.thumb_r,
+        self._thumb = Thumb(self._pos_x + self._thumb_r,
                             self._pos_y + thumb_y_corr,
-                            self.thumb_r)
+                            self._thumb_r)
 
-        self._value_label = Label(self._pos_x + self.length + self.margin,
+        self._value_label = Label(self._pos_x + self._length + self.margin,
                                   self._pos_y, 8*self._width, center=True)
 
-        self._min = self._pos_x + self.thumb_r
-        self._max = self._pos_x + self.length - self.thumb_r
+        self._min = self._pos_x + self._thumb_r
+        self._max = self._pos_x + self._length - self._thumb_r
 
         self.set()
 
@@ -54,6 +55,10 @@ class Slider:
     def set_pos(self, x, y):
         self._pos_x = x
         self._pos_y = y
+
+    def set_thumb_radius(self, radius):
+        self._thumb_r = radius
+        self._length = self._length0 + 2*self._thumb_r
 
     def set_name_label(self, text, left):
         self._name_label = Label(self._pos_x-left, self._pos_y,
