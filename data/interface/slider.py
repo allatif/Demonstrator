@@ -88,10 +88,6 @@ class Slider:
         return zero_pos, self._pos_y, dyn_length, self._width
 
     @property
-    def number(self):
-        return self._number
-
-    @property
     def value(self):
         return self._value
 
