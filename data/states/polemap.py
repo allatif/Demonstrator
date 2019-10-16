@@ -48,8 +48,8 @@ class PoleMap(pg_root._State):
 
         # Used checkbox
         # # Checkbox position depends on last slider
-        cb_pos_x = self.sliders[len(self.sliders)-1].track.rect[0]
-        cb_pos_y = self.sliders[len(self.sliders)-1].track.rect[1] + 20
+        cb_pos_x = self.sliders[len(self.sliders)-1].pos[0]
+        cb_pos_y = self.sliders[len(self.sliders)-1].pos[1] + 20
         self.checkbox = checkbox.CheckBox(16, 2, color.BLACK)
         self.checkbox.set_pos(cb_pos_x, cb_pos_y)
         self.checkbox.set_label('Switch off Controller', margin=5)
