@@ -8,10 +8,10 @@ class Slider:
                  dea_filled_color=None, dea_thumb_color=None,
                  dea_value_color=None, pos_x=0, pos_y=0, margin=10, unit=None):
         self._value = value
+        self._start, self._end = range_
         self._width = width
         self.thumb_r = round(1.5*self._width)
         self.length = length + 2*self.thumb_r
-        self._start, self._end = range_
 
         # Color attrs
         self.track_color = track_color
