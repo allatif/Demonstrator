@@ -49,8 +49,8 @@ class PygameApp:
         previous, self.state_name = self.state_name, self.state.next
         persist = self.state.cleanup()
         self.state = self.state_dict[self.state_name]
-        self.state.startup(persist)
         self.state.previous = previous
+        self.state.startup(persist)
 
     def event_handler(self):
         """Process all events and pass them down to current State. The F5 key
