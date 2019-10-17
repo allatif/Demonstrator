@@ -33,19 +33,21 @@ class Slider:
         self.active = True
 
     def _init_components(self):
-        # Subclasses
+        # # Subclasses
+        # Initialize Slider track
         self._track = Track(self._pos_x, self._pos_y, self._length, self._width)
 
+        # Initialize Slider thumb with min and max positions
         thumb_y_corr = 1 if self._width > 2 else 0
         self._thumb = Thumb(self._pos_x + self._thumb_r,
                             self._pos_y + thumb_y_corr,
                             self._thumb_r)
-
-        self._value_label = Label(self._pos_x + self._length + self.margin,
-                                  self._pos_y, 8*self._width, center=True)
-
         self._min = self._pos_x + self._thumb_r
         self._max = self._pos_x + self._length - self._thumb_r
+
+        # Initialize Slider label for value
+        self._value_label = Label(self._pos_x + self._length + self.margin,
+                                  self._pos_y, 8*self._width, center=True)
 
         self.set()
 
@@ -55,6 +57,7 @@ class Slider:
     def set_pos(self, x, y):
         self._pos_x = x
         self._pos_y = y
+        self._init_components()
 
     def set_thumb_radius(self, radius):
         self._thumb_r = radius

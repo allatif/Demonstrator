@@ -35,7 +35,6 @@ class SliderGroup:
         for num, slider in enumerate(self._sliders):
             add = 1 if self._header_label is not None else 0
             slider.set_pos(self._pos_x, self._pos_y + self.gap*(num+add))
-            slider._init_components()
 
     def get_values(self):
         return [slider.value for slider in self._sliders]
