@@ -32,6 +32,8 @@ class Slider:
         self.active = True
 
     def _init_components(self):
+        """Need to be called by build method."""
+
         # # Subclasses
         # Initialize Slider track
         self._track = Track(self._sld_x, self._sld_y, self._length, self._width)
