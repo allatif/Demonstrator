@@ -167,10 +167,17 @@ class _State:
             surface.blit(header.font_cache, header.rect)
 
         for slider in slider_group_obj.sliders:
+            if slider.name is not None:
+                # Slider Name Label
+                name_label = slider.name_label
+                name_label.cache_font(slider.name, 'Liberation Sans',
+                                      name_label.size, slider.act_value_color)
+                surface.blit(name_label.font_cache, name_label.rect)
+
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
 
-            # Slider filled Track
+            # Slider Filled Track
             slid_color = slider.act_filled_color
             if not slider.active:
                 slid_color = slider.dea_filled_color

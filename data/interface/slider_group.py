@@ -22,9 +22,8 @@ class SliderGroup:
         self._pos_x = pos_x
         self._pos_y = pos_y
 
-        if gap is None:
-            self.gap = 10*self._sliders[0]._width
-        else:
+        self.gap = 10*self._sliders[0]._width
+        if gap is not None:
             self.gap = gap
 
         if self.header_text is not None:
@@ -34,7 +33,7 @@ class SliderGroup:
 
         for num, slider in enumerate(self._sliders):
             add = 1 if self._header_label is not None else 0
-            slider.set_pos(self._pos_x, self._pos_y + self.gap*(num+add))
+            slider.build(self._pos_x, self._pos_y + self.gap*(num+add))
 
     def get_values(self):
         return [slider.value for slider in self._sliders]

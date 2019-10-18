@@ -6,7 +6,7 @@ class Slider:
     def __init__(self, value, range_, width, length, track_color,
                  act_filled_color, act_thumb_color, act_value_color,
                  dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, pos_x=0, pos_y=0, margin=10, unit=None):
+                 dea_value_color=None, name=None, margin=10, unit=None):
         self._value = value
         self._start, self._end = range_
         self._width = width
@@ -23,49 +23,57 @@ class Slider:
         self.dea_thumb_color = dea_thumb_color
         self.dea_value_color = dea_value_color
 
-        self._pos_x = pos_x
-        self._pos_y = pos_y
+        self.name = name
         self.margin = margin
         self._unit = unit
 
-        self._init_components()
+        self._label_size = 8*self._width
 
         self.active = True
 
     def _init_components(self):
         # # Subclasses
         # Initialize Slider track
-        self._track = Track(self._pos_x, self._pos_y, self._length, self._width)
+        self._track = Track(self._sld_x, self._sld_y, self._length, self._width)
 
         # Initialize Slider thumb with min and max positions
         thumb_y_corr = 1 if self._width > 2 else 0
-        self._thumb = Thumb(self._pos_x + self._thumb_r,
-                            self._pos_y + thumb_y_corr,
+        self._thumb = Thumb(self._sld_x + self._thumb_r,
+                            self._sld_y + thumb_y_corr,
                             self._thumb_r)
-        self._min = self._pos_x + self._thumb_r
-        self._max = self._pos_x + self._length - self._thumb_r
+        self._min = self._sld_x + self._thumb_r
+        self._max = self._sld_x + self._length - self._thumb_r
+        self.set()
 
         # Initialize Slider label for value
-        self._value_label = Label(self._pos_x + self._length + self.margin,
-                                  self._pos_y, 8*self._width, center=True)
+        self._value_label = Label(self._sld_x + self._length + self.margin,
+                                  self._sld_y, self._label_size, center=True)
 
-        self.set()
+        # Initialize Slider name label
+        if self.name is not None:
+            self._name_label = Label(self._pos_x, self._pos_y,
+                                     self._label_size, center=True)
+
+    def build(self, x, y, name_margin=None):
+        if self.name is None:
+            self._sld_x = x
+            self._sld_y = y
+        else:
+            push_right = len(self.name) * (self._label_size//2) + self.margin
+            if name_margin is not None:
+                push_right = name_margin
+            self._pos_x = x
+            self._pos_y = y
+            self._sld_x = x + push_right
+            self._sld_y = y
+        self._init_components()
 
     def set(self):
         self._thumb._c_x = self.get_thumb_from_value()
 
-    def set_pos(self, x, y):
-        self._pos_x = x
-        self._pos_y = y
-        self._init_components()
-
     def set_thumb_radius(self, radius):
         self._thumb_r = radius
         self._length = self._length0 + 2*self._thumb_r
-
-    def set_name_label(self, text, left):
-        self._name_label = Label(self._pos_x-left, self._pos_y,
-                                 self._size, text=text)
 
     def slide(self, mouse):
         self._thumb._c_x = mouse[0]
@@ -91,9 +99,9 @@ class Slider:
     def get_slid_rect(self):
         zero_pos = self.get_thumb_from_value(0)
         if self._start == 0 or self._end == 0:
-            zero_pos = self._pos_x
+            zero_pos = self._sld_x
         dyn_length = self._thumb.c_x - zero_pos
-        return zero_pos, self._pos_y, dyn_length, self._width
+        return zero_pos, self._sld_y, dyn_length, self._width
 
     @property
     def value(self):
@@ -101,6 +109,8 @@ class Slider:
 
     @property
     def pos(self):
+        if self.name is None:
+            return self._sld_x, self._sld_y
         return self._pos_x, self._pos_y
 
     @property

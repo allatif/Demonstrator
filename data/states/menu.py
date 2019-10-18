@@ -52,16 +52,18 @@ class SetupMenu(pg_root._State):
         self.sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
         zipped = zip(slider_ranges, self.sim_init_state)
+        slider_names = ['x', 'v', 'φ', 'ω']
         units = ['m', 'm/s', '°', '°/s']
         for num, (slider_range, val) in enumerate(zipped):
             if num > 1:
                 val = self.rad2deg(val)
             self.sliders.append(slider.Slider(val, slider_range, 4, 250,
-                                              unit=units[num], margin=25,
+                                              unit=units[num], margin=15,
                                               track_color=color.GREY,
                                               act_filled_color=color.LLGREEN,
                                               act_thumb_color=color.LGREEN,
-                                              act_value_color=color.LGREEN))
+                                              act_value_color=color.LGREEN,
+                                              name=slider_names[num]))
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
