@@ -31,12 +31,19 @@ class SetupMenu(pg_root._State):
         pg_root._State.startup(self, persistant)
         self.sim_init_state = self.persist["sim initial state"]
 
-        self._init_sliders()
-        self.slider_group = slider_group \
-            .SliderGroup(self.sliders, header_text='Initial Conditions',
+        self._init_cond_sliders()
+        self.slider_group_a = slider_group \
+            .SliderGroup(self.cond_sliders, header_text='Initial Conditions',
                          header_size=26)
-        self.slider_group.arrange(self.win.con_pos[0]+10,
-                                  self.win.con_pos[1]+75)
+        self.slider_group_a.arrange(self.win.con_pos[0]+10,
+                                    self.win.con_pos[1]+75)
+
+        self._init_ref_sliders()
+        self.slider_group_b = slider_group \
+            .SliderGroup(self.ref_sliders, header_text='Reference State',
+                         header_size=26)
+        self.slider_group_b.arrange(self.win.con_pos[0]+435,
+                                    self.win.con_pos[1]+75)
 
         self.bg_img = pg.image.fromstring(self.persist["bg_image"],
                                           (self.width, self.height), 'RGB')
@@ -47,9 +54,9 @@ class SetupMenu(pg_root._State):
         self.persist["sim initial state"] = self.sim_init_state
         return self.persist
 
-    def _init_sliders(self):
+    def _init_cond_sliders(self):
         # Initialize sliders
-        self.sliders = []
+        self.cond_sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
         zipped = zip(slider_ranges, self.sim_init_state)
         slider_names = ['x', 'v', 'φ', 'ω']
@@ -57,13 +64,30 @@ class SetupMenu(pg_root._State):
         for num, (slider_range, val) in enumerate(zipped):
             if num > 1:
                 val = self.rad2deg(val)
-            self.sliders.append(slider.Slider(val, slider_range, 4, 250,
-                                              unit=units[num], margin=15,
-                                              track_color=color.GREY,
-                                              act_filled_color=color.LLGREEN,
-                                              act_thumb_color=color.LGREEN,
-                                              act_value_color=color.LGREEN,
-                                              name=slider_names[num]))
+            self.cond_sliders.append(slider.Slider(val, slider_range, 4, 250,
+                                                   unit=units[num], margin=15,
+                                                   track_color=color.GREY,
+                                                   act_filled_color=color.LLGREEN,
+                                                   act_thumb_color=color.LGREEN,
+                                                   act_value_color=color.LGREEN,
+                                                   name=slider_names[num]))
+
+    def _init_ref_sliders(self):
+        # Initialize sliders
+        self.ref_sliders = []
+        reference_state = [0.5]
+        slider_ranges = [(-2, 2)]
+        zipped = zip(slider_ranges, reference_state)
+        slider_names = ['x']
+        units = ['m']
+        for num, (slider_range, val) in enumerate(zipped):
+            self.ref_sliders.append(slider.Slider(val, slider_range, 4, 250,
+                                                  unit=units[num], margin=15,
+                                                  track_color=color.GREY,
+                                                  act_filled_color=color.ORANGE,
+                                                  act_thumb_color=color.DORANGE,
+                                                  act_value_color=color.DORANGE,
+                                                  name=slider_names[num]))
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -71,13 +95,13 @@ class SetupMenu(pg_root._State):
                 self.done = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            for sldr in self.sliders:
+            for sldr in self.cond_sliders+self.ref_sliders:
                 if sldr.thumb.mouseover:
                     sldr.thumb.grab()
                     break
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            for sldr in self.sliders:
+            for sldr in self.cond_sliders+self.ref_sliders:
                 if sldr.thumb.grabbed:
                     sldr.thumb.release()
                     break
@@ -86,12 +110,13 @@ class SetupMenu(pg_root._State):
                 self.predone = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
-            for sldr in self.sliders:
+            for sldr in self.cond_sliders:
                 if sldr.thumb.mouseover:
                     sldr.zeroize()
 
     def mouse_logic(self, mouse):
-        self.slider_group_logic(mouse, self.slider_group)
+        self.slider_group_logic(mouse, self.slider_group_a)
+        self.slider_group_logic(mouse, self.slider_group_b)
         self.hover_object_logic(mouse, self.but_ok)
 
     def update(self, surface):
@@ -100,7 +125,7 @@ class SetupMenu(pg_root._State):
         # When press OK-button
         # Before state is going to close it will save the new initial cond.
         if self.predone:
-            init_state = self.slider_group.get_values()
+            init_state = self.slider_group_a.get_values()
             self.sim_init_state = list(self._state_in_rad(init_state))
             self.done = True
 
@@ -109,7 +134,8 @@ class SetupMenu(pg_root._State):
         pg.gfxdraw.box(surface, self.win.rect, color.TRAN225)
 
         self.draw_heading(surface)
-        self.draw_slider_group(surface, self.slider_group)
+        self.draw_slider_group(surface, self.slider_group_a)
+        self.draw_slider_group(surface, self.slider_group_b)
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):
