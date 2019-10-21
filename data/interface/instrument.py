@@ -57,7 +57,7 @@ class Instrument:
 
     def update(self):
         pixel_value = self._thumb._x - self._min
-        self._value = pixel_value*self._ratio + self._start
+        self._value = round(pixel_value*self._ratio + self._start, 1)
 
     def get_thumb_from_value(self, value=None):
         if value is not None:
