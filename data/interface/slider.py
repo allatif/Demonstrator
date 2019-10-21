@@ -32,12 +32,10 @@ class Slider(Instrument):
 
         # Initialize Slider thumb with min/max positions
         # and value range to pixel range ratio
-        thumb_y_corr = 1 if self._width > 2 else 0
-        self._thumb = Thumb(self._ins_x + self._thumb_r,
-                            self._ins_y + thumb_y_corr,
-                            self._thumb_r)
         self._min = self._ins_x + self._thumb_r
         self._max = self._ins_x + self._length - self._thumb_r
+        thumb_y_corr = 1 if self._width > 2 else 0
+        self._thumb = Thumb(self._min, self._ins_y+thumb_y_corr, self._thumb_r)
         self._ratio = (self._end-self._start) / (self._max-self._min)
         self.set()
 

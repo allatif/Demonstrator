@@ -35,14 +35,14 @@ class ControlKnob(Instrument):
         self._ring = Ring(self._ins_x+self._r, self._ins_y+self._r,
                           self._r, self._width)
 
+        # Initialize Control Knob cone thumb with min/max positions
+        # and value range to pixel range ratio
+        self._thumb = ConeThumb(20, 30)
+
         # Initialize Pointer
         self._pointer = Pointer((self._ring._c_x, self._ring._c_y+self._r_i),
                                 (self._ring._c_x, self._ring._c_y+self._r))
 
-        # Initialize Control Knob cone thumb with min/max positions
-        # and value range to pixel range ratio
-        self._thumb = ConeThumb(self._ring._c_x, self._ring._c_y+self._r,
-                                20, 30)
         self._min = round(self._ring._c_x - m.sin(m.radians(50))*self._r)
         self._max = round(self._ring._c_x + m.sin(m.radians(50))*self._r)
         self._ratio = (self._end-self._start) / (self._max-self._min)
@@ -97,29 +97,14 @@ class Ring:
         return self._w
 
 
-class Pointer:
-
-    def __init__(self, start, end):
-        self._start = start
-        self._end = end
-
-    @property
-    def start(self):
-        return self._start
-
-    @property
-    def end(self):
-        return self._end
-
-
 class ConeThumb:
 
-    def __init__(self, apex_x, apex_y, width, length):
-        self._x = apex_x
-        self._y = apex_y
+    def __init__(self, width, length):
         self._width = width
         self._length = length
 
+        self._x = 0
+        self._y = 0
         self._grabbed = False
         self.mouseover = False
 
@@ -150,3 +135,18 @@ class ConeThumb:
     @property
     def grabbed(self):
         return self._grabbed
+
+
+class Pointer:
+
+    def __init__(self, start, end):
+        self._start = start
+        self._end = end
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def end(self):
+        return self._end
