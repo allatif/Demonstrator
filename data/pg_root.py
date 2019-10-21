@@ -30,6 +30,7 @@ class PygameApp:
     def setup_states(self, state_dict, start_state):
         """Given a dictionary of States and a State to start with,
         builds the self.state_dict."""
+
         self.state_dict = state_dict
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
@@ -37,6 +38,7 @@ class PygameApp:
     def update(self):
         """Checks if a state is done or has called for a game quit.
         State is flipped if neccessary and State.update is called."""
+
         if self.state.quit:
             self.done = True
         elif self.state.done:
@@ -46,6 +48,7 @@ class PygameApp:
     def flip_state(self):
         """When a State changes to done necessary startup and cleanup
         functions are called and the current State is changed."""
+
         previous, self.state_name = self.state_name, self.state.next
         persist = self.state.cleanup()
         self.state = self.state_dict[self.state_name]
@@ -55,6 +58,7 @@ class PygameApp:
     def event_handler(self):
         """Process all events and pass them down to current State. The F5 key
         globally turns on/off the display of FPS in the caption"""
+
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.done = True
@@ -65,10 +69,12 @@ class PygameApp:
 
     def mouse_handler(self, mouse):
         """Process mouse position and pass it down to current State"""
+
         self.state.mouse_logic(mouse)
 
     def toggle_show_fps(self, key):
         """Press F5 to turn on/off displaying the framerate in the caption."""
+
         if key == pg.K_F5:
             self.show_fps = not self.show_fps
             if not self.show_fps:
@@ -76,6 +82,7 @@ class PygameApp:
 
     def run(self):
         """Main loop for entire program."""
+
         while not self.done:
             self.clock.tick(self.fps)
             mouse = pg.mouse.get_pos()
@@ -115,11 +122,13 @@ class _State:
 
     def startup(self, persistant):
         """Add variables passed in persistant to the proper attributes"""
+
         self.persist = persistant
 
     def cleanup(self):
         """Add variables that should persist to the self.persist dictionary.
         Then reset State.done to False."""
+
         self.done = False
         return self.persist
 
@@ -130,6 +139,7 @@ class _State:
 
     def hover_object_logic(self, mouse, obj):
         """Object logic for mouse hovering"""
+
         if obj.inside(mouse):
             obj.mouseover = True
             if hasattr(obj, 'color'):
@@ -141,24 +151,15 @@ class _State:
             if hasattr(obj, 'color'):
                 obj.color = obj.obj_color
 
-    def slider_group_logic(self, mouse, slider_group_obj):
-        """Slider logic when mouse grabs any thumb of one of the sliders."""
-        for slider in slider_group_obj.sliders:
-            thumb = slider.thumb
-            self.hover_object_logic(mouse, thumb)
-
-            if thumb.grabbed:
-                slider.slide(mouse)
-            slider.update()
-
-    def instrument_logic(self, mouse, instrument_obj):
+    def instrument_logic(self, mouse, instrument):
         """Instrument logic when mouse grabs thumb of instrument."""
-        thumb = instrument_obj.thumb
+
+        thumb = instrument.thumb
         self.hover_object_logic(mouse, thumb)
 
         if thumb.grabbed:
-            instrument_obj.slide(mouse)
-        instrument_obj.update()
+            instrument.slide(mouse)
+        instrument.update()
 
     def update(self, surface):
         """Update method for state. Must be overrided in children."""
@@ -176,12 +177,21 @@ class _State:
             surface.blit(header.font_cache, header.rect)
 
         for slider in slider_group_obj.sliders:
-            if slider.name is not None:
-                # Slider Name Label
-                name_label = slider.name_label
-                name_label.cache_font(slider.name, 'Liberation Sans',
-                                      name_label.size, slider.act_value_color)
-                surface.blit(name_label.font_cache, name_label.rect)
+            self.draw_instrument(surface, slider)
+
+    def draw_instrument(self, surface, instrument):
+        """Draws instrument with all its components and name label
+        if available."""
+
+        if instrument.name is not None:
+            # Instrument Name Label
+            name_label = instrument.name_label
+            name_label.cache_font(instrument.name, 'Liberation Sans',
+                                  name_label.size, instrument.act_value_color)
+            surface.blit(name_label.font_cache, name_label.rect)
+
+        if type(instrument).__name__ == 'Slider':
+            slider = instrument
 
             # Slider Track
             pg.gfxdraw.box(surface, slider.track.rect, slider.color)
@@ -201,65 +211,45 @@ class _State:
                                        slider.thumb.r,
                                        thumb_color)
 
-            # Value Label Text
-            text_color = slider.act_value_color
-            if not slider.active:
-                text_color = slider.dea_value_color
-            slider.value_label.cache_font('Liberation Sans',
-                                          slider.value_label.size,
+        if type(instrument).__name__ == 'ControlKnob':
+            knob = instrument
+
+            # Control Knob Ring
+            self._draw_aafilled_ring(surface, knob.ring.c_x, knob.ring.c_y,
+                                     knob.ring.r, knob.ring.w, knob.color)
+
+            # Control Knob Cone Thumb
+            thumb = knob.thumb
+            thumb_color = instrument.act_thumb_color
+            if not knob.active:
+                thumb_color = knob.dea_thumb_color
+            pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
+            pg.draw.polygon(surface, thumb_color, thumb.points)
+
+        # Instrument Value Label
+        text_color = instrument.act_value_color
+        if not instrument.active:
+            text_color = instrument.dea_value_color
+        instrument.value_label.cache_font('Liberation Sans',
+                                          instrument.value_label.size,
                                           only_font=True)
-            font = slider.value_label.font_cache
+        font = instrument.value_label.font_cache
 
-            text_str = f'{round(slider.value, 1)}'
-            if slider.unit is not None:
-                text_str = f'{round(slider.value, 1)} {slider.unit}'
-            text = font.render(text_str, True, text_color)
-
-            surface.blit(text, slider.value_label.rect)
-
-    def draw_controlknob(self, surface, controlknob_obj):
-        """Draws control knob with name label if available."""
-
-        if controlknob_obj.name is not None:
-            # Control Knob Name Label
-            name_label = controlknob_obj.name_label
-            name_label.cache_font(controlknob_obj.name, 'Liberation Sans',
-                                  name_label.size, controlknob_obj.act_value_color)
-            surface.blit(name_label.font_cache, name_label.rect)
-
-        # Control Knob Ring
-        self._draw_aafilled_ring(surface, controlknob_obj.ring.c_x,
-                                 controlknob_obj.ring.c_y,
-                                 controlknob_obj.ring.r,
-                                 controlknob_obj.ring.w, controlknob_obj.color)
-
-        # Control Knob Cone Thumb
-        thumb = controlknob_obj.thumb
-        thumb_color = controlknob_obj.act_thumb_color
-        if not controlknob_obj.active:
-            thumb_color = controlknob_obj.dea_thumb_color
-        pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
-        pg.draw.polygon(surface, thumb_color, thumb.points)
-
-        # Value Label Text
-        text_color = controlknob_obj.act_value_color
-        if not controlknob_obj.active:
-            text_color = controlknob_obj.dea_value_color
-        controlknob_obj.value_label.cache_font('Liberation Sans',
-                                               controlknob_obj.value_label.size,
-                                               only_font=True)
-        font = controlknob_obj.value_label.font_cache
-
-        text_str = f'{round(controlknob_obj.value, 1)}'
-        if controlknob_obj.unit is not None:
-            text_str = f'{round(controlknob_obj.value, 1)}{controlknob_obj.unit}'
+        text_str = f'{round(instrument.value, 1)}'
+        if instrument.unit is not None:
+            text_str = f'{round(instrument.value, 1)}{instrument.unit}'
         text = font.render(text_str, True, text_color)
-        rect = text.get_rect(center=controlknob_obj.ring.center)
 
-        surface.blit(text, rect)
+        if type(instrument).__name__ == 'ControlKnob':
+            rect = text.get_rect(center=instrument.ring.center)
+            surface.blit(text, rect)
+
+        else:
+            surface.blit(text, instrument.value_label.rect)
 
     def draw_checkbox(self, surface, checkbox_obj):
         """Draws checkbox with text label and cross if checked."""
+
         rect = checkbox_obj.rect
         width = checkbox_obj.border_width
 
@@ -287,6 +277,7 @@ class _State:
 
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
+
         pg.gfxdraw.box(surface, button_obj.rect, button_obj.color)
 
         if button_obj.has_refl:
@@ -307,6 +298,7 @@ class _State:
     def render_hud(self, length, wide, margin, pos):
         """Returns the rect of hud field. Rect is always in bottom left or
         bottom right position of the screen."""
+
         if pos == 'left':
             hud_pos_x = margin
             hud_pos_y = self.height - margin - wide
@@ -319,6 +311,7 @@ class _State:
     @staticmethod
     def get_font(name, size):
         """Returns a font only."""
+
         if name in pg_init.FONTS:
             font = pg_init.FONTS[name]
             return pg.font.Font(font, size)
@@ -328,6 +321,7 @@ class _State:
     def render_font(text, name, size, color, center=None):
         """Returns the rendered font surface and its rect centered on center,
         if required."""
+
         font = _State.get_font(name, size)
         text = font.render(text, True, color)
         if center is not None:

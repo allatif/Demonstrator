@@ -38,9 +38,9 @@ class SetupMenu(pg_root._State):
         self.slider_group_a.arrange(self.win.con_pos[0]+10,
                                     self.win.con_pos[1]+75)
 
-        self._init_ref_sliders()
+        self._init_ref_instruments()
         self.slider_group_b = slider_group \
-            .SliderGroup(self.ref_sliders, header_text='Reference State',
+            .SliderGroup(self.ref_instrs, header_text='Reference State',
                          header_size=26)
         self.slider_group_b.arrange(self.win.con_pos[0]+435,
                                     self.win.con_pos[1]+75)
@@ -55,7 +55,7 @@ class SetupMenu(pg_root._State):
         return self.persist
 
     def _init_cond_sliders(self):
-        # Initialize sliders
+        # Initialize sliders for initial conditions
         self.cond_sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
         zipped = zip(slider_ranges, self.sim_init_state)
@@ -72,32 +72,32 @@ class SetupMenu(pg_root._State):
                                                    act_value_color=color.LGREEN,
                                                    name=slider_names[num]))
 
-    def _init_ref_sliders(self):
-        # Initialize sliders
-        self.ref_sliders = []
-        reference_state = [0.5]
-        slider_ranges = [(-2, 2)]
-        zipped = zip(slider_ranges, reference_state)
-        slider_names = ['x']
-        units = ['m']
-        for num, (slider_range, val) in enumerate(zipped):
-            self.ref_sliders.append(slider.Slider(val, slider_range, 4, 250,
-                                                  unit=units[num], margin=15,
-                                                  color=color.GREY,
-                                                  act_filled_color=color.ORANGE,
-                                                  act_thumb_color=color.DORANGE,
-                                                  act_value_color=color.DORANGE,
-                                                  name=slider_names[num]))
+    def _init_ref_instruments(self):
+        # Initialize sliders and control knob for reference state
+        self.ref_instrs = []
+        values = [0.5, 5]
+        ranges = [(-2, 2), (9.9, -9.9)]
+        names = ['x', 'φ']
+        units = ['m', '°']
+        self.ref_instrs.append(
+            slider.Slider(values[0], ranges[0], 4, 250, unit=units[0],
+                          margin=15, color=color.GREY,
+                          act_filled_color=color.ORANGE,
+                          act_thumb_color=color.DORANGE,
+                          act_value_color=color.DORANGE,
+                          name=names[0])
+        )
+        self.ref_instrs.append(
+            knob.ControlKnob(values[1], ranges[1], 50, 32, unit=units[1],
+                             margin=15, color=color.GREY,
+                             act_pointer_color=color.ORANGE,
+                             act_thumb_color=color.DORANGE,
+                             act_value_color=color.DORANGE,
+                             name=names[1])
+        )
 
-        self.control_knob = knob.ControlKnob(5, [9.9, -9.9], 50, 32,
-                                             unit='°', margin=15,
-                                             color=color.GREY,
-                                             act_pointer_color=color.ORANGE,
-                                             act_thumb_color=color.DORANGE,
-                                             act_value_color=color.DORANGE,
-                                             name='φ')
-        self.control_knob.build(self.win.con_pos[0]+435,
-                                self.win.con_pos[1]+155)
+        # self.control_knob.build(self.win.con_pos[0]+435,
+        #                         self.win.con_pos[1]+155)
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -105,38 +105,28 @@ class SetupMenu(pg_root._State):
                 self.done = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            for sldr in self.cond_sliders+self.ref_sliders:
-                if sldr.thumb.mouseover:
-                    sldr.thumb.grab()
+            for instr in self.cond_sliders+self.ref_instrs:
+                if instr.thumb.mouseover:
+                    instr.thumb.grab()
                     break
-
-            if self.control_knob.thumb.mouseover:
-                self.control_knob.thumb.grab()
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            for sldr in self.cond_sliders+self.ref_sliders:
-                if sldr.thumb.grabbed:
-                    sldr.thumb.release()
+            for instr in self.cond_sliders+self.ref_instrs:
+                if instr.thumb.grabbed:
+                    instr.thumb.release()
                     break
-
-            if self.control_knob.thumb.grabbed:
-                self.control_knob.thumb.release()
 
             if self.but_ok.mouseover:
                 self.predone = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
-            for sldr in self.cond_sliders+self.ref_sliders:
-                if sldr.thumb.mouseover:
-                    sldr.zeroize()
-
-            if self.control_knob.thumb.mouseover:
-                self.control_knob.zeroize()
+            for instr in self.cond_sliders+self.ref_instrs:
+                if instr.thumb.mouseover:
+                    instr.zeroize()
 
     def mouse_logic(self, mouse):
-        self.slider_group_logic(mouse, self.slider_group_a)
-        self.slider_group_logic(mouse, self.slider_group_b)
-        self.instrument_logic(mouse, self.control_knob)
+        for instr in self.cond_sliders+self.ref_instrs:
+            self.instrument_logic(mouse, instr)
         self.hover_object_logic(mouse, self.but_ok)
 
     def update(self, surface):
@@ -156,7 +146,6 @@ class SetupMenu(pg_root._State):
         self.draw_heading(surface)
         self.draw_slider_group(surface, self.slider_group_a)
         self.draw_slider_group(surface, self.slider_group_b)
-        self.draw_controlknob(surface, self.control_knob)
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):
