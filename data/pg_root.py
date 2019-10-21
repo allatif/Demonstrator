@@ -357,10 +357,6 @@ class _State:
         pg.draw.circle(surface, color, (x, y), r, w)
 
     @staticmethod
-    def deg2rad(deg):
-        return deg * (m.pi/180)
-
-    @staticmethod
     def rad2deg(rad):
         return (rad*180) / m.pi
 

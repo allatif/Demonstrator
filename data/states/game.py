@@ -144,7 +144,7 @@ class Game(pg_root._State):
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 
-        if abs(x3) < self.deg2rad(0.5) and abs(x1) < 0.025:
+        if abs(x3) < m.radians(0.5) and abs(x1) < 0.025:
             # If ball approaching idle state,
             # that means tilt angle smaller than 0.5°
             # and x position close to zero,
@@ -152,12 +152,12 @@ class Game(pg_root._State):
             # That shall simulate interference and inaccuracy
             self.model.set_Kregs(0, 0, 0, 0)
 
-        if abs(x3) > self.deg2rad(30):
+        if abs(x3) > m.radians(30):
             # If ball tilt angle > 30°
             # System stops controlling, controller values set to zero
             self.model.set_Kregs(0, 0, 0, 0)
 
-        if abs(x3) > self.deg2rad(60):
+        if abs(x3) > m.radians(60):
             # If ball tilt angle > 60°
             # Ball will start falling and shall roll down the cone
             self.ball.falling = True
@@ -337,7 +337,7 @@ class Game(pg_root._State):
             SI = False
 
         for num, value in enumerate(self.state_values):
-            value = self.rad2deg(value) if num > 1 and not SI else value
+            value = m.degrees(value) if num > 1 and not SI else value
             space = '  ' if value > 0 else ' '
             value_str = f'x{num+1}:{space}{value:.2f} {units[num]}'
             text = self.hudfont.render(value_str, True, color.WHITE)
