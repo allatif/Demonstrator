@@ -88,7 +88,7 @@ class SetupMenu(pg_root._State):
                           name=names[0])
         )
         self.ref_instrs.append(
-            knob.ControlKnob(values[1], ranges[1], 50, 32, unit=units[1],
+            knob.ControlKnob(values[1], ranges[1], 51, 32, unit=units[1],
                              margin=15, color=color.GREY,
                              act_pointer_color=color.ORANGE,
                              act_thumb_color=color.DORANGE,
