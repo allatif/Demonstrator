@@ -18,6 +18,7 @@ class PoleMap(pg_root._State):
         self.height = pg_init.SCREEN_RECT[3]
         self.plane = gaussian.Plane(self.width, self.height)
         self.next = "GAME"
+        self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
         self.model = setup_sim.StateSpaceModel()
         self.poles = None
@@ -78,12 +79,16 @@ class PoleMap(pg_root._State):
         self.next = "GAME"
         if self.previous == 'GAME':
             self.but_plot.virgin = True
+
+        self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
+
         if "result" in self.persist:
             self.results = self.persist["result"]
 
     def cleanup(self):
         self.done = False
+        self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
         self.persist["controller"] = self.Kregs
         self.persist["control off"] = self.checkbox.checked

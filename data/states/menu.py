@@ -29,6 +29,7 @@ class SetupMenu(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
 
         self._init_cond_sliders()
@@ -51,6 +52,7 @@ class SetupMenu(pg_root._State):
     def cleanup(self):
         self.done = False
         self.predone = False
+        self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
         return self.persist
 
@@ -63,7 +65,7 @@ class SetupMenu(pg_root._State):
         units = ['m', 'm/s', '°', '°/s']
         for num, (slider_range, val) in enumerate(zipped):
             if num > 1:
-                val = self.rad2deg(val)
+                val = m.degrees(val)
             self.cond_sliders.append(slider.Slider(val, slider_range, 4, 250,
                                                    unit=units[num], margin=15,
                                                    color=color.GREY,
@@ -75,12 +77,12 @@ class SetupMenu(pg_root._State):
     def _init_ref_instruments(self):
         # Initialize sliders and control knob for reference state
         self.ref_instrs = []
-        values = [0.5, 5]
+        vel, ang = self.sim_ref_state
         ranges = [(-2, 2), (9.9, -9.9)]
         names = ['x', 'φ']
         units = ['m', '°']
         self.ref_instrs.append(
-            slider.Slider(values[0], ranges[0], 4, 250, unit=units[0],
+            slider.Slider(vel, ranges[0], 4, 250, unit=units[0],
                           margin=15, color=color.GREY,
                           act_filled_color=color.ORANGE,
                           act_thumb_color=color.DORANGE,
@@ -88,7 +90,7 @@ class SetupMenu(pg_root._State):
                           name=names[0])
         )
         self.ref_instrs.append(
-            knob.ControlKnob(values[1], ranges[1], 51, 32, unit=units[1],
+            knob.ControlKnob(m.degrees(ang), ranges[1], 51, 32, unit=units[1],
                              margin=15, color=color.GREY,
                              act_pointer_color=color.ORANGE,
                              act_thumb_color=color.DORANGE,
@@ -133,7 +135,9 @@ class SetupMenu(pg_root._State):
         # Before state is going to close it will save the new initial cond.
         if self.predone:
             init_state = self.slider_group_a.get_values()
+            ref_state = self.slider_group_b.get_values()
             self.sim_init_state = list(self._state_in_rad(init_state))
+            self.sim_ref_state = list(self._state_in_rad(ref_state))
             self.done = True
 
     def draw(self, surface):
@@ -150,6 +154,6 @@ class SetupMenu(pg_root._State):
 
     def _state_in_rad(self, state):
         for num, value in enumerate(state):
-            if num > 1:
+            if num > len(state)//2-1:
                 value = m.radians(value)
             yield value

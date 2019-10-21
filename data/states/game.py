@@ -69,6 +69,7 @@ class Game(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
         self.__init__(mother=False)
         self.Kregs = self.persist["controller"]
@@ -138,7 +139,7 @@ class Game(pg_root._State):
                                                     self.sim.sim_length,
                                                     Game.step,
                                                     interference,
-                                                    (0.5, 0.0),
+                                                    self.sim_ref_state,
                                                     self.user.force))
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
