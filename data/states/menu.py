@@ -96,9 +96,6 @@ class SetupMenu(pg_root._State):
                              name=names[1])
         )
 
-        # self.control_knob.build(self.win.con_pos[0]+435,
-        #                         self.win.con_pos[1]+155)
-
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
