@@ -42,8 +42,8 @@ class ControlKnob(Instrument):
         # Initialize Pointer
         self._pointer = Pointer()
 
-        self._min = round(self._ring._c_x - m.sin(m.radians(50))*self._r)
-        self._max = round(self._ring._c_x + m.sin(m.radians(50))*self._r)
+        self._min = round(self._ring._c_x - m.sin(m.radians(60))*self._r)
+        self._max = round(self._ring._c_x + m.sin(m.radians(60))*self._r)
         self._ratio = (self._end-self._start) / (self._max-self._min)
         self.set()
 
