@@ -50,37 +50,15 @@ class Slider(Instrument):
             self._name_label = Label(self._pos_x, self._pos_y,
                                      self._label_size, center=True)
 
-    def set(self):
-        self._thumb._c_x = self.get_thumb_from_value()
-
     def set_thumb_radius(self, radius):
         self._thumb_r = radius
         self._length = self._length0 + 2*self._thumb_r
-
-    def slide(self, mouse):
-        self._thumb._c_x = mouse[0]
-        if mouse[0] < self._min:
-            self._thumb._c_x = self._min
-        if mouse[0] > self._max:
-            self._thumb._c_x = self._max
-
-    def zeroize(self):
-        self._thumb._c_x = self.get_thumb_from_value(0)
-
-    def update(self):
-        pixel_value = self._thumb.c_x - self._min
-        self._value = pixel_value*self._ratio + self._start
-
-    def get_thumb_from_value(self, value=None):
-        if value is not None:
-            return int(round((value-self._start) / self._ratio + self._min))
-        return int(round((self._value-self._start) / self._ratio + self._min))
 
     def get_slid_rect(self):
         zero_pos = self.get_thumb_from_value(0)
         if self._start == 0 or self._end == 0:
             zero_pos = self._ins_x
-        dyn_length = self._thumb.c_x - zero_pos
+        dyn_length = self._thumb._x - zero_pos
         return zero_pos, self._ins_y, dyn_length, self._width
 
     @property
@@ -101,8 +79,8 @@ class Track:
 class Thumb:
 
     def __init__(self, c_x, c_y, radius):
-        self._c_x = c_x
-        self._c_y = c_y
+        self._x = c_x
+        self._y = c_y
         self._r = radius
         if radius == 6:
             self._r = radius-1
@@ -119,15 +97,15 @@ class Thumb:
         self._grabbed = False
 
     def inside(self, mouse):
-        return (mouse[0]-self.c_x)**2 + (mouse[1]-self.c_y)**2 < (self.r+2)**2
+        return (mouse[0]-self._x)**2 + (mouse[1]-self._y)**2 < (self.r+2)**2
 
     @property
     def c_x(self):
-        return self._c_x
+        return self._x
 
     @property
     def c_y(self):
-        return self._c_y
+        return self._y
 
     @property
     def r(self):

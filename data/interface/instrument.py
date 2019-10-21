@@ -43,20 +43,26 @@ class Instrument:
         self._init_components()
 
     def set(self):
-        """Must be overrided in children."""
-        pass
+        self._thumb._x = self.get_thumb_from_value()
+
+    def slide(self, mouse):
+        self._thumb._x = mouse[0]
+        if mouse[0] < self._min:
+            self._thumb._x = self._min
+        if mouse[0] > self._max:
+            self._thumb._x = self._max
 
     def zeroize(self):
-        """Must be overrided in children."""
-        pass
+        self._thumb._x = self.get_thumb_from_value(0)
 
     def update(self):
-        """Must be overrided in children."""
-        pass
+        pixel_value = self._thumb._x - self._min
+        self._value = pixel_value*self._ratio + self._start
 
     def get_thumb_from_value(self, value=None):
-        """Must be overrided in children."""
-        return 0
+        if value is not None:
+            return int(round((value-self._start) / self._ratio + self._min))
+        return int(round((self._value-self._start) / self._ratio + self._min))
 
     @property
     def value(self):

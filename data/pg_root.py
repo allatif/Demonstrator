@@ -228,8 +228,8 @@ class _State:
             surface.blit(name_label.font_cache, name_label.rect)
 
         # Control Knob Ring
-        self._draw_aafilled_ring(surface, controlknob_obj.ring.center[0],
-                                 controlknob_obj.ring.center[1],
+        self._draw_aafilled_ring(surface, controlknob_obj.ring.c_x,
+                                 controlknob_obj.ring.c_y,
                                  controlknob_obj.ring.r,
                                  controlknob_obj.ring.w, controlknob_obj.color)
 
