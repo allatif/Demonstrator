@@ -356,10 +356,6 @@ class _State:
         pg.gfxdraw.aacircle(surface, x, y, r, color)
         pg.draw.circle(surface, color, (x, y), r, w)
 
-    @staticmethod
-    def rad2deg(rad):
-        return (rad*180) / m.pi
-
 
 def load_all_gfx(directory, accept=(".png", ".jpg", ".bmp")):
     """Load all graphics with extensions in the accept argument

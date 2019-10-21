@@ -188,7 +188,7 @@ class Game(pg_root._State):
         if self.predone:
             result_vec_len = self.sim.sim_length if self.simover else Game.step
             self.results = (x2_vec[:result_vec_len],
-                            self.rad2deg(x3_vec[:result_vec_len]),
+                            np.degrees(x3_vec[:result_vec_len]),
                             t_vec[:result_vec_len])
             self.done = True
 
