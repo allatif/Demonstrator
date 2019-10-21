@@ -147,17 +147,26 @@ class _State:
             thumb = slider.thumb
             self.hover_object_logic(mouse, thumb)
 
-            if slider.thumb.grabbed:
+            if thumb.grabbed:
                 slider.slide(mouse)
             slider.update()
+
+    def instrument_logic(self, mouse, instrument_obj):
+        """Instrument logic when mouse grabs thumb of instrument."""
+        thumb = instrument_obj.thumb
+        self.hover_object_logic(mouse, thumb)
+
+        if thumb.grabbed:
+            instrument_obj.slide(mouse)
+        instrument_obj.update()
 
     def update(self, surface):
         """Update method for state. Must be overrided in children."""
         pass
 
     def draw_slider_group(self, surface, slider_group_obj):
-        """Draws all sliders as a group with thumb and value label that where
-        passed through a list."""
+        """Draws all sliders as a group that where passed through
+        as slider group object."""
 
         # Group Header
         header = slider_group_obj.header_label
@@ -175,7 +184,7 @@ class _State:
                 surface.blit(name_label.font_cache, name_label.rect)
 
             # Slider Track
-            pg.gfxdraw.box(surface, slider.track.rect, slider.track_color)
+            pg.gfxdraw.box(surface, slider.track.rect, slider.color)
 
             # Slider Filled Track
             slid_color = slider.act_filled_color
@@ -207,6 +216,47 @@ class _State:
             text = font.render(text_str, True, text_color)
 
             surface.blit(text, slider.value_label.rect)
+
+    def draw_controlknob(self, surface, controlknob_obj):
+        """Draws control knob with name label if available."""
+
+        if controlknob_obj.name is not None:
+            # Control Knob Name Label
+            name_label = controlknob_obj.name_label
+            name_label.cache_font(controlknob_obj.name, 'Liberation Sans',
+                                  name_label.size, controlknob_obj.act_value_color)
+            surface.blit(name_label.font_cache, name_label.rect)
+
+        # Control Knob Ring
+        self._draw_aafilled_ring(surface, controlknob_obj.ring.center[0],
+                                 controlknob_obj.ring.center[1],
+                                 controlknob_obj.ring.r,
+                                 controlknob_obj.ring.w, controlknob_obj.color)
+
+        # Control Knob Cone Thumb
+        thumb = controlknob_obj.thumb
+        thumb_color = controlknob_obj.act_thumb_color
+        if not controlknob_obj.active:
+            thumb_color = controlknob_obj.dea_thumb_color
+        pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
+        pg.draw.polygon(surface, thumb_color, thumb.points)
+
+        # Value Label Text
+        text_color = controlknob_obj.act_value_color
+        if not controlknob_obj.active:
+            text_color = controlknob_obj.dea_value_color
+        controlknob_obj.value_label.cache_font('Liberation Sans',
+                                               controlknob_obj.value_label.size,
+                                               only_font=True)
+        font = controlknob_obj.value_label.font_cache
+
+        text_str = f'{round(controlknob_obj.value, 1)}'
+        if controlknob_obj.unit is not None:
+            text_str = f'{round(controlknob_obj.value, 1)}{controlknob_obj.unit}'
+        text = font.render(text_str, True, text_color)
+        rect = text.get_rect(center=controlknob_obj.ring.center)
+
+        surface.blit(text, rect)
 
     def draw_checkbox(self, surface, checkbox_obj):
         """Draws checkbox with text label and cross if checked."""
@@ -294,6 +344,14 @@ class _State:
     def _draw_aafilled_circle(surface, x, y, r, color):
         pg.gfxdraw.aacircle(surface, x, y, r, color)
         pg.gfxdraw.filled_circle(surface, x, y, r, color)
+
+    @staticmethod
+    def _draw_aafilled_ring(surface, x, y, r, w, color):
+        pg.gfxdraw.aacircle(surface, x, y, r-w-1, color)
+        pg.gfxdraw.aacircle(surface, x, y, r-w, color)
+        pg.gfxdraw.aacircle(surface, x, y, r-1, color)
+        pg.gfxdraw.aacircle(surface, x, y, r, color)
+        pg.draw.circle(surface, color, (x, y), r, w)
 
     @staticmethod
     def deg2rad(deg):

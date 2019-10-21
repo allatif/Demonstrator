@@ -7,7 +7,7 @@ import pygame.gfxdraw
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import color
-from .. interface import window, slider_group, slider, button
+from .. interface import window, slider_group, slider, button, knob
 
 
 class SetupMenu(pg_root._State):
@@ -66,7 +66,7 @@ class SetupMenu(pg_root._State):
                 val = self.rad2deg(val)
             self.cond_sliders.append(slider.Slider(val, slider_range, 4, 250,
                                                    unit=units[num], margin=15,
-                                                   track_color=color.GREY,
+                                                   color=color.GREY,
                                                    act_filled_color=color.LLGREEN,
                                                    act_thumb_color=color.LGREEN,
                                                    act_value_color=color.LGREEN,
@@ -83,11 +83,21 @@ class SetupMenu(pg_root._State):
         for num, (slider_range, val) in enumerate(zipped):
             self.ref_sliders.append(slider.Slider(val, slider_range, 4, 250,
                                                   unit=units[num], margin=15,
-                                                  track_color=color.GREY,
+                                                  color=color.GREY,
                                                   act_filled_color=color.ORANGE,
                                                   act_thumb_color=color.DORANGE,
                                                   act_value_color=color.DORANGE,
                                                   name=slider_names[num]))
+
+        self.control_knob = knob.ControlKnob(5, [9.9, -9.9], 50, 32,
+                                             unit='°', margin=15,
+                                             color=color.GREY,
+                                             act_pointer_color=color.ORANGE,
+                                             act_thumb_color=color.DORANGE,
+                                             act_value_color=color.DORANGE,
+                                             name='φ')
+        self.control_knob.build(self.win.con_pos[0]+435,
+                                self.win.con_pos[1]+155)
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -100,23 +110,33 @@ class SetupMenu(pg_root._State):
                     sldr.thumb.grab()
                     break
 
+            if self.control_knob.thumb.mouseover:
+                self.control_knob.thumb.grab()
+
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
             for sldr in self.cond_sliders+self.ref_sliders:
                 if sldr.thumb.grabbed:
                     sldr.thumb.release()
                     break
 
+            if self.control_knob.thumb.grabbed:
+                self.control_knob.thumb.release()
+
             if self.but_ok.mouseover:
                 self.predone = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
-            for sldr in self.cond_sliders:
+            for sldr in self.cond_sliders+self.ref_sliders:
                 if sldr.thumb.mouseover:
                     sldr.zeroize()
+
+            if self.control_knob.thumb.mouseover:
+                self.control_knob.zeroize()
 
     def mouse_logic(self, mouse):
         self.slider_group_logic(mouse, self.slider_group_a)
         self.slider_group_logic(mouse, self.slider_group_b)
+        self.instrument_logic(mouse, self.control_knob)
         self.hover_object_logic(mouse, self.but_ok)
 
     def update(self, surface):
@@ -136,6 +156,7 @@ class SetupMenu(pg_root._State):
         self.draw_heading(surface)
         self.draw_slider_group(surface, self.slider_group_a)
         self.draw_slider_group(surface, self.slider_group_b)
+        self.draw_controlknob(surface, self.control_knob)
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):
@@ -144,5 +165,5 @@ class SetupMenu(pg_root._State):
     def _state_in_rad(self, state):
         for num, value in enumerate(state):
             if num > 1:
-                value = self.deg2rad(value)
+                value = m.radians(value)
             yield value
