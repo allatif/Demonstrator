@@ -42,7 +42,7 @@ class ControlKnob(Instrument):
         # Initialize Control Knob cone thumb with min/max positions
         # and value range to pixel range ratio
         self._thumb = ConeThumb(self._ring._c_x, self._ring._c_y+self._r,
-                                20, 45)
+                                20, 30)
         self._min = round(self._ring._c_x - m.sin(m.radians(50))*self._r)
         self._max = round(self._ring._c_x + m.sin(m.radians(50))*self._r)
         self._ratio = (self._end-self._start) / (self._max-self._min)
