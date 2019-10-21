@@ -40,8 +40,7 @@ class ControlKnob(Instrument):
         self._thumb = ConeThumb(20, 30)
 
         # Initialize Pointer
-        self._pointer = Pointer((self._ring._c_x, self._ring._c_y+self._r_i),
-                                (self._ring._c_x, self._ring._c_y+self._r))
+        self._pointer = Pointer()
 
         self._min = round(self._ring._c_x - m.sin(m.radians(50))*self._r)
         self._max = round(self._ring._c_x + m.sin(m.radians(50))*self._r)
@@ -58,14 +57,27 @@ class ControlKnob(Instrument):
                                      self._label_size, center=True)
 
     def update(self):
-        rel_distance_to_ring_center = abs(self._thumb._x-self.ring._c_x)
+        # Calculation of Thumb's Y position
+        rel_distance_to_ring_center = self.ring._c_x - self._thumb._x
         self._ang = m.asin(rel_distance_to_ring_center/self._r)
-        self._thumb._y = round(self._ring._c_y + self._ring._r*m.cos(self._ang))
+        self._thumb._y = round(self._ring._c_y+self._ring._r*m.cos(self._ang))
+
+        # Calculation Pointer positions
+        self.pointer._start_x, self.pointer._start_y = self._thumb.points[0]
+        self.pointer._end_x = round(self.ring._c_x
+                                    - m.sin(self._ang)*(self._r_i-1))
+        self.pointer._end_y = round(self._ring._c_y
+                                    + (self._r_i-1)*m.cos(self._ang))
+
         Instrument.update(self)
 
     @property
     def ring(self):
         return self._ring
+
+    @property
+    def pointer(self):
+        return self._pointer
 
 
 class Ring:
@@ -139,14 +151,14 @@ class ConeThumb:
 
 class Pointer:
 
-    def __init__(self, start, end):
-        self._start = start
-        self._end = end
+    def __init__(self):
+        self._start_x, self._start_y = 0, 0
+        self._end_x, self._end_y = 0, 0
 
     @property
     def start(self):
-        return self._start
+        return self._start_x, self._start_y
 
     @property
     def end(self):
-        return self._end
+        return self._end_x, self._end_y

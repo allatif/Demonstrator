@@ -226,6 +226,10 @@ class _State:
             pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
             pg.draw.polygon(surface, thumb_color, thumb.points)
 
+            # Control Knob Pointer
+            pygame.draw.aaline(surface, knob.act_pointer_color,
+                               knob.pointer.start, knob.pointer.end)
+
         # Instrument Value Label
         text_color = instrument.act_value_color
         if not instrument.active:
