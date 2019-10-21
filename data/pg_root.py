@@ -241,7 +241,12 @@ class _State:
 
         text_str = f'{round(instrument.value, 1)}'
         if instrument.unit is not None:
-            text_str = f'{round(instrument.value, 1)}{instrument.unit}'
+            text_str = f'{round(instrument.value, 1)} {instrument.unit}'
+
+            if type(instrument).__name__ == 'ControlKnob':
+                # No space between instrument value and instrument unit
+                text_str = f'{round(instrument.value, 1)}{instrument.unit}'
+
         text = font.render(text_str, True, text_color)
 
         if type(instrument).__name__ == 'ControlKnob':
