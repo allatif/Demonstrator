@@ -144,6 +144,7 @@ class Game(pg_root._State):
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
 
+        """
         if abs(x3) < m.radians(0.5) and abs(x1) < 0.025:
             # If ball approaching idle state,
             # that means tilt angle smaller than 0.5°
@@ -151,6 +152,7 @@ class Game(pg_root._State):
             # system stops controlling
             # That shall simulate interference and inaccuracy
             self.model.set_Kregs(0, 0, 0, 0)
+        """
 
         if abs(x3) > m.radians(30):
             # If ball tilt angle > 30°
