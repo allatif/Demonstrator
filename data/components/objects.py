@@ -177,22 +177,23 @@ class Ruler:
             step = side*SCALE
 
             range_end = 0 if side < 0 else self.len
+            pxl_offset = 1
 
             # Sub-Scales
             for pos_x in range(self.zero, range_end, step//subs):
-                start = pos_x, self.pos+1
-                end = pos_x, self.pos + scale_len
+                start = pos_x-pxl_offset, self.pos+1
+                end = pos_x-pxl_offset, self.pos + scale_len
                 self.scales.append((start, end))
 
             # Main-Scales with numbers
             for num, pos_x in enumerate(range(self.zero, range_end, step)):
-                start = pos_x, self.pos+1
-                end = pos_x, self.pos + main_scale_len
+                start = pos_x-pxl_offset, self.pos+1
+                end = pos_x-pxl_offset, self.pos + main_scale_len
                 self._numbers.append(side*num)
                 self._positions.append(pos_x)
                 self.scales.append((start, end))
 
-    def set_labels(self, top, size, margin=1):
+    def set_labels(self, top, size, margin=0):
         for num, pos_x in self.get_numbers():
             self.num_labels.append(Label(pos_x+margin, self.pos+top,
                                          size, text=str(num)))
