@@ -21,7 +21,7 @@ class ControlKnob(Instrument):
         self._r_i = round((m.sqrt(2)/2) * (self._label_size+self.margin))
         self._width = self._r - self._r_i
 
-        # Color attrs
+        # Color attributes
         self.act_pointer_color = act_pointer_color
         self.dea_pointer_color = dea_pointer_color
 
