@@ -17,26 +17,28 @@ class Slider(Instrument):
         self._thumb_r = round(1.5*self._width)
         self._length = self._length0 + 2*self._thumb_r
 
-        # Color attrs
+        # Color attributes
         self.act_filled_color = act_filled_color
         self.dea_filled_color = dea_filled_color
 
+        # Label size depends on Track width
         self._label_size = 8*self._width
 
     def _init_components(self):
         """Need to be called by build method."""
 
+        # Min / max positions and value range to pixel range ratio
+        self._min = self._ins_x + self._thumb_r
+        self._max = self._ins_x + self._length - self._thumb_r
+        self._ratio = (self._end-self._start) / (self._max-self._min)
+
         # # Subclasses
         # Initialize Slider track
         self._track = Track(self._ins_x, self._ins_y, self._length, self._width)
 
-        # Initialize Slider thumb with min/max positions
-        # and value range to pixel range ratio
-        self._min = self._ins_x + self._thumb_r
-        self._max = self._ins_x + self._length - self._thumb_r
+        # Initialize Slider
         thumb_y_corr = 1 if self._width > 2 else 0
         self._thumb = Thumb(self._min, self._ins_y+thumb_y_corr, self._thumb_r)
-        self._ratio = (self._end-self._start) / (self._max-self._min)
         self.set()
 
         # Initialize Slider label for value

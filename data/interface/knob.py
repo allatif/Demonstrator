@@ -25,26 +25,25 @@ class ControlKnob(Instrument):
         self.act_pointer_color = act_pointer_color
         self.dea_pointer_color = dea_pointer_color
 
+        # Control Knob screened angle
         self._ang = 0
 
     def _init_components(self):
         """Need to be called by build method."""
+
+        # Min / max positions and value range to pixel range ratio
+        self._min = round(self._ins_x + self._r - m.sin(m.radians(60))*self._r)
+        self._max = round(self._ins_x + self._r + m.sin(m.radians(60))*self._r)
+        self._ratio = (self._end-self._start) / (self._max-self._min)
 
         # # Subclasses
         # Initialize Control Knob ring
         self._ring = Ring(self._ins_x+self._r, self._ins_y+self._r,
                           self._r, self._width)
 
-        # Initialize Control Knob cone thumb with min/max positions
-        # and value range to pixel range ratio
+        # Initialize Control Knob cone thumb and Knob Pointer
         self._thumb = ConeThumb(20, 30)
-
-        # Initialize Pointer
         self._pointer = Pointer()
-
-        self._min = round(self._ring._c_x - m.sin(m.radians(60))*self._r)
-        self._max = round(self._ring._c_x + m.sin(m.radians(60))*self._r)
-        self._ratio = (self._end-self._start) / (self._max-self._min)
         self.set()
 
         # Initialize Control Knob label for value
@@ -59,6 +58,7 @@ class ControlKnob(Instrument):
     def update(self):
         # Calculation of Thumb's Y position
         rel_distance_to_ring_center = self.ring._c_x - self._thumb._x
+        print(rel_distance_to_ring_center)
         self._ang = m.asin(rel_distance_to_ring_center/self._r)
         self._thumb._y = round(self._ring._c_y+self._ring._r*m.cos(self._ang))
 
