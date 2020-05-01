@@ -80,8 +80,9 @@ class PoleMap(pg_root._State):
         if self.previous == 'GAME':
             self.but_plot.virgin = True
 
-        self.sim_ref_state = self.persist["sim reference state"]
-        self.sim_init_state = self.persist["sim initial state"]
+        if self.previous is not 'SPLASH':
+            self.sim_ref_state = self.persist["sim reference state"]
+            self.sim_init_state = self.persist["sim initial state"]
 
         if "result" in self.persist:
             self.results = self.persist["result"]

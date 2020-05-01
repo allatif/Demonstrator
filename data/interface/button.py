@@ -14,6 +14,7 @@ class Button(Box):
 
         self.color = self._obj_color
         self._text_size = round(0.6*self._height)
+
         self._has_refl = False
         self.virgin = True
 
