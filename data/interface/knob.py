@@ -58,7 +58,6 @@ class ControlKnob(Instrument):
     def update(self):
         # Calculation of Thumb's Y position
         rel_distance_to_ring_center = self.ring._c_x - self._thumb._x
-        print(rel_distance_to_ring_center)
         self._ang = m.asin(rel_distance_to_ring_center/self._r)
         self._thumb._y = round(self._ring._c_y+self._ring._r*m.cos(self._ang))
 
