@@ -133,11 +133,12 @@ class Game(pg_root._State):
             interference = self.interference
             self.interference = None
 
-        self.euler_thread = euler.EulerThread(args=(A, B, self.user_cont,
+        self.euler_thread = euler.EulerThread(args=(A, B,
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
                                                     self.sim.sim_length,
                                                     Game.step,
+                                                    self.user_cont,
                                                     interference,
                                                     self.sim_ref_state,
                                                     self.user.force))
