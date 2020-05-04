@@ -25,7 +25,11 @@ class Environment:
         self._sim = setup_sim.SimData(120_000, init_state_tuple)
         return rand_init_state
 
-    def step(self):
+    def step(self, action):
+        if action == 0:
+            actionforce = -10000
+        elif action == 1:
+            actionforce = 10000
         done = False
         reward = 1.0
         _obs_ = euler.euler_method(self._model.A, self._model.B,
@@ -33,14 +37,15 @@ class Environment:
                                    self._euler_stepsize,
                                    self._sim.sim_length,
                                    Environment.step_,
-                                   steps_per_frame=20)
+                                   force=actionforce,
+                                   steps_per_frame=30)
         _, x1, x2, x3, x4 = _obs_
 
         if abs(x3) > m.radians(30) or abs(x1) > 2.5:
             done = True
             reward = 0.
 
-        Environment.step_ += 20
+        Environment.step_ += 30
 
         return np.array([np.float(x1),
                          np.float(x2),
