@@ -61,7 +61,7 @@ class Game(pg_root._State):
         self.agent = Agent()
         self.agent.load_model("sphere_cone_rl_pg.h5")
 
-        self.interference = None
+        self.interference_load = None
         self.wave = None
         self.physics = None
         self.state_values = (0, 0, 0, 0)
@@ -109,7 +109,7 @@ class Game(pg_root._State):
 
             if self.ball.mouseover:
                 diff = self.user.mouse[0] - self.cone.get_center_x()
-                self.interference = self._disturbing_func(diff)
+                self.interference_load = self._disturbing_func(diff)
 
                 self.wave = Impulse(args=(self.user.mouse[0],
                                           self.user.mouse[1],
@@ -133,9 +133,9 @@ class Game(pg_root._State):
         t_vec = self.sim.t_vec
 
         interference = 0.0
-        if self.interference is not None:
-            interference = self.interference
-            self.interference = None
+        if self.interference_load is not None:
+            interference = self.interference_load
+            self.interference_load = None
 
         force = self.agent.act(self.obs)
 
