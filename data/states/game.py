@@ -127,8 +127,9 @@ class Game(pg_root._State):
         self.model.update()
         self.model.set_Kregs(*self.Kregs)
 
-        A = self.model.system
-        B = self.model.B
+        # Gathering variables for State Space
+        A_matrix = self.model.system
+        B_matrix = self.model.B
         x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
         t_vec = self.sim.t_vec
 
@@ -139,17 +140,15 @@ class Game(pg_root._State):
 
         force = self.agent.act(self.obs)
 
-        self.euler_thread = euler.EulerThread(args=(A, B,
+        self.euler_thread = euler.EulerThread(args=(A_matrix, B_matrix,
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
-                                                    self.sim.sim_length,
                                                     Game.step,
-                                                    self.user_cont,
+                                                    None,
                                                     interference,
-                                                    self.sim_ref_state,
-                                                    force))
+                                                    self.sim_ref_state))
         self.euler_thread.start()
-        self.simover, x1, x2, x3, x4 = self.euler_thread.join()
+        x1, x2, x3, x4, self.simover = self.euler_thread.join()
         self.obs = np.array([x1, x2, x3, x4])
 
         """
