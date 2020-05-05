@@ -11,6 +11,7 @@ from .. components import gphysics
 from .. components import mousecontrol
 from .. components.objects import Cone, Sphere, Ground, Ruler
 from .. components.animations import Impulse
+from .. components.rl.agent import Agent
 
 
 class Game(pg_root._State):
@@ -29,6 +30,7 @@ class Game(pg_root._State):
         self.sim = setup_sim.SimData(120_000)
         if hasattr(self, 'sim_init_state'):
             self.sim = setup_sim.SimData(120_000, self.sim_init_state)
+            self.obs = np.array([*self.sim_init_state])
 
         self.model = setup_sim.StateSpaceModel()
         self.euler_stepsize = 0.001
@@ -56,6 +58,8 @@ class Game(pg_root._State):
         # print(self.ruler.scales)
 
         self.user = mousecontrol.MouseControl(2000)
+        self.agent = Agent()
+        self.agent.load_model("sphere_cone_rl_pg.h5")
 
         self.interference = None
         self.wave = None
@@ -133,6 +137,8 @@ class Game(pg_root._State):
             interference = self.interference
             self.interference = None
 
+        force = self.agent.act(self.obs)
+
         self.euler_thread = euler.EulerThread(args=(A, B,
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
@@ -141,9 +147,10 @@ class Game(pg_root._State):
                                                     self.user_cont,
                                                     interference,
                                                     self.sim_ref_state,
-                                                    self.user.force))
+                                                    force))
         self.euler_thread.start()
         self.simover, x1, x2, x3, x4 = self.euler_thread.join()
+        self.obs = np.array([x1, x2, x3, x4])
 
         """
         if abs(x3) < m.radians(0.5) and abs(x1) < 0.025:
