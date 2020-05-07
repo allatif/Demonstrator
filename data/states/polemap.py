@@ -92,7 +92,9 @@ class PoleMap(pg_root._State):
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
         self.persist["controller"] = self.Kregs
-        self.persist["control off"] = self.checkbox.checked
+        self.persist["mode"] = 'ss_controller'
+        if self.checkbox.checked:
+            self.persist["mode"] = 'user'
         self.persist["bg_image"] = self.polemap_imagestr
         return self.persist
 

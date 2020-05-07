@@ -8,7 +8,7 @@ from .. import pg_init, pg_root, setup_sim, euler
 
 from .. components import color
 from .. components import gphysics
-from .. components import mousecontrol
+from .. components.mousecontrol import MouseControl
 from .. components.objects import Cone, Sphere, Ground, Ruler
 from .. components.animations import Impulse
 from .. components.rl.agent import Agent
@@ -27,18 +27,24 @@ class Game(pg_root._State):
         self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
+        # Initialize Control Objects
+        self.user = MouseControl(sensibility=2000)
+        self.agent = Agent()
+        # .load_model("sphere_cone_rl_pg.h5")
+
+        # Initialize Dynamik Model
         self.sim = setup_sim.SimData(120_000)
         if hasattr(self, 'sim_init_state'):
             self.sim = setup_sim.SimData(120_000, self.sim_init_state)
-            self.obs = np.array([*self.sim_init_state])
+            self.agent.observe(np.array([*self.sim_init_state]))
 
         self.model = setup_sim.StateSpaceModel()
         self.euler_stepsize = 0.001
 
         # 0.01 for 100 fps
-        self.big_step = round(0.01 / self.euler_stepsize)
+        self.frame_step = round(0.01 / self.euler_stepsize)
 
-        # Initialize Objects
+        # Initialize Game Objects
         self.ground = Ground(510, self.width, thickness=10)
 
         self.cone = Cone(basis_length=pg_init.SCALE,
@@ -55,19 +61,14 @@ class Game(pg_root._State):
                            length=self.ground.len)
         self.ruler.set_scales(10, 5, scale_w=2, subs=10)
         self.ruler.set_labels(top=25, size=18)
-        # print(self.ruler.scales)
-
-        self.user = mousecontrol.MouseControl(2000)
-        self.agent = Agent()
-        self.agent.load_model("sphere_cone_rl_pg.h5")
 
         self.interference_load = None
         self.wave = None
         self.physics = None
-        self.state_values = (0, 0, 0, 0)
         self.simover = False
         self.predone = False
         self.results = None
+        self.state_values = (0, 0, 0, 0)
 
         self.options = {"Hud position": 'right', "Angle unit": 'rad'}
 
@@ -75,12 +76,20 @@ class Game(pg_root._State):
         pg_root._State.startup(self, persistant)
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
-        self.__init__(mother=False)
         self.Kregs = self.persist["controller"]
-        self.user_cont = self.persist["control off"]
-        if self.user_cont:
+
+        self.__init__(mother=False)
+
+        self.model.set_Kregs(*self.Kregs)
+        self.model.update()
+
+        self.mode = self.persist["mode"]
+        if self.mode == 'user':
             print(" -- User in control now -- ")
-        print(self.Kregs)
+        elif self.mode == 'ss_controller':
+            print(self.Kregs)
+        elif self.mode == 'agent':
+            print(" -- Agent in control now -- ")
 
         # Reset Euler algorithm
         Game.step = 0
@@ -124,10 +133,14 @@ class Game(pg_root._State):
         self.user.update(mouse)
 
     def update(self, surface):
-        self.model.update()
-        self.model.set_Kregs(*self.Kregs)
+        control_object = None
+        if self.mode == 'user':
+            control_object = self.user
+        elif self.mode == 'agent':
+            self.agent.update()
+            control_object = self.agent
 
-        # Gathering variables for State Space
+        # Gathering variables for State Space Euler
         A_matrix = self.model.system
         B_matrix = self.model.B
         x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
@@ -138,33 +151,22 @@ class Game(pg_root._State):
             interference = self.interference_load
             self.interference_load = None
 
-        force = self.agent.act(self.obs)
-
         self.euler_thread = euler.EulerThread(args=(A_matrix, B_matrix,
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
                                                     Game.step,
-                                                    None,
+                                                    control_object,
                                                     interference,
                                                     self.sim_ref_state))
         self.euler_thread.start()
         x1, x2, x3, x4, self.simover = self.euler_thread.join()
-        self.obs = np.array([x1, x2, x3, x4])
+        self.agent.observe(np.array([x1, x2, x3, x4]))
 
-        """
-        if abs(x3) < m.radians(0.5) and abs(x1) < 0.025:
-            # If ball approaching idle state,
-            # that means tilt angle smaller than 0.5°
-            # and x position close to zero,
-            # system stops controlling
-            # That shall simulate interference and inaccuracy
-            self.model.set_Kregs(0, 0, 0, 0)
-        """
-
-        if abs(x3) > m.radians(30):
-            # If ball tilt angle > 30°
+        if abs(x3) > m.radians(20):
+            # If ball tilt angle > 20°
             # System stops controlling, controller values set to zero
             self.model.set_Kregs(0, 0, 0, 0)
+            self.model.update()
 
         if abs(x3) > m.radians(60):
             # If ball tilt angle > 60°
@@ -182,7 +184,7 @@ class Game(pg_root._State):
                              np.float(x4))
 
             if not self.simover:
-                Game.step += self.big_step
+                Game.step += self.frame_step
 
         # Else-Path for simulating ball drop
         elif self.ball.falling:
