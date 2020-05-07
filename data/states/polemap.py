@@ -102,6 +102,9 @@ class PoleMap(pg_root._State):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 self.done = True
+            if event.key == pg.K_BACKSPACE:
+                self.next = "SPLASH"
+                self.done = True
             if event.key == pg.K_F1:
                 self.options["Hud position"] = 'left'
             if event.key == pg.K_F2:
