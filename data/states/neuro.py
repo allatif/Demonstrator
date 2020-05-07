@@ -6,7 +6,7 @@ from .. components import color
 from .. interface import button
 
 
-class Splash(pg_root._State):
+class Neuro(pg_root._State):
 
     def __init__(self):
         pg_root._State.__init__(self)
@@ -14,9 +14,9 @@ class Splash(pg_root._State):
         self.height = pg_init.SCREEN_RECT[3]
         self.next = "POLEMAP"
 
-        # Initialize Mode Buttons
+        # Initialize buttons
         margin = 50
-        button_size = (425, 250)
+        button_size = (425, 375)
         pos_y = 175
         text_size = 42
 
@@ -36,18 +36,9 @@ class Splash(pg_root._State):
         self.but_rl.set_pos(self.width-self.but_rl.width-margin, pos_y)
         self.but_rl.set_text_size(text_size)
 
-        # Initialize Setup Settings Button
-        self.but_set = button.Button('Setup Settings',
-                                     obj_color=color.LBLUE,
-                                     hov_color=color.LLBLUE,
-                                     text_color=color.WHITE,
-                                     size=(button_size[0], 75))
-        self.but_set.set_pos(margin, button_size[1]+pos_y+margin)
-        self.but_set.set_text_size(text_size - 6)
-
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-        self.next = "POLEMAP"
+        self.next = "GAME"
 
     def cleanup(self):
         self.done = False
@@ -63,17 +54,15 @@ class Splash(pg_root._State):
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
             if self.but_csd.mouseover:
-                self.next = "POLEMAP"
+                self.next = "GAME"
                 self.done = True
 
             if self.but_rl.mouseover:
-                self.next = "NEURO"
-                self.done = True
+                pass
 
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.but_csd)
         self.hover_object_logic(mouse, self.but_rl)
-        self.hover_object_logic(mouse, self.but_set)
 
     def update(self, surface):
         self.draw(surface)
@@ -81,19 +70,7 @@ class Splash(pg_root._State):
     def draw(self, surface):
         surface.fill(color.DGREY)
         self.draw_interface(surface)
-        self.draw_header(surface, "DEMONSTRATOR")
 
     def draw_interface(self, surface):
         self.draw_button(surface, self.but_csd)
         self.draw_button(surface, self.but_rl)
-        self.draw_button(surface, self.but_set)
-
-    def draw_header(self, surface, text):
-        fontname = 'ARCADECLASSIC'
-        center = (self.width//2-42, 85)
-        msg, rect = self.render_font(text, fontname, 128, color.LRED, center)
-        pos_x, pos_y, width, height = rect
-        alpha_surface = pg.Surface((width+84, height-10), pg.SRCALPHA)
-        alpha_surface.fill(color.TRAN150)
-        alpha_surface.blit(msg, (42, -3))
-        surface.blit(alpha_surface, (pos_x, pos_y, width, height))
