@@ -233,11 +233,11 @@ class PoleMap(pg_root._State):
         if self.results is not None:
             self.draw_button(surface, self.but_plot)
 
-    def draw_hud(self, surface, length, wide, margin=4, pos='left'):
+    def draw_hud(self, surface, weigth, height, margin=4, pos='left'):
         text_margin = 5
         line_margin = 14
 
-        rect = self.render_hud(length, wide, margin, pos)
+        rect = self.render_hud(weigth, height, margin, pos)
         hudcolor = color.TRAN200
 
         if self.options["Euler corr"]:
