@@ -304,17 +304,17 @@ class _State:
                               button_obj.text_color, center=button_obj.center)
         surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
 
-    def render_hud(self, length, wide, margin, pos):
+    def render_hud(self, width, height, margin, pos):
         """Returns the rect of hud field. Rect is always in bottom left or
         bottom right position of the screen."""
 
         if pos == 'left':
             hud_pos_x = margin
-            hud_pos_y = self.height - margin - wide
+            hud_pos_y = self.height - margin - height
         elif pos == 'right':
-            hud_pos_x = self.width - margin - length
-            hud_pos_y = self.height - margin - wide
-        rect = (hud_pos_x, hud_pos_y, length, wide)
+            hud_pos_x = self.width - margin - width
+            hud_pos_y = self.height - margin - height
+        rect = (hud_pos_x, hud_pos_y, width, height)
         return rect
 
     @staticmethod
