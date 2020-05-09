@@ -244,8 +244,8 @@ class PoleMap(pg_root._State):
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
             text = self.render_font(msg, 'Liberation Sans', 14, color.DBLUE)
-            var_x_pos = rect[0]+length+2 if pos == 'left' else rect[0]-110
-            surface.blit(text, (var_x_pos, rect[1]+wide-18))
+            var_x_pos = rect[0]+weigth+2 if pos == 'left' else rect[0]-110
+            surface.blit(text, (var_x_pos, rect[1]+height-18))
 
             hudcolor = color.A200DDBLUE
 
