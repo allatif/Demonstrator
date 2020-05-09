@@ -1,6 +1,6 @@
 import math as m
 
-from .. import pg_init, pg_root
+from .. import pg_init
 from .. interface.label import Label
 
 SCALE = pg_init.SCALE
@@ -159,12 +159,14 @@ class Ground:
 
 class Ruler:
 
-    def __init__(self, pos, zero, length):
+    def __init__(self, pos, zero, length, marker_color):
         self.pos = pos
         self.zero = zero
         self.len = length
         self.scales = []
         self.num_labels = []
+        self.marker = RulerMarker(pg_init.SCREEN_SIZE[0]//2,
+                                  self.pos+10, marker_color)
 
     def set_scales(self, main_scale_len, scale_len, scale_w, subs=5):
         self.scale_w = scale_w
@@ -200,3 +202,100 @@ class Ruler:
 
     def get_numbers(self):
         return list(zip(self._numbers, self._positions))[1:]
+
+
+class RulerMarker:
+
+    def __init__(self, zero_x, y, color, value=0, size=(10, 30)):
+        self._zero_x = zero_x
+        self._x = zero_x
+        self._y = y
+        self._color = color
+        self._value = value
+        self._width = size[0]
+        self._height = 1*size[1]//3
+        self._length = 2*size[1]//3
+        self._rec_x = self._x - self._width//2
+        self._rec_y = self._y + self._height
+        self._ratio = 1 / SCALE
+        self._grabbed = False
+        self.mouseover = False
+
+    def grab(self):
+        self._grabbed = True
+
+    def release(self):
+        self._grabbed = False
+
+    def set(self, value):
+        self._x = self.get_pos_from_value(value) - 1
+        self._rec_x = self._x - self._width//2
+
+    def slide(self, mouse):
+        self._x = mouse[0]
+        self._rec_x = self._x - self._width//2
+
+    def snap(self, value=20):
+        temp = self._x / value
+        num_dec = temp % 1
+        roundup = True if num_dec >= 0.5 else False
+        temp = round(temp)
+        correction = -10 if roundup else 10
+        self._x = temp*value + correction + 1
+        self._rec_x = self._x - self._width//2
+
+    def click(self, binary, value=20):
+        push = value if bool(binary) else -value
+        self._x += push
+        self._rec_x = self._x - self._width//2
+
+    def update(self):
+        self._value = round((self._x-self._zero_x) * self._ratio, 1)
+
+    def get_pos_from_value(self, value):
+        return int(round((value / self._ratio) + self._zero_x))
+
+    def inside(self, point):
+        in_x = point[0] >= self._rec_x and point[0] <= self._rec_x+self._width
+        in_y = point[1] >= self._rec_y and point[1] <= self._rec_y+self._length
+        return in_x and in_y
+
+    @property
+    def grabbed(self):
+        return self._grabbed
+
+    @property
+    def zero_x(self):
+        return self._zero_x
+
+    @property
+    def x(self):
+        return self._x
+
+    @property
+    def y(self):
+        return self._y
+
+    @property
+    def color(self):
+        return self._color
+
+    @property
+    def value(self):
+        return self._value
+
+    @property
+    def width(self):
+        return self._width
+
+    @property
+    def length(self):
+        return self._length
+
+    @property
+    def rec_x(self):
+        return self._rec_x
+
+    @property
+    def rec_y(self):
+        return self._rec_y

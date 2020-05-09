@@ -58,7 +58,7 @@ class Game(pg_root._State):
 
         self.ruler = Ruler(pos=self.ground.pos+self.ground.w,
                            zero=self.cone.get_zero_pos(),
-                           length=self.ground.len)
+                           length=self.ground.len, marker_color=color.ORANGE)
         self.ruler.set_scales(10, 5, scale_w=2, subs=10)
         self.ruler.set_labels(top=25, size=18)
 
@@ -82,6 +82,8 @@ class Game(pg_root._State):
 
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
+
+        self.ruler.marker.set(self.sim_ref_state[0])
 
         self.mode = self.persist["mode"]
         if self.mode == 'user':
@@ -112,6 +114,10 @@ class Game(pg_root._State):
                     self.options["Angle unit"] = 'deg'
                 else:
                     self.options["Angle unit"] = 'rad'
+            if event.key == pg.K_LEFT:
+                self.ruler.marker.click(0)
+            if event.key == pg.K_RIGHT:
+                self.ruler.marker.click(1)
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             self.user.input = True
@@ -125,11 +131,26 @@ class Game(pg_root._State):
                                           8, 2, diff))
                 self.wave.start()
 
+            if self.ruler.marker.mouseover:
+                self.ruler.marker.grab()
+
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
             self.user.input = False
 
+            if self.ruler.marker.grabbed:
+                self.ruler.marker.release()
+                self.ruler.marker.snap()
+
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.ball)
+        if self.ruler.marker.inside(mouse):
+            self.ruler.marker.mouseover = True
+        else:
+            self.ruler.marker.mouseover = False
+
+        if self.ruler.marker.grabbed:
+            self.ruler.marker.slide(mouse)
+
         self.user.update(mouse)
 
     def update(self, surface):
@@ -139,6 +160,10 @@ class Game(pg_root._State):
         elif self.mode == 'agent':
             self.agent.update()
             control_object = self.agent
+
+        # Update Reference State x via ruler marker
+        self.ruler.marker.update()
+        self.sim_ref_state = self._update_reference_state()
 
         # Gathering variables for State Space Euler
         A_matrix = self.model.system
@@ -237,6 +262,8 @@ class Game(pg_root._State):
                              color.BLACK, center=(label.pos[0], label.pos[1]))
             surface.blit(label.font_cache[0], label.font_cache[1])
 
+        self.draw_reference_marker(surface)
+
     def draw_trigon_marker(self, surface):
         point_bottom = (self.cone.get_points('top')[0],
                         self.ground.pos + self.ground.w)
@@ -248,6 +275,20 @@ class Game(pg_root._State):
         self._draw_aafilled_polygon(surface,
                                     (point_bottom, point_left, point_right),
                                     color.GREY)
+
+    def draw_reference_marker(self, surface):
+        # Draws a pentagon like a house shape (trigon + rectangle)
+        marker = self.ruler.marker
+        point_top = marker.x, marker.y
+        point_a = marker.rec_x, marker.rec_y
+        point_b = marker.rec_x + marker.width, marker.rec_y
+        point_c = marker.rec_x, marker.rec_y + marker.length
+        point_d = marker.rec_x + marker.width, marker.rec_y + marker.length
+        self._draw_aafilled_polygon(surface, (point_top, point_a, point_c,
+                                              point_d, point_b), marker.color)
+        # Draw shadow
+        pg.draw.aalines(surface, color.DDORANGE, False,
+                        (point_top, point_b, point_d))
 
     def draw_cone(self, surface, reflection=True):
         # Real location of cone
@@ -368,3 +409,6 @@ class Game(pg_root._State):
 
     def _disturbing_func(self, intensity):
         return -intensity*1.0e-2
+
+    def _update_reference_state(self):
+        return self.ruler.marker.value, self.sim_ref_state[1]
