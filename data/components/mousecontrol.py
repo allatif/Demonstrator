@@ -8,7 +8,7 @@ class MouseControl:
         self._sens = sensibility
 
         self._mouse = (0, 0)
-        self._force = 0.0
+        self._force = 0
         self.input = False
 
     def update(self, mouse):
@@ -23,15 +23,15 @@ class MouseControl:
             self._force = 0
 
     def _calc_horizontal_force(self):
-        max_force = 100_000
+        max_force = 50_000
         if len(MouseControl._pos_list) == 2:
             old_pos_x = MouseControl._pos_list[0][0]
             new_pos_x = MouseControl._pos_list[1][0]
             force = (new_pos_x-old_pos_x)*self._sens
             if abs(force) > max_force:
-                return (force/abs(force))*max_force
+                return int((force/abs(force))*max_force)
             return force
-        return 0.0
+        return 0
 
     @property
     def mouse(self):
