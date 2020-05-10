@@ -20,7 +20,7 @@ class MouseControl:
         if self.input:
             self._force = self._calc_horizontal_force()
         else:
-            self._force = 0.0
+            self._force = 0
 
     def _calc_horizontal_force(self):
         max_force = 100_000
