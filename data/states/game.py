@@ -28,7 +28,9 @@ class Game(pg_root._State):
         self.bg_img = pg_init.GFX['bg']
 
         # Initialize Control Objects
-        self.user = MouseControl(sensibility=2000)
+        self.control_object = None
+        self.force_records = []
+        self.user = MouseControl(sensibility=1000)
         self.agent = Agent()
         # .load_model("sphere_cone_rl_pg.h5")
 
@@ -120,7 +122,8 @@ class Game(pg_root._State):
                 self.ruler.marker.click(1)
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            self.user.input = True
+            if not self.ball.falling:
+                self.user.input = True
 
             if self.ball.mouseover:
                 diff = self.user.mouse[0] - self.cone.get_center_x()
@@ -154,12 +157,11 @@ class Game(pg_root._State):
         self.user.update(mouse)
 
     def update(self, surface):
-        control_object = None
         if self.mode == 'user':
-            control_object = self.user
+            self.control_object = self.user
         elif self.mode == 'agent':
             self.agent.update()
-            control_object = self.agent
+            self.control_object = self.agent
 
         # Update Reference State x via ruler marker
         self.ruler.marker.update()
@@ -180,7 +182,7 @@ class Game(pg_root._State):
                                                     self.sim.state_vec, t_vec,
                                                     self.euler_stepsize,
                                                     Game.step,
-                                                    control_object,
+                                                    self.control_object,
                                                     interference,
                                                     self.sim_ref_state))
         self.euler_thread.start()
@@ -211,6 +213,9 @@ class Game(pg_root._State):
             if not self.simover:
                 Game.step += self.frame_step
 
+            if self.control_object is not None:
+                self.force_records.append(self.control_object.force)
+
         # Else-Path for simulating ball drop
         elif self.ball.falling:
             if self.physics is None:
@@ -237,6 +242,8 @@ class Game(pg_root._State):
         self.draw_cone(surface, reflection=True)
         self.draw_ball(surface)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
+        if self.control_object is not None:
+            self.draw_force_hud(surface, 160, 36)
 
         if self.wave is not None and not (self.ball.falling or self.simover):
             self.draw_impulsewave(surface)
@@ -262,7 +269,8 @@ class Game(pg_root._State):
                              color.BLACK, center=(label.pos[0], label.pos[1]))
             surface.blit(label.font_cache[0], label.font_cache[1])
 
-        self.draw_reference_marker(surface)
+        if self.mode is not 'user':
+            self.draw_reference_marker(surface)
 
     def draw_trigon_marker(self, surface):
         point_bottom = (self.cone.get_points('top')[0],
@@ -375,11 +383,11 @@ class Game(pg_root._State):
                            self.wave.width)
             surface.blit(alpha_surface, (0, 0))
 
-    def draw_hud(self, surface, length, wide, margin=4, pos='right'):
+    def draw_hud(self, surface, width, height, margin=4, pos='right'):
         text_margin = 5
         line_margin = 14
 
-        rect = self.render_hud(length, wide, margin, pos)
+        rect = self.render_hud(width, height, margin, pos)
         pg.gfxdraw.box(surface, rect, color.TRAN200)
 
         units = ['m', 'm/s', 'rad', 'rad/s']
@@ -397,6 +405,23 @@ class Game(pg_root._State):
             surface.blit(text,
                          (rect[0] + text_margin,
                           rect[1] + text_margin + num*line_margin))
+
+    def draw_force_hud(self, surface, width, height, margin=4, pos='center'):
+        text_margin = 4
+
+        rect = self.render_hud(width, height, margin, pos)
+        pg.gfxdraw.box(surface, rect, color.TRAN200)
+
+        fontname = 'Consolas'
+        fontsize = 32
+        if self._i_ % 10 == 0:
+            self._temp_0 = self.control_object.force
+        value = self._temp_0
+        center = (self.width//2, margin+fontsize//2+text_margin)
+        text, rect = self.render_font(f'F {value}', fontname, fontsize,
+                                      color.LRED, center)
+        surface.blit(text, rect)
+        self.run_loop_counter()
 
     def draw_message(self, surface, text):
         fontname = 'ARCADECLASSIC'
