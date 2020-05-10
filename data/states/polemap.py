@@ -233,18 +233,18 @@ class PoleMap(pg_root._State):
         if self.results is not None:
             self.draw_button(surface, self.but_plot)
 
-    def draw_hud(self, surface, weigth, height, margin=4, pos='left'):
+    def draw_hud(self, surface, width, height, margin=4, pos='left'):
         text_margin = 5
         line_margin = 14
 
-        rect = self.render_hud(weigth, height, margin, pos)
+        rect = self.render_hud(width, height, margin, pos)
         hudcolor = color.TRAN200
 
         if self.options["Euler corr"]:
             # Show if option Euler method correction offset is activated
             msg = '*Imaginary axis offset'
             text = self.render_font(msg, 'Liberation Sans', 14, color.DBLUE)
-            var_x_pos = rect[0]+weigth+2 if pos == 'left' else rect[0]-110
+            var_x_pos = rect[0]+width+2 if pos == 'left' else rect[0]-110
             surface.blit(text, (var_x_pos, rect[1]+height-18))
 
             hudcolor = color.A200DDBLUE
