@@ -308,7 +308,10 @@ class _State:
         """Returns the rect of hud field. Rect is always in bottom left or
         bottom right position of the screen."""
 
-        if pos == 'left':
+        if pos == 'center':
+            hud_pos_x = pg_init.SCREEN_SIZE[0]//2 - width//2
+            hud_pos_y = margin
+        elif pos == 'left':
             hud_pos_x = margin
             hud_pos_y = self.height - margin - height
         elif pos == 'right':
