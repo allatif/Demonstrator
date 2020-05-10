@@ -114,6 +114,7 @@ class _State:
         self.persist = {}
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
+        self._loop_counter = 0
 
     def get_event(self, event):
         """Processes events that were passed from the main event loop.
@@ -320,6 +321,9 @@ class _State:
         rect = (hud_pos_x, hud_pos_y, width, height)
         return rect
 
+    def run_loop_counter(self, increment=1):
+        self._loop_counter += increment
+
     @staticmethod
     def get_font(name, size):
         """Returns a font only."""
@@ -358,6 +362,10 @@ class _State:
         pg.gfxdraw.aacircle(surface, x, y, r-1, color)
         pg.gfxdraw.aacircle(surface, x, y, r, color)
         pg.draw.circle(surface, color, (x, y), r, w)
+
+    @property
+    def _i_(self):
+        return self._loop_counter
 
 
 def load_all_gfx(directory, accept=(".png", ".jpg", ".bmp")):

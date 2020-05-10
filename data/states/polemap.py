@@ -70,7 +70,6 @@ class PoleMap(pg_root._State):
         self.but_plot.activate_reflection()
 
         self.options = {"Hud position": 'left', "Euler corr": False}
-        self.loop_counter = 0
 
         self.polemap_imagestr = ''
 
@@ -280,8 +279,8 @@ class PoleMap(pg_root._State):
             plt.show()
 
     def gen_signal_by_loop(self, amplitude, length, forobj='Pole'):
-        self.loop_counter += 1
+        self.run_loop_counter()
         if forobj == 'Pole':
-            return amplitude * m.sin((self.loop_counter/length) * m.pi)**2
+            return amplitude * m.sin((self._i_/length) * m.pi)**2
         elif forobj == 'But_Refl':
-            return not (self.loop_counter % 1)
+            return not (self._i_ % 1)
