@@ -406,15 +406,17 @@ class Game(pg_root._State):
                          (rect[0] + text_margin,
                           rect[1] + text_margin + num*line_margin))
 
-    def draw_force_hud(self, surface, width, height, margin=4, pos='center'):
-        text_margin = 4
+    def draw_force_hud(self, surface, width, height,
+                       update_rate=10, margin=4, pos='center'):
+        frames_per_update = pg_init.FPS // update_rate
 
         rect = self.render_hud(width, height, margin, pos)
         pg.gfxdraw.box(surface, rect, color.TRAN200)
 
         fontname = 'Consolas'
         fontsize = 32
-        if self._i_ % 10 == 0:
+        text_margin = 4
+        if self._i_ % frames_per_update == 0:
             self._temp_0 = self.control_object.force
         value = self._temp_0
         center = (self.width//2, margin+fontsize//2+text_margin)
