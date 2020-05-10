@@ -114,6 +114,12 @@ class _State:
         self.persist = {}
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
+
+        # Temporary variabeles usefull to hold intermediate values
+        self._temp_0 = 0
+        self._temp_1 = 0
+        self._temp_2 = 0
+
         self._loop_counter = 0
 
     def get_event(self, event):
