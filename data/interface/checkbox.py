@@ -18,7 +18,7 @@ class CheckBox(Box):
         self.checked = False
 
         self._r = None
-        if type == 'radio':
+        if type_ == 'radio':
             self._r = self._size // 2
 
     def set_label(self, text, margin=2):
