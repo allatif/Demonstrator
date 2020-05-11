@@ -24,11 +24,7 @@ class PoleMap(pg_root._State):
         self.poles = None
         self.results = None
 
-        # self.Kregs = [-2196.6, -4761.2, -51800, -18831]
         self.Kregs = [-1296.6, -3161.2, -31800, -9831]
-        # self.Kregs = [-1196.6, -3761.2, -11800, -8831]
-        # for testing fall of sphere
-        # # self.Kregs = [-9050, -3150, -4800, -9750]
 
         # Initialize sliders
         self.sliders = []
@@ -69,7 +65,7 @@ class PoleMap(pg_root._State):
         self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
         self.but_plot.activate_reflection()
 
-        self.options = {"Hud position": 'left', "Euler corr": False}
+        self.options = {"Hud position": 'left'}
 
         self.polemap_imagestr = ''
 
@@ -108,8 +104,6 @@ class PoleMap(pg_root._State):
                 self.options["Hud position"] = 'left'
             if event.key == pg.K_F2:
                 self.options["Hud position"] = 'right'
-            if event.key == pg.K_c:
-                self.options["Euler corr"] = not self.options["Euler corr"]
             if event.key == pg.K_KP_PLUS:
                 self.plane.Re_axis.zoom()
                 self.plane.Im_axis.zoom()
@@ -161,13 +155,10 @@ class PoleMap(pg_root._State):
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
 
-        # Euler method causes a little error per step k when dt is too big
-        # Need of correction offset 'corr' to correct marginal stable poles
-        crr = 0.0485 if self.options['Euler corr'] else 0.0
         self.poles = []
         for pole in self.model.get_poles():
-            pos = self.plane.get_pos_from_point((pole.real+crr, pole.imag))
-            self.poles.append(gaussian.Pole(pos, 15, pole.real+crr, pole.imag))
+            pos = self.plane.get_pos_from_point((pole.real, pole.imag))
+            self.poles.append(gaussian.Pole(pos, 15, pole.real, pole.imag))
 
         self.polemap_imagestr = pg.image.tostring(surface, 'RGB')
 
@@ -238,15 +229,6 @@ class PoleMap(pg_root._State):
 
         rect = self.render_hud(width, height, margin, pos)
         hudcolor = color.TRAN200
-
-        if self.options["Euler corr"]:
-            # Show if option Euler method correction offset is activated
-            msg = '*Imaginary axis offset'
-            text = self.render_font(msg, 'Liberation Sans', 14, color.DBLUE)
-            var_x_pos = rect[0]+width+2 if pos == 'left' else rect[0]-110
-            surface.blit(text, (var_x_pos, rect[1]+height-18))
-
-            hudcolor = color.A200DDBLUE
 
         pg.gfxdraw.box(surface, rect, hudcolor)
 
