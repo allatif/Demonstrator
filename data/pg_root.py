@@ -263,6 +263,20 @@ class _State:
         else:
             surface.blit(text, instrument.value_label.rect)
 
+    def draw_checkbox_group(self, surface, cbox_group_obj):
+        """Draws all checkboxes as a group that where passed through
+        as cbox group object."""
+
+        # Group Header
+        header = cbox_group_obj.header_label
+        if header is not None:
+            header.cache_font(cbox_group_obj.header_text, 'Liberation Sans',
+                              header.size, cbox_group_obj.header_color)
+            surface.blit(header.font_cache, header.rect)
+
+        for cbox in cbox_group_obj.cboxes:
+            self.draw_checkbox(surface, cbox)
+
     def draw_checkbox(self, surface, checkbox_obj):
         """Draws checkbox with text label and cross if checked."""
 
