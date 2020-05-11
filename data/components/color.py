@@ -29,6 +29,8 @@ LBLUE = (30, 144, 255)
 DBLUE = (0, 0, 128)
 DDBLUE = (0, 0, 45)
 
+CYAN = (114, 247, 218)
+
 
 # ALPHA COLORS (RGBA)
 _RGB = (0, 0, 0)
