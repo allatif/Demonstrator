@@ -27,8 +27,6 @@ class Instrument:
         pass
 
     def build(self, x, y, name_margin=None):
-        """Need to be called by build method."""
-
         if self.name is None:
             self._ins_x = x
             self._ins_y = y
