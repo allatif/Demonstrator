@@ -36,8 +36,11 @@ class CheckBox(Box):
 
     def gen_radio(self, margin):
         if self._r is not None:
-            return self._r - margin
-        return 0
+            c_x = self._pos_x + self._r
+            c_y = self._pos_y + self._r
+            r = self._r - margin
+            return c_x, c_y, r
+        return 0, 0, 0
 
     @property
     def border_width(self):
