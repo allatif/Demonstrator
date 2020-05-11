@@ -55,9 +55,5 @@ class SliderGroup:
         return self._header_label
 
     @property
-    def slider_amt(self):
-        return self._slider_amt
-
-    @property
     def pos(self):
         return self._pos_x, self._pos_y
