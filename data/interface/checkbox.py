@@ -5,7 +5,7 @@ from . label import Label
 class CheckBox(Box):
 
     def __init__(self, size, border_width, border_color,
-                 box_color=None, text_color=None):
+                 box_color=None, text_color=None, type_='default'):
         Box.__init__(self)
         self._size = size
         self._width = size
@@ -14,7 +14,12 @@ class CheckBox(Box):
         self._box_color = box_color
         self._border_color = border_color
         self._text_color = text_color
+        self._type_ = type_
         self.checked = False
+
+        self._r = None
+        if type == 'radio':
+            self._r = self._size // 2
 
     def set_label(self, text, margin=2):
         self._label = Label(self._pos_x+self._width+margin, self._pos_y,
@@ -28,6 +33,11 @@ class CheckBox(Box):
         point_b1 = self._pos_x + self._size - m, self._pos_y + m
         point_b2 = self._pos_x + m, self._pos_y + self._size - m
         return [point_a1, point_a2], [point_b1, point_b2]
+
+    def gen_radio(self, margin):
+        if self._r is not None:
+            return self._r - margin
+        return 0
 
     @property
     def border_width(self):
@@ -48,3 +58,11 @@ class CheckBox(Box):
     @property
     def label(self):
         return self._label
+
+    @property
+    def type_(self):
+        return self._type_
+
+    @property
+    def r(self):
+        return self._r
