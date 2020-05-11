@@ -398,7 +398,7 @@ class Game(pg_root._State):
 
         for num, value in enumerate(self.state_values):
             value = m.degrees(value) if num > 1 and not SI else value
-            space = '  ' if value > 0 else ' '
+            space = '  ' if value >= 0 else ' '
             value_str = f'x{num+1}:{space}{value:.2f} {units[num]}'
             text = self.hudfont.render(value_str, True, color.WHITE)
 
@@ -410,19 +410,23 @@ class Game(pg_root._State):
                        update_rate=10, margin=4, pos='center'):
         frames_per_update = pg_init.FPS // update_rate
 
+        text_margin_top = 4
+        text_margin_left = 8
+
         rect = self.render_hud(width, height, margin, pos)
         pg.gfxdraw.box(surface, rect, color.TRAN200)
 
         fontname = 'Consolas'
         fontsize = 32
-        text_margin = 4
         if self._i_ % frames_per_update == 0:
             self._temp_0 = self.control_object.force
         value = self._temp_0
-        center = (self.width//2, margin+fontsize//2+text_margin)
-        text, rect = self.render_font(f'F {value}', fontname, fontsize,
-                                      color.LRED, center)
-        surface.blit(text, rect)
+
+        space = '  ' if value >= 0 else ' '
+        text_color = color.TOMATO if value >= 0 else color.CYAN
+        value_str = f'F{space}{value}'
+        text = self.render_font(value_str, fontname, fontsize, text_color)
+        surface.blit(text, (rect[0]+text_margin_left, rect[1]+text_margin_top))
         self.run_loop_counter()
 
     def draw_message(self, surface, text):
