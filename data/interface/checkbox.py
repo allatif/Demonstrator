@@ -4,7 +4,7 @@ from . label import Label
 
 class CheckBox(Box):
 
-    def __init__(self, size, border_width, border_color,
+    def __init__(self, size, border_width, border_color, checked=False,
                  box_color=None, text_color=None, type_='default'):
         Box.__init__(self)
         self._size = size
@@ -15,7 +15,7 @@ class CheckBox(Box):
         self._border_color = border_color
         self._text_color = text_color
         self._type_ = type_
-        self.checked = False
+        self.checked = checked
 
         self._r = None
         if type_ == 'radio':
