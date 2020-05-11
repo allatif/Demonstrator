@@ -269,12 +269,25 @@ class _State:
         rect = checkbox_obj.rect
         width = checkbox_obj.border_width
 
-        # Box
-        if checkbox_obj.box_color is None:
-            pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
-        else:
-            pg.draw.rect(surface, checkbox_obj.box_color, rect)
-            pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
+        # Box / Radio
+        if checkbox_obj.type_ == 'default':
+            if checkbox_obj.box_color is None:
+                pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
+            else:
+                pg.draw.rect(surface, checkbox_obj.box_color, rect)
+                pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
+        elif checkbox_obj.type_ == 'radio':
+            if checkbox_obj.box_color is None:
+                x = rect[0] + checkbox_obj.r
+                y = rect[1] + checkbox_obj.r
+                r = checkbox_obj.r
+                w = width//2
+                box_color = checkbox_obj.box_color
+                border_color = checkbox_obj.border_color
+                self._draw_aafilled_ring(surface, x, y, r, w, border_color)
+            else:
+                self._draw_aafilled_circle(surface, x, y, r, box_color)
+                self._draw_aafilled_ring(surface, x, y, r, w, border_color)
 
         # Label Text
         text_color = checkbox_obj.text_color
@@ -285,11 +298,17 @@ class _State:
                                 checkbox_obj.height, text_color)
         surface.blit(checkbox_obj.font_cache, checkbox_obj.label.rect)
 
-        if checkbox_obj.checked:
-            # Checkbox Cross
-            for line in checkbox_obj.gen_cross(margin=5):
-                pg.draw.line(surface, checkbox_obj.border_color,
-                             *line, checkbox_obj.cross_width)
+        # Checkbox Cross / Radio
+        if checkbox_obj.type_ == 'default':
+            if checkbox_obj.checked:
+                for line in checkbox_obj.gen_cross(margin=5):
+                    pg.draw.line(surface, checkbox_obj.border_color,
+                                 *line, checkbox_obj.cross_width)
+        elif checkbox_obj.type_ == 'radio':
+            if checkbox_obj.checked:
+                x, y, r = checkbox_obj.gen_radio(margin=5)
+                self._draw_aafilled_circle(surface, x, y, r,
+                                           checkbox_obj.border_color)
 
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
