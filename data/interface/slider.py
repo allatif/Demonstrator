@@ -56,7 +56,7 @@ class Slider(Instrument):
 
     def get_slid_rect(self):
         zero_pos = self.get_thumb_from_value(0)
-        if self._start == 0 or self._end == 0:
+        if self._start >= 0:
             zero_pos = self._ins_x
         dyn_length = self._thumb._x - zero_pos
         return zero_pos, self._ins_y, dyn_length, self._width
