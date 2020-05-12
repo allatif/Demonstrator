@@ -1,10 +1,11 @@
 from threading import Thread
 
 
-def euler_method(A, B, state_vec, t_vec, dt, game_step, control_object=None,
-                 interference=0, reference=(0, 0), steps_per_frame=10):
+def euler_method(A, B, state_vec, t_vec, fps, steps_per_frame, game_step,
+                 control_object=None, interference=0, reference=(0, 0)):
     over = False
     step = 0
+    dt = 1 / (fps*steps_per_frame)
     sim_length = len(state_vec[0]) - 1
     x1, x2, x3, x4 = state_vec
 

@@ -41,10 +41,6 @@ class Game(pg_root._State):
             self.agent.observe(np.array([*self.sim_init_state]))
 
         self.model = setup_sim.StateSpaceModel()
-        self.euler_stepsize = 0.001
-
-        # 0.01 for 100 fps
-        self.frame_step = round(0.01 / self.euler_stepsize)
 
         # Initialize Game Objects
         self.ground = Ground(510, self.width, thickness=10)
@@ -79,6 +75,8 @@ class Game(pg_root._State):
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
         self.Kregs = self.persist["controller"]
+        self.euler_ministeps = self.persist["euler ministeps"]
+        self.frame_step = self.euler_ministeps
 
         self.__init__(mother=False)
 
@@ -180,7 +178,8 @@ class Game(pg_root._State):
 
         self.euler_thread = euler.EulerThread(args=(A_matrix, B_matrix,
                                                     self.sim.state_vec, t_vec,
-                                                    self.euler_stepsize,
+                                                    self.static_fps,
+                                                    self.euler_ministeps,
                                                     Game.step,
                                                     self.control_object,
                                                     interference,
@@ -408,7 +407,7 @@ class Game(pg_root._State):
 
     def draw_force_hud(self, surface, width, height,
                        update_rate=10, margin=4, pos='center'):
-        frames_per_update = pg_init.FPS // update_rate
+        frames_per_update = self.static_fps // update_rate
 
         text_margin_top = 4
         text_margin_left = 8
