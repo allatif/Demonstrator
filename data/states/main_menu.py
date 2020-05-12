@@ -60,7 +60,7 @@ class MainSetup(pg_root._State):
     def _init_fps_checkboxes(self):
         # Initialize checkboxes for choosing fps
         self.fps_cboxes = []
-        cbox_labels = ['50 fps', '100 fps']
+        cbox_labels = ['60 fps', '100 fps']
         zipped = zip(cbox_labels, self.game_fps_bins)
         for cbox_label, bool_ in zipped:
             self.fps_cboxes.append(checkbox.CheckBox(24, 3, color.WHITE,
