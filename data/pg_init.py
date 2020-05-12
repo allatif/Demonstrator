@@ -6,7 +6,7 @@ from . import pg_root
 SCREEN_SIZE = (1024, 600)
 ORIGINAL_CAPTION = "Kugel-Kegel-Demonstrator"
 SCALE = 200  # Pixels that will be equivalent to 1 meter
-FPS = 110.0  # Will be 100 FPS in game
+FPS = (55.0, 110.0)  # Will be 50 or 100 FPS in game
 
 # Initialization
 pg.init()
