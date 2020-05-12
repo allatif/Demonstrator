@@ -315,12 +315,12 @@ class _State:
         # Checkbox Cross / Radio
         if checkbox_obj.type_ == 'default':
             if checkbox_obj.checked:
-                for line in checkbox_obj.gen_cross(margin=5):
+                for line in checkbox_obj.gen_cross():
                     pg.draw.line(surface, checkbox_obj.border_color,
                                  *line, checkbox_obj.cross_width)
         elif checkbox_obj.type_ == 'radio':
             if checkbox_obj.checked:
-                x, y, r = checkbox_obj.gen_radio(margin=5)
+                x, y, r = checkbox_obj.gen_radio()
                 self._draw_aafilled_circle(surface, x, y, r,
                                            checkbox_obj.border_color)
 
