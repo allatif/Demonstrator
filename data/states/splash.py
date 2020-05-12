@@ -14,7 +14,7 @@ class Splash(pg_root._State):
         self.height = pg_init.SCREEN_RECT[3]
         self.next = "POLEMAP"
 
-        self.game_fps_bins = [True, False]
+        self.game_fps_bins = [False, True]
         self.euler_ministeps = 10
 
         # Initialize Mode Buttons
