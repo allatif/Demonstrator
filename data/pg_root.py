@@ -49,6 +49,8 @@ class PygameApp:
             idx = fps_bins.index(True)
             self.fps = pg_init.FPS[idx]
 
+        self.state.static_fps = int(round(self.fps / 1.1))
+
         self.state.update(self.screen)
 
     def flip_state(self):
@@ -120,6 +122,7 @@ class _State:
         self.persist = {}
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
+        self.static_fps = None
 
         # Temporary variabeles usefull to hold intermediate values
         self._temp_0 = 0
