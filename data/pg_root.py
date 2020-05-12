@@ -19,7 +19,7 @@ class PygameApp:
         self.caption = caption
         self.done = False
         self.clock = pg.time.Clock()
-        self.fps = pg_init.FPS
+        self.fps = pg_init.FPS[1]
         self.show_fps = True
 
         self.mouse = None
@@ -43,6 +43,12 @@ class PygameApp:
             self.done = True
         elif self.state.done:
             self.flip_state()
+
+        if "game fps binaries" in self.state.persist:
+            fps_bins = self.state.persist["game fps binaries"]
+            idx = fps_bins.index(True)
+            self.fps = pg_init.FPS[idx]
+
         self.state.update(self.screen)
 
     def flip_state(self):
