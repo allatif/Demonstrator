@@ -17,12 +17,13 @@ class CheckboxGroup:
             self._header_size = self._cboxes[0].label.size
 
         self._header_label = None
+        self._selected_num = None
 
     def arrange(self, pos_x, pos_y, gap=None):
         self._pos_x = pos_x
         self._pos_y = pos_y
 
-        self.gap = 10*self._cboxes[0]._height
+        self.gap = self._cboxes[0]._height + self._cboxes[0]._height//2
         if gap is not None:
             self.gap = gap
 
@@ -34,9 +35,23 @@ class CheckboxGroup:
         for num, cbox in enumerate(self._cboxes):
             add = 1 if self._header_label is not None else 0
             cbox.set_pos(self._pos_x, self._pos_y + self.gap*(num+add))
+            cbox.set_label(cbox.name, margin=10)
+            if cbox.checked and cbox.type_ == 'radio':
+                self.select_checkbox(num)
+
+    def update(self):
+        if self._selected_num is not None:
+            for num, cbox in enumerate(self._cboxes):
+                if num == self._selected_num:
+                    cbox.checked = True
+                    continue
+                cbox.checked = False
 
     def get_bools(self):
         return [cbox.checked for cbox in self._cboxes]
+
+    def select_checkbox(self, num):
+        self._selected_num = num
 
     @property
     def cboxes(self):
@@ -53,7 +68,3 @@ class CheckboxGroup:
     @property
     def header_label(self):
         return self._header_label
-
-    @property
-    def pos(self):
-        return self._pos_x, self._pos_y
