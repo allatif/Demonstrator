@@ -22,6 +22,11 @@ class Instrument:
 
         self.active = True
 
+        self._settings = {
+            'integer': False,
+            'decimal places': 1
+        }
+
     def _init_components(self):
         """Must be overrided in children."""
         pass
@@ -55,7 +60,10 @@ class Instrument:
 
     def update(self):
         pixel_value = self._thumb._x - self._min
-        self._value = round(pixel_value*self._ratio + self._start, 1)
+        dec = self._settings['decimal places']
+        self._value = round(pixel_value*self._ratio + self._start, dec)
+        if self._settings['integer']:
+            self._value = int(self._value)
 
     def get_thumb_from_value(self, value=None):
         if value is not None:
@@ -87,3 +95,7 @@ class Instrument:
     @property
     def name_label(self):
         return self._name_label
+
+    @property
+    def settings(self):
+        return self._settings
