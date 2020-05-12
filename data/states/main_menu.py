@@ -81,6 +81,7 @@ class MainSetup(pg_root._State):
                           act_value_color=color.LGREEN,
                           name=None)
         )
+        self.euler_sliders[0].settings['integer'] = True
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
