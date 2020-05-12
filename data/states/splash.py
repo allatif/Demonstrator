@@ -14,6 +14,9 @@ class Splash(pg_root._State):
         self.height = pg_init.SCREEN_RECT[3]
         self.next = "POLEMAP"
 
+        self.game_fps_bins = [True, False]
+        self.euler_ministeps = 10
+
         # Initialize Mode Buttons
         margin = 50
         button_size = (425, 250)
@@ -37,7 +40,7 @@ class Splash(pg_root._State):
         self.but_rl.set_text_size(text_size)
 
         # Initialize Setup Settings Button
-        self.but_set = button.Button('Setup Settings',
+        self.but_set = button.Button('Main Settings',
                                      obj_color=color.LBLUE,
                                      hov_color=color.LLBLUE,
                                      text_color=color.WHITE,
@@ -45,12 +48,19 @@ class Splash(pg_root._State):
         self.but_set.set_pos(margin, button_size[1]+pos_y+margin)
         self.but_set.set_text_size(text_size - 6)
 
+        self.splashscreen_imagestr = ''
+
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.game_fps_bins = self.persist["game fps binaries"]
+        self.euler_ministeps = self.persist["euler ministeps"]
         self.next = "POLEMAP"
 
     def cleanup(self):
         self.done = False
+        self.persist["game fps binaries"] = self.game_fps_bins
+        self.persist["euler ministeps"] = self.euler_ministeps
+        self.persist["bg_image"] = self.splashscreen_imagestr
         return self.persist
 
     def get_event(self, event):
@@ -70,12 +80,17 @@ class Splash(pg_root._State):
                 self.next = "NEURO"
                 self.done = True
 
+            if self.but_set.mouseover:
+                self.next = "MAINSETTINGS"
+                self.done = True
+
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.but_csd)
         self.hover_object_logic(mouse, self.but_rl)
         self.hover_object_logic(mouse, self.but_set)
 
     def update(self, surface):
+        self.splashscreen_imagestr = pg.image.tostring(surface, 'RGB')
         self.draw(surface)
 
     def draw(self, surface):
