@@ -35,7 +35,7 @@ class MainSetup(pg_root._State):
 
         self._init_fps_checkboxes()
         self.cbox_group = checkbox_group \
-            .CheckboxGroup(self.fps_cboxes, header_text='In Game FPS',
+            .CheckboxGroup(self.fps_cboxes, header_text='In game frame rate',
                            header_size=26)
         self.cbox_group.arrange(self.win.con_pos[0]+10,
                                 self.win.con_pos[1]+75)
@@ -43,7 +43,7 @@ class MainSetup(pg_root._State):
         self._init_euler_setup_sliders()
         self.slider_group = slider_group \
             .SliderGroup(self.euler_sliders,
-                         header_text='Euler Steps per Frame', header_size=26)
+                         header_text='Euler steps per frame', header_size=26)
         self.slider_group.arrange(self.win.con_pos[0]+10,
                                   self.win.con_pos[1]+225)
 
