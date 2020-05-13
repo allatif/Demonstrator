@@ -1,20 +1,14 @@
+from .. components import colors
+
+
 class Instrument:
 
-    def __init__(self, value, range_, color, act_thumb_color,
-                 act_value_color, dea_thumb_color=None, dea_value_color=None,
-                 name=None, margin=10, unit=None):
+    def __init__(self, value, range_, name, color_pack, margin, unit):
         self._value = value
         self._start, self._end = range_
         self.name = name
         self.margin = margin
         self._unit = unit
-
-        # Color attrs
-        self.color = color
-        self.act_thumb_color = act_thumb_color
-        self.act_value_color = act_value_color
-        self.dea_thumb_color = dea_thumb_color
-        self.dea_value_color = dea_value_color
 
         # Instrument position
         self._ins_x = 0
@@ -23,6 +17,11 @@ class Instrument:
         self.active = True
 
         self._settings = {
+            'track color': colors.GREY,
+            'active thumb color': color_pack['contrast'],
+            'active value color': color_pack['contrast'],
+            'deactive thumb color': colors.BLACK,
+            'deactive value color': colors.LGREY,
             'integer': False,
             'decimal places': 1
         }

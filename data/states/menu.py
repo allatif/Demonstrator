@@ -4,9 +4,9 @@ import pygame as pg
 import pygame.gfxdraw
 
 
-from .. import pg_init, pg_root, setup_sim
+from .. import pg_init, pg_root
 
-from .. components import color
+from .. components import colors
 from .. interface import window, slider_group, slider, button, knob
 
 
@@ -20,10 +20,11 @@ class SetupMenu(pg_root._State):
         self.predone = False
 
         self.win = window.MenuWindow('Settings Menu')
-        self.win.cache_font(self.win.header, 'Liberation Sans', 32, color.WHITE)
+        self.win.cache_font(self.win.header, 'Liberation Sans', 32,
+                            colors.WHITE)
 
         # Initialize button
-        self.but_ok = button.Button('OK', color.LRED, color.LLRED, color.WHITE)
+        self.but_ok = button.Button('OK', colors.RED_PACK, colors.WHITE)
         self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
                             self.win.con_bottom-self.but_ok.height)
 
@@ -67,12 +68,9 @@ class SetupMenu(pg_root._State):
             if num > 1:
                 val = m.degrees(val)
             self.cond_sliders.append(slider.Slider(val, slider_range, 4, 250,
-                                                   unit=units[num], margin=15,
-                                                   color=color.GREY,
-                                                   act_filled_color=color.LLGREEN,
-                                                   act_thumb_color=color.LGREEN,
-                                                   act_value_color=color.LGREEN,
-                                                   name=slider_names[num]))
+                                                   colors.GREEN_PACK,
+                                                   name=slider_names[num],
+                                                   margin=15, unit=units[num]))
 
     def _init_ref_instruments(self):
         # Initialize sliders and control knob for reference state
@@ -82,21 +80,13 @@ class SetupMenu(pg_root._State):
         names = ['x', 'φ']
         units = ['m', '°']
         self.ref_instrs.append(
-            slider.Slider(vel, ranges[0], 4, 250, unit=units[0],
-                          margin=15, color=color.GREY,
-                          act_filled_color=color.ORANGE,
-                          act_thumb_color=color.DORANGE,
-                          act_value_color=color.DORANGE,
-                          name=names[0])
-        )
+            slider.Slider(vel, ranges[0], 4, 250, colors.ORANGE_PACK,
+                          name=names[0], margin=15, unit=units[0]))
+
         self.ref_instrs.append(
-            knob.ControlKnob(m.degrees(ang), ranges[1], 51, 32, unit=units[1],
-                             margin=24, color=color.GREY,
-                             act_pointer_color=color.ORANGE,
-                             act_thumb_color=color.DORANGE,
-                             act_value_color=color.DORANGE,
-                             name=names[1])
-        )
+            knob.ControlKnob(m.degrees(ang), ranges[1], 51, 32,
+                             colors.ORANGE_PACK, name=names[1], margin=24,
+                             unit=units[1]))
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
@@ -142,7 +132,7 @@ class SetupMenu(pg_root._State):
 
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
-        pg.gfxdraw.box(surface, self.win.rect, color.TRAN225)
+        pg.gfxdraw.box(surface, self.win.rect, colors.TRAN225)
 
         self.draw_heading(surface)
         self.draw_slider_group(surface, self.slider_group_a)

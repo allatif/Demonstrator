@@ -10,7 +10,7 @@ class CheckboxGroup:
 
         self._header_color = header_color
         if header_color is None:
-            self._header_color = self._cboxes[0].border_color
+            self._header_color = self._cboxes[0].settings['border color']
 
         self._header_size = header_size
         if header_size is None:

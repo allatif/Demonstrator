@@ -6,7 +6,7 @@ import numpy as np
 
 from .. import pg_init, pg_root, setup_sim, euler
 
-from .. components import color
+from .. components import colors
 from .. components import gphysics
 from .. components.mousecontrol import MouseControl
 from .. components.objects import Cone, Sphere, Ground, Ruler
@@ -56,7 +56,7 @@ class Game(pg_root._State):
 
         self.ruler = Ruler(pos=self.ground.pos+self.ground.w,
                            zero=self.cone.get_zero_pos(),
-                           length=self.ground.len, marker_color=color.ORANGE)
+                           length=self.ground.len, marker_color=colors.ORANGE)
         self.ruler.set_scales(10, 5, scale_w=2, subs=10)
         self.ruler.set_labels(top=25, size=18)
 
@@ -254,18 +254,18 @@ class Game(pg_root._State):
             self.draw_message(surface, 'Finished')
 
     def draw_ground(self, surface):
-        pg.draw.line(surface, color.BLACK,
+        pg.draw.line(surface, colors.BLACK,
                      *self.ground.get_line(), self.ground.w)
 
     def draw_ruler(self, surface):
         self.draw_trigon_marker(surface)
 
         for scale in self.ruler.scales:
-            pg.draw.line(surface, color.BLACK, *scale, self.ruler.scale_w)
+            pg.draw.line(surface, colors.BLACK, *scale, self.ruler.scale_w)
 
         for label in self.ruler.num_labels:
             label.cache_font(label.text, 'Liberation Sans', label.height,
-                             color.BLACK, center=(label.pos[0], label.pos[1]))
+                             colors.BLACK, center=(label.pos[0], label.pos[1]))
             surface.blit(label.font_cache[0], label.font_cache[1])
 
         if self.mode is not 'user':
@@ -281,7 +281,7 @@ class Game(pg_root._State):
 
         self._draw_aafilled_polygon(surface,
                                     (point_bottom, point_left, point_right),
-                                    color.GREY)
+                                    colors.GREY)
 
     def draw_reference_marker(self, surface):
         # Draws a pentagon like a house shape (trigon + rectangle)
@@ -294,7 +294,7 @@ class Game(pg_root._State):
         self._draw_aafilled_polygon(surface, (point_top, point_a, point_c,
                                               point_d, point_b), marker.color)
         # Draw shadow
-        pg.draw.aalines(surface, color.DDORANGE, False,
+        pg.draw.aalines(surface, colors.ORANGE_PACK['shadow'], False,
                         (point_top, point_b, point_d))
 
     def draw_cone(self, surface, reflection=True):
@@ -302,10 +302,10 @@ class Game(pg_root._State):
         _x_ = self.cone.loc
 
         # Antialiased outline
-        pg.gfxdraw.aatrigon(surface, *self.cone.get_coords(), color.GREY)
+        pg.gfxdraw.aatrigon(surface, *self.cone.get_coords(), colors.GREY)
 
         if not reflection:
-            pg.draw.polygon(surface, color.GREY, self.cone.get_points())
+            pg.draw.polygon(surface, colors.GREY, self.cone.get_points())
         else:
             for s in range(40):
                 grey = 100
@@ -326,7 +326,7 @@ class Game(pg_root._State):
 
         # Antialiased outline
         pg.gfxdraw.aacircle(surface, *self.ball.get_center(),
-                            self.ball.r, color.DRED)
+                            self.ball.r, colors.DRED)
 
         # Shading
         shades = 21
@@ -334,7 +334,7 @@ class Game(pg_root._State):
             r_y = self.ball.r
             c_x, c_y = self.ball.get_center()
             apex_y = self.cone.get_points('top')[1]
-            red = color.DRED[0]
+            red = colors.DRED[0]
             red = red + 5*s
             rgb = (red, 0, 0)
 
@@ -372,7 +372,7 @@ class Game(pg_root._State):
         # pg.draw.line(surface, color.DGREY, *self.ball.get_equator_line(10)
         self._draw_aafilled_polygon(surface,
                                     self.ball.get_equator_tape(width=10),
-                                    color.DGREY)
+                                    colors.DGREY)
 
     def draw_impulsewave(self, surface):
         if self.wave.running:
@@ -387,7 +387,7 @@ class Game(pg_root._State):
         line_margin = 14
 
         rect = self.render_hud(width, height, margin, pos)
-        pg.gfxdraw.box(surface, rect, color.TRAN200)
+        pg.gfxdraw.box(surface, rect, colors.TRAN200)
 
         units = ['m', 'm/s', 'rad', 'rad/s']
         SI = True
@@ -399,7 +399,7 @@ class Game(pg_root._State):
             value = m.degrees(value) if num > 1 and not SI else value
             space = '  ' if value >= 0 else ' '
             value_str = f'x{num+1}:{space}{value:.2f} {units[num]}'
-            text = self.hudfont.render(value_str, True, color.WHITE)
+            text = self.hudfont.render(value_str, True, colors.WHITE)
 
             surface.blit(text,
                          (rect[0] + text_margin,
@@ -413,7 +413,7 @@ class Game(pg_root._State):
         text_margin_left = 8
 
         rect = self.render_hud(width, height, margin, pos)
-        pg.gfxdraw.box(surface, rect, color.TRAN200)
+        pg.gfxdraw.box(surface, rect, colors.TRAN200)
 
         fontname = 'Consolas'
         fontsize = 32
@@ -422,7 +422,7 @@ class Game(pg_root._State):
         value = self._temp_0
 
         space = '  ' if value >= 0 else ' '
-        text_color = color.TOMATO if value >= 0 else color.CYAN
+        text_color = colors.TOMATO if value >= 0 else colors.CYAN
         value_str = f'F{space}{value}'
         text = self.render_font(value_str, fontname, fontsize, text_color)
         surface.blit(text, (rect[0]+text_margin_left, rect[1]+text_margin_top))
@@ -431,9 +431,9 @@ class Game(pg_root._State):
     def draw_message(self, surface, text):
         fontname = 'ARCADECLASSIC'
         center = (self.width//2, self.cone.get_points('top')[1]//2)
-        msg, rect = self.render_font(text, fontname, 128, color.LRED, center)
+        msg, rect = self.render_font(text, fontname, 128, colors.LRED, center)
         alpha_surface = pg.Surface((rect[2]+12, rect[3]-10), pg.SRCALPHA)
-        alpha_surface.fill(color.TRAN150)
+        alpha_surface.fill(colors.TRAN150)
         alpha_surface.blit(msg, (8, -3))
         surface.blit(alpha_surface, rect)
 

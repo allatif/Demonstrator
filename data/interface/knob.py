@@ -2,18 +2,14 @@ import math as m
 
 from . instrument import Instrument
 from . label import Label
+from .. components import colors
 
 
 class ControlKnob(Instrument):
 
-    def __init__(self, value, range_, radius, label_size, color,
-                 act_pointer_color, act_thumb_color, act_value_color,
-                 dea_pointer_color=None, dea_thumb_color=None,
-                 dea_value_color=None, name=None, margin=10, unit=None):
-        Instrument.__init__(self, value, range_, color,
-                            act_thumb_color, act_value_color,
-                            dea_thumb_color, dea_value_color,
-                            name, margin, unit)
+    def __init__(self, value, range_, radius, label_size, color_pack,
+                 name=None, margin=10, unit=None):
+        Instrument.__init__(self, value, range_, name, color_pack, margin, unit)
         self._r = radius
 
         # Square inside ring
@@ -21,9 +17,9 @@ class ControlKnob(Instrument):
         self._r_i = round((m.sqrt(2)/2) * (self._label_size+self.margin))
         self._width = self._r - self._r_i
 
-        # Color attributes
-        self.act_pointer_color = act_pointer_color
-        self.dea_pointer_color = dea_pointer_color
+        # Add setting keys
+        self._settings['active pointer color'] = color_pack['intro']
+        self._settings['deactive pointer color'] = colors.DGREY
 
         # Control Knob screened angle
         self._ang = 0

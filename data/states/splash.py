@@ -2,7 +2,7 @@ import pygame as pg
 
 from .. import pg_init, pg_root
 
-from .. components import color
+from .. components import colors
 from .. interface import button
 
 
@@ -24,27 +24,20 @@ class Splash(pg_root._State):
         text_size = 42
 
         self.but_csd = button.Button('Control System Design',
-                                     obj_color=color.LLGREEN,
-                                     hov_color=color.LLLGREEN,
-                                     text_color=color.BLACK,
+                                     colors.GREEN_PACK, colors.BLACK,
                                      size=button_size)
         self.but_csd.set_pos(margin, pos_y)
         self.but_csd.set_text_size(text_size)
 
         self.but_rl = button.Button('Reinforcement Learning',
-                                    obj_color=color.LRED,
-                                    hov_color=color.LLRED,
-                                    text_color=color.WHITE,
+                                    colors.RED_PACK, colors.WHITE,
                                     size=button_size)
         self.but_rl.set_pos(self.width-self.but_rl.width-margin, pos_y)
         self.but_rl.set_text_size(text_size)
 
         # Initialize Setup Settings Button
-        self.but_set = button.Button('Main Settings',
-                                     obj_color=color.LBLUE,
-                                     hov_color=color.LLBLUE,
-                                     text_color=color.WHITE,
-                                     size=(button_size[0], 75))
+        self.but_set = button.Button('Main Settings', colors.BLUE_PACK,
+                                     colors.WHITE, size=(button_size[0], 75))
         self.but_set.set_pos(margin, button_size[1]+pos_y+margin)
         self.but_set.set_text_size(text_size - 6)
 
@@ -94,7 +87,7 @@ class Splash(pg_root._State):
         self.draw(surface)
 
     def draw(self, surface):
-        surface.fill(color.DGREY)
+        surface.fill(colors.DGREY)
         self.draw_interface(surface)
         self.draw_header(surface, "DEMONSTRATOR")
 
@@ -106,9 +99,9 @@ class Splash(pg_root._State):
     def draw_header(self, surface, text):
         fontname = 'ARCADECLASSIC'
         center = (self.width//2-42, 85)
-        msg, rect = self.render_font(text, fontname, 128, color.LRED, center)
+        msg, rect = self.render_font(text, fontname, 128, colors.LRED, center)
         pos_x, pos_y, width, height = rect
         alpha_surface = pg.Surface((width+84, height-10), pg.SRCALPHA)
-        alpha_surface.fill(color.TRAN150)
+        alpha_surface.fill(colors.TRAN150)
         alpha_surface.blit(msg, (42, -3))
         surface.blit(alpha_surface, (pos_x, pos_y, width, height))

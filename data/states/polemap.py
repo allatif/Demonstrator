@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from .. import pg_init, pg_root, setup_sim
 
-from .. components import color, gaussian
+from .. components import colors, gaussian
 from .. interface import slider_group, slider, button, checkbox
 
 
@@ -31,13 +31,7 @@ class PoleMap(pg_root._State):
         slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
         for slider_range, val in zip(slider_ranges, self.Kregs):
             self.sliders.append(slider.Slider(val, slider_range, 2, 200,
-                                              color=color.GREY,
-                                              act_filled_color=color.CORAL,
-                                              act_thumb_color=color.TOMATO,
-                                              act_value_color=color.TOMATO,
-                                              dea_filled_color=color.DGREY,
-                                              dea_thumb_color=color.BLACK,
-                                              dea_value_color=color.LGREY))
+                                              colors.CORAL_PACK))
         self.slider_group = slider_group \
             .SliderGroup(self.sliders, header_text='Controller Settings',
                          header_size=16)
@@ -47,21 +41,16 @@ class PoleMap(pg_root._State):
         # # Checkbox position depends on last slider
         cb_pos_x = self.sliders[len(self.sliders)-1].pos[0]
         cb_pos_y = self.sliders[len(self.sliders)-1].pos[1] + 20
-        self.checkbox = checkbox.CheckBox(16, 2, color.BLACK)
+        self.checkbox = checkbox.CheckBox(16, 2, colors.BLACK)
         self.checkbox.set_pos(cb_pos_x, cb_pos_y)
         self.checkbox.set_label('Switch off Controller', margin=5)
 
         # Initialize buttons
-        self.but_set = button.Button('Settings',
-                                     obj_color=color.LBLUE,
-                                     hov_color=color.LLBLUE,
-                                     text_color=color.WHITE)
+        self.but_set = button.Button('Settings', colors.BLUE_PACK, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
-        self.but_plot = button.Button('Show Plot',
-                                      obj_color=color.LRED,
-                                      hov_color=color.LLRED,
-                                      text_color=color.WHITE)
+        self.but_plot = button.Button('Show Plot', colors.RED_PACK,
+                                      colors.WHITE)
         self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
         self.but_plot.activate_reflection()
 
@@ -165,7 +154,7 @@ class PoleMap(pg_root._State):
         self.draw(surface)
 
     def draw(self, surface):
-        surface.fill(color.WHITE)
+        surface.fill(colors.WHITE)
         self.draw_coordlines(surface, self.plane.Re_axis, self.plane.Im_axis)
         self.draw_axes(surface, self.plane.Re_axis, self.plane.Im_axis)
 
@@ -179,17 +168,17 @@ class PoleMap(pg_root._State):
             else:
                 pole.norm()
 
-            dyn_color = color.LBLUE
+            dyn_color = colors.LBLUE
             if pole.is_unstable():
-                dyn_color = color.RED
+                dyn_color = colors.RED
 
                 # Animate unstable pole flicker
                 signal = self.gen_signal_by_loop(4, 80, forobj='Pole')
                 self._draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
-                                           color.ARED)
+                                           colors.ARED)
             elif pole.is_marginal_stable():
-                dyn_color = color.CORAL
+                dyn_color = colors.CORAL
 
             self._draw_aafilled_circle(surface, *pos, pole.r, dyn_color)
 
@@ -199,15 +188,15 @@ class PoleMap(pg_root._State):
     def draw_axes(self, surface, axis_1, axis_2):
         d = {0: axis_1, 1: axis_2}
         for axis in range(2):
-            pg.draw.line(surface, color.BLACK,
+            pg.draw.line(surface, colors.BLACK,
                          *d[axis].get_line(), d[axis].thickness)
 
     def draw_coordlines(self, surface, axis_1, axis_2, grid=True):
         d = {0: axis_1, 1: axis_2}
-        linecolor = color.LGREY
+        linecolor = colors.LGREY
         thickness = 1
         if not grid:
-            linecolor = color.BLACK
+            linecolor = colors.BLACK
             thickness = 2
 
         for axis in range(2):
@@ -228,13 +217,13 @@ class PoleMap(pg_root._State):
         line_margin = 14
 
         rect = self.render_hud(width, height, margin, pos)
-        hudcolor = color.TRAN200
+        hudcolor = colors.TRAN200
 
         pg.gfxdraw.box(surface, rect, hudcolor)
 
         for num, pole in enumerate(self.poles):
             pole_str = f'{pole}'
-            text_color = color.LRED if pole.is_unstable() else color.WHITE
+            text_color = colors.LRED if pole.is_unstable() else colors.WHITE
             text = self.hudfont.render(pole_str, True, text_color)
 
             surface.blit(text, (rect[0] + text_margin,
@@ -244,16 +233,16 @@ class PoleMap(pg_root._State):
         if self.results is not None:
             x, ang, time = self.results
             plt.figure(figsize=(12, 8), dpi=80,
-                       facecolor=(color.get_pp(color.WHITE)))
+                       facecolor=(colors.get_pp(colors.WHITE)))
 
             plt.subplot(211)
-            plt.plot(time, x, color=color.get_pp(color.LBLUE))
+            plt.plot(time, x, color=colors.get_pp(colors.LBLUE))
             plt.xlabel('Time [s]')
             plt.ylabel('Velocity [m/s]')
             plt.grid(True)
 
             plt.subplot(212)
-            plt.plot(time, ang, color=color.get_pp(color.TOMATO))
+            plt.plot(time, ang, color=colors.get_pp(colors.TOMATO))
             plt.xlabel('Time [s]')
             plt.ylabel('Angle [°]')
             plt.grid(True)

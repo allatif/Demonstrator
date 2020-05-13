@@ -10,7 +10,7 @@ class SliderGroup:
 
         self._header_color = header_color
         if header_color is None:
-            self._header_color = self._sliders[0].act_value_color
+            self._header_color = self._sliders[0].settings['active value color']
 
         self._header_size = header_size
         if header_size is None:

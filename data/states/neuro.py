@@ -2,7 +2,7 @@ import pygame as pg
 
 from .. import pg_init, pg_root
 
-from .. components import color
+from .. components import colors
 from .. interface import button
 
 

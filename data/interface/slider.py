@@ -1,25 +1,21 @@
 from . instrument import Instrument
 from . label import Label
+from .. components import colors
 
 
 class Slider(Instrument):
 
-    def __init__(self, value, range_, width, length, color,
-                 act_filled_color, act_thumb_color, act_value_color,
-                 dea_filled_color=None, dea_thumb_color=None,
-                 dea_value_color=None, name=None, margin=10, unit=None):
-        Instrument.__init__(self, value, range_, color,
-                            act_thumb_color, act_value_color,
-                            dea_thumb_color, dea_value_color,
-                            name, margin, unit)
+    def __init__(self, value, range_, width, length, color_pack,
+                 name=None, margin=10, unit=None):
+        Instrument.__init__(self, value, range_, name, color_pack, margin, unit)
         self._width = width
         self._length0 = length
         self._thumb_r = round(1.5*self._width)
         self._length = self._length0 + 2*self._thumb_r
 
-        # Color attributes
-        self.act_filled_color = act_filled_color
-        self.dea_filled_color = dea_filled_color
+        # Add setting keys
+        self._settings['active filled color'] = color_pack['intro']
+        self._settings['deactive filled color'] = colors.DGREY
 
         # Label size depends on Track width
         self._label_size = 8*self._width

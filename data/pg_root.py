@@ -1,5 +1,4 @@
 import os
-import math as m
 
 import pygame as pg
 import pygame.gfxdraw
@@ -159,13 +158,13 @@ class _State:
         if obj.inside(mouse):
             obj.mouseover = True
             if hasattr(obj, 'color'):
-                obj.color = obj.hov_color
+                obj.color = obj.settings['hover color']
             if hasattr(obj, 'virgin'):
                 obj.virgin = False
         else:
             obj.mouseover = False
             if hasattr(obj, 'color'):
-                obj.color = obj.obj_color
+                obj.color = obj.settings['button color']
 
     def instrument_logic(self, mouse, instrument):
         """Instrument logic when mouse grabs thumb of instrument."""
@@ -203,25 +202,27 @@ class _State:
             # Instrument Name Label
             name_label = instrument.name_label
             name_label.cache_font(instrument.name, 'Liberation Sans',
-                                  name_label.size, instrument.act_value_color)
+                                  name_label.size,
+                                  instrument.settings['active value color'])
             surface.blit(name_label.font_cache, name_label.rect)
 
         if type(instrument).__name__ == 'Slider':
             slider = instrument
 
             # Slider Track
-            pg.gfxdraw.box(surface, slider.track.rect, slider.color)
+            pg.gfxdraw.box(surface, slider.track.rect,
+                           slider.settings['track color'])
 
             # Slider Filled Track
-            slid_color = slider.act_filled_color
+            slid_color = slider.settings['active filled color']
             if not slider.active:
-                slid_color = slider.dea_filled_color
+                slid_color = slider.settings['deactive filled color']
             pg.gfxdraw.box(surface, slider.get_slid_rect(), slid_color)
 
             # Slider Thumb
-            thumb_color = slider.act_thumb_color
+            thumb_color = slider.settings['active thumb color']
             if not slider.active:
-                thumb_color = slider.dea_thumb_color
+                thumb_color = slider.settings['deactive thumb color']
             self._draw_aafilled_circle(surface, slider.thumb.c_x,
                                        slider.thumb.c_y,
                                        slider.thumb.r,
@@ -232,24 +233,28 @@ class _State:
 
             # Control Knob Ring
             self._draw_aafilled_ring(surface, knob.ring.c_x, knob.ring.c_y,
-                                     knob.ring.r, knob.ring.w, knob.color)
+                                     knob.ring.r, knob.ring.w,
+                                     knob.settings['track color'])
 
             # Control Knob Cone Thumb
             thumb = knob.thumb
-            thumb_color = instrument.act_thumb_color
+            thumb_color = knob.settings['active thumb color']
             if not knob.active:
-                thumb_color = knob.dea_thumb_color
+                thumb_color = knob.settings['deactive thumb color']
             pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
             pg.draw.polygon(surface, thumb_color, thumb.points)
 
             # Control Knob Pointer
-            pygame.draw.aaline(surface, knob.act_pointer_color,
+            pointer_color = knob.settings['active pointer color']
+            if not knob.active:
+                pointer_color = knob.settings['deactive pointer color']
+            pygame.draw.aaline(surface, pointer_color,
                                knob.pointer.start, knob.pointer.end)
 
         # Instrument Value Label
-        text_color = instrument.act_value_color
+        text_color = instrument.settings['active value color']
         if not instrument.active:
-            text_color = instrument.dea_value_color
+            text_color = instrument.settings['deactive value color']
         instrument.value_label.cache_font('Liberation Sans',
                                           instrument.value_label.size,
                                           only_font=True)
@@ -293,29 +298,29 @@ class _State:
         width = checkbox_obj.border_width
 
         # Box / Radio
+        border_color = checkbox_obj.settings['border color']
+        box_color = checkbox_obj.settings['box color']
         if checkbox_obj.type_ == 'default':
-            if checkbox_obj.box_color is None:
-                pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
+            if box_color is None:
+                pg.draw.rect(surface, border_color, rect, width)
             else:
-                pg.draw.rect(surface, checkbox_obj.box_color, rect)
-                pg.draw.rect(surface, checkbox_obj.border_color, rect, width)
+                pg.draw.rect(surface, box_color, rect)
+                pg.draw.rect(surface, border_color, rect, width)
         elif checkbox_obj.type_ == 'radio':
-            if checkbox_obj.box_color is None:
-                x = rect[0] + checkbox_obj.r
-                y = rect[1] + checkbox_obj.r
-                r = checkbox_obj.r
-                w = width//2
-                box_color = checkbox_obj.box_color
-                border_color = checkbox_obj.border_color
+            x = rect[0] + checkbox_obj.r
+            y = rect[1] + checkbox_obj.r
+            r = checkbox_obj.r
+            w = width//2
+            if box_color is None:
                 self._draw_aafilled_ring(surface, x, y, r, w, border_color)
             else:
                 self._draw_aafilled_circle(surface, x, y, r, box_color)
                 self._draw_aafilled_ring(surface, x, y, r, w, border_color)
 
         # Label Text
-        text_color = checkbox_obj.text_color
+        text_color = checkbox_obj.settings['text color']
         if text_color is None:
-            text_color = checkbox_obj.border_color
+            text_color = checkbox_obj.settings['border color']
 
         checkbox_obj.cache_font(checkbox_obj.label.text, 'Liberation Sans',
                                 checkbox_obj.height, text_color)
@@ -325,32 +330,35 @@ class _State:
         if checkbox_obj.type_ == 'default':
             if checkbox_obj.checked:
                 for line in checkbox_obj.gen_cross():
-                    pg.draw.line(surface, checkbox_obj.border_color,
+                    pg.draw.line(surface, checkbox_obj.settings['border color'],
                                  *line, checkbox_obj.cross_width)
         elif checkbox_obj.type_ == 'radio':
             if checkbox_obj.checked:
                 x, y, r = checkbox_obj.gen_radio()
-                self._draw_aafilled_circle(surface, x, y, r,
-                                           checkbox_obj.border_color)
+                self._draw_aafilled_circle(
+                    surface, x, y, r,
+                    checkbox_obj.settings['border color']
+                )
 
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
 
         pg.gfxdraw.box(surface, button_obj.rect, button_obj.color)
 
-        if button_obj.has_refl:
+        if button_obj.settings['reflection']:
             # Button Reflection
             if button_obj.virgin:
                 signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
                 button_obj.run(signal)
                 self._draw_aafilled_polygon(surface,
                                             button_obj.get_refl_poly(),
-                                            button_obj.hov_color)
+                                            button_obj.settings['hover color'])
 
         # Button Text
         size = button_obj.text_size
         button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
-                              button_obj.text_color, center=button_obj.center)
+                              button_obj.settings['text color'],
+                              center=button_obj.center)
         surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
 
     def render_hud(self, width, height, margin, pos):

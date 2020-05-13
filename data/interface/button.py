@@ -3,23 +3,27 @@ from . box import Box
 
 class Button(Box):
 
-    def __init__(self, text, obj_color, hov_color, text_color, size=(90, 30)):
+    def __init__(self, text, color_pack, text_color, size=(90, 30)):
         Box.__init__(self)
         self.text = text
         self._width = size[0]
         self._height = size[1]
-        self._obj_color = obj_color
-        self._hov_color = hov_color
-        self._text_color = text_color
 
-        self.color = self._obj_color
         self._text_size = round(0.6*self._height)
 
-        self._has_refl = False
+        self._settings = {
+            'button color': color_pack['intro'],
+            'hover color': color_pack['light'],
+            'text color': text_color,
+            'reflection': False,
+        }
+
+        self.color = self._settings['button color']
+
         self.virgin = True
 
     def activate_reflection(self):
-        self._has_refl = True
+        self._settings['reflection'] = True
         self._refl = Reflection(self.pos, 10, self.height)
 
     def run(self, signal):
@@ -43,18 +47,6 @@ class Button(Box):
         self._text_size = value
 
     @property
-    def obj_color(self):
-        return self._obj_color
-
-    @property
-    def hov_color(self):
-        return self._hov_color
-
-    @property
-    def text_color(self):
-        return self._text_color
-
-    @property
     def text_size(self):
         return self._text_size
 
@@ -63,8 +55,8 @@ class Button(Box):
         return self._pos_x + (self._width//2), self._pos_y + (self.height//2)
 
     @property
-    def has_refl(self):
-        return self._has_refl
+    def settings(self):
+        return self._settings
 
 
 class Reflection:

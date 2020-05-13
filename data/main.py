@@ -8,7 +8,7 @@ def main():
     state_dict = {"SPLASH": splash.Splash(),
                   "MAINSETTINGS": main_menu.MainSetup(),
                   "POLEMAP": polemap.PoleMap(),
-                  "NEURO": neuro.Neuro(),
+                  #"NEURO": neuro.Neuro(),
                   "GAME": game.Game(),
                   "SETTINGS": menu.SetupMenu()}
     pgapp.setup_states(state_dict, "SPLASH")

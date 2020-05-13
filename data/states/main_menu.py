@@ -4,9 +4,9 @@ import pygame as pg
 import pygame.gfxdraw
 
 
-from .. import pg_init, pg_root, setup_sim
+from .. import pg_init, pg_root
 
-from .. components import color
+from .. components import colors
 from .. interface import window, slider_group, slider
 from .. interface import button, checkbox_group, checkbox
 
@@ -21,10 +21,11 @@ class MainSetup(pg_root._State):
         self.predone = False
 
         self.win = window.MenuWindow('Main Settings')
-        self.win.cache_font(self.win.header, 'Liberation Sans', 32, color.WHITE)
+        self.win.cache_font(self.win.header, 'Liberation Sans', 32,
+                            colors.WHITE)
 
         # Initialize button
-        self.but_ok = button.Button('OK', color.LRED, color.LLRED, color.WHITE)
+        self.but_ok = button.Button('OK', colors.RED_PACK, colors.WHITE)
         self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
                             self.win.con_bottom-self.but_ok.height)
 
@@ -63,7 +64,7 @@ class MainSetup(pg_root._State):
         cbox_labels = ['60 fps', '100 fps']
         zipped = zip(cbox_labels, self.game_fps_bins)
         for cbox_label, bool_ in zipped:
-            self.fps_cboxes.append(checkbox.CheckBox(24, 3, color.WHITE,
+            self.fps_cboxes.append(checkbox.CheckBox(24, 3, colors.WHITE,
                                                      bool_, name=cbox_label,
                                                      type_='radio'))
 
@@ -74,13 +75,8 @@ class MainSetup(pg_root._State):
         units = ['step(s)']
         self.euler_sliders.append(
             slider.Slider(self.euler_ministeps, ranges[0], 4, 250,
-                          unit=units[0],
-                          margin=15, color=color.GREY,
-                          act_filled_color=color.LLGREEN,
-                          act_thumb_color=color.LGREEN,
-                          act_value_color=color.LGREEN,
-                          name=None)
-        )
+                          colors.GREEN_PACK, name=None, margin=15,
+                          unit=units[0]))
         self.euler_sliders[0].settings['integer'] = True
 
     def get_event(self, event):
@@ -133,7 +129,7 @@ class MainSetup(pg_root._State):
 
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
-        pg.gfxdraw.box(surface, self.win.rect, color.TRAN225)
+        pg.gfxdraw.box(surface, self.win.rect, colors.TRAN225)
 
         self.draw_heading(surface)
         self.draw_checkbox_group(surface, self.cbox_group)

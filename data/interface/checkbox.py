@@ -4,16 +4,13 @@ from . label import Label
 
 class CheckBox(Box):
 
-    def __init__(self, size, border_width, border_color, checked=False,
-                 box_color=None, text_color=None, name=None, type_='default'):
+    def __init__(self, size, border_width, color, checked=False,
+                 name=None, type_='default'):
         Box.__init__(self)
         self._size = size
         self._width = size
         self._height = size
         self._border_width = border_width
-        self._box_color = box_color
-        self._border_color = border_color
-        self._text_color = text_color
         self._type_ = type_
         self.name = name
         self.checked = checked
@@ -21,6 +18,12 @@ class CheckBox(Box):
         self._r = None
         if type_ == 'radio':
             self._r = self._size // 2
+
+        self._settings = {
+            'border color': color,
+            'box color': None,
+            'text color': color
+        }
 
     def set_label(self, text, margin=2):
         self._label = Label(self._pos_x+self._width+margin, self._pos_y,
@@ -48,18 +51,6 @@ class CheckBox(Box):
         return self._border_width
 
     @property
-    def box_color(self):
-        return self._box_color
-
-    @property
-    def border_color(self):
-        return self._border_color
-
-    @property
-    def text_color(self):
-        return self._text_color
-
-    @property
     def label(self):
         return self._label
 
@@ -70,3 +61,7 @@ class CheckBox(Box):
     @property
     def r(self):
         return self._r
+
+    @property
+    def settings(self):
+        return self._settings
