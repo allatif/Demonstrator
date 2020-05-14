@@ -53,7 +53,7 @@ class Splash(pg_root._State):
         self.done = False
         self.persist["game fps binaries"] = self.game_fps_bins
         self.persist["euler ministeps"] = self.euler_ministeps
-        self.persist["bg_image"] = self.splashscreen_imagestr
+        self.persist["bg_image"] = self.screenshot_imagestr
         return self.persist
 
     def get_event(self, event):
@@ -83,7 +83,7 @@ class Splash(pg_root._State):
         self.hover_object_logic(mouse, self.but_set)
 
     def update(self, surface):
-        self.splashscreen_imagestr = pg.image.tostring(surface, 'RGB')
+        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
         self.draw(surface)
 
     def draw(self, surface):

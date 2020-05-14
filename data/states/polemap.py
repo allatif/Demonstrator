@@ -79,7 +79,7 @@ class PoleMap(pg_root._State):
         self.persist["mode"] = 'ss_controller'
         if self.checkbox.checked:
             self.persist["mode"] = 'user'
-        self.persist["bg_image"] = self.polemap_imagestr
+        self.persist["bg_image"] = self.screenshot_imagestr
         return self.persist
 
     def get_event(self, event):
@@ -149,7 +149,7 @@ class PoleMap(pg_root._State):
             pos = self.plane.get_pos_from_point((pole.real, pole.imag))
             self.poles.append(gaussian.Pole(pos, 15, pole.real, pole.imag))
 
-        self.polemap_imagestr = pg.image.tostring(surface, 'RGB')
+        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
 
         self.draw(surface)
 
