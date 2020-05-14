@@ -361,6 +361,10 @@ class _State:
                               center=button_obj.center)
         surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
 
+    def draw_buttons(self, surface, *args):
+        for arg in args:
+            self.draw_button(surface, arg)
+
     def render_hud(self, width, height, margin, pos):
         """Returns the rect of hud field. Rect is always in bottom left or
         bottom right position of the screen."""

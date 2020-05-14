@@ -92,9 +92,7 @@ class Splash(pg_root._State):
         self.draw_header(surface, "DEMONSTRATOR")
 
     def draw_interface(self, surface):
-        self.draw_button(surface, self.but_csd)
-        self.draw_button(surface, self.but_rl)
-        self.draw_button(surface, self.but_set)
+        self.draw_buttons(surface, self.but_csd, self.but_rl, self.but_set)
 
     def draw_header(self, surface, text):
         fontname = 'ARCADECLASSIC'
