@@ -16,7 +16,6 @@ class SetupMenu(pg_root._State):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.next = "POLEMAP"
         self.predone = False
 
         self.win = window.MenuWindow('Settings Menu')
@@ -30,6 +29,7 @@ class SetupMenu(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.next = self.previous
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
 
