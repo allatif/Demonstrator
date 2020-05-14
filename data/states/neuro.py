@@ -12,65 +12,54 @@ class Neuro(pg_root._State):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.next = "POLEMAP"
+        self.next = "GAME"
+        self.sim_ref_state = (0.5, 0)
+        self.sim_init_state = (0, 0, 0, 0.3)
 
-        # Initialize buttons
-        margin = 50
-        button_size = (425, 375)
-        pos_y = 175
-        text_size = 42
-
-        self.but_csd = button.Button('Control System Design',
-                                     obj_color=color.LLGREEN,
-                                     hov_color=color.LLLGREEN,
-                                     text_color=color.BLACK,
-                                     size=button_size)
-        self.but_csd.set_pos(margin, pos_y)
-        self.but_csd.set_text_size(text_size)
-
-        self.but_rl = button.Button('Reinforcement Learning',
-                                    obj_color=color.LRED,
-                                    hov_color=color.LLRED,
-                                    text_color=color.WHITE,
-                                    size=button_size)
-        self.but_rl.set_pos(self.width-self.but_rl.width-margin, pos_y)
-        self.but_rl.set_text_size(text_size)
+        self.but_set = button.Button('Settings', colors.BLUE_PACK, colors.WHITE)
+        self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.next = "GAME"
 
+        if self.previous is not 'SPLASH':
+            self.sim_ref_state = self.persist["sim reference state"]
+            self.sim_init_state = self.persist["sim initial state"]
+
     def cleanup(self):
         self.done = False
+        self.persist["sim reference state"] = self.sim_ref_state
+        self.persist["sim initial state"] = self.sim_init_state
+        self.persist["bg_image"] = self.screenshot_imagestr
         return self.persist
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 self.done = True
+            if event.key == pg.K_BACKSPACE:
+                self.next = "SPLASH"
+                self.done = True
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             pass
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            if self.but_csd.mouseover:
-                self.next = "GAME"
+            if self.but_set.mouseover:
+                self.next = "SETTINGS"
                 self.done = True
 
-            if self.but_rl.mouseover:
-                pass
-
     def mouse_logic(self, mouse):
-        self.hover_object_logic(mouse, self.but_csd)
-        self.hover_object_logic(mouse, self.but_rl)
+        self.hover_object_logic(mouse, self.but_set)
 
     def update(self, surface):
+        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
         self.draw(surface)
 
     def draw(self, surface):
-        surface.fill(color.DGREY)
+        surface.fill(colors.WHITE)
         self.draw_interface(surface)
 
     def draw_interface(self, surface):
-        self.draw_button(surface, self.but_csd)
-        self.draw_button(surface, self.but_rl)
+        self.draw_button(surface, self.but_set)
