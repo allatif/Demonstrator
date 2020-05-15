@@ -16,7 +16,7 @@ class Neuro(pg_root._State):
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
 
-        self.but_set = button.Button('Settings', colors.BLUE_PACK, colors.WHITE)
+        self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
     def startup(self, persistant):

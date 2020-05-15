@@ -24,19 +24,19 @@ class Splash(pg_root._State):
         text_size = 42
 
         self.but_csd = button.Button('Control System Design',
-                                     colors.GREEN_PACK, colors.BLACK,
+                                     colors.LLGREEN, colors.BLACK,
                                      size=button_size)
         self.but_csd.set_pos(margin, pos_y)
         self.but_csd.set_text_size(text_size)
 
         self.but_rl = button.Button('Reinforcement Learning',
-                                    colors.RED_PACK, colors.WHITE,
+                                    colors.LRED, colors.WHITE,
                                     size=button_size)
         self.but_rl.set_pos(self.width-self.but_rl.width-margin, pos_y)
         self.but_rl.set_text_size(text_size)
 
         # Initialize Setup Settings Button
-        self.but_set = button.Button('Main Settings', colors.BLUE_PACK,
+        self.but_set = button.Button('Main Settings', colors.LBLUE,
                                      colors.WHITE, size=(button_size[0], 75))
         self.but_set.set_pos(margin, button_size[1]+pos_y+margin)
         self.but_set.set_text_size(text_size - 6)

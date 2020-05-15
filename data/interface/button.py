@@ -3,7 +3,7 @@ from . box import Box
 
 class Button(Box):
 
-    def __init__(self, text, color_pack, text_color, size=(90, 30)):
+    def __init__(self, text, color, text_color, size=(90, 30)):
         Box.__init__(self)
         self.text = text
         self._width = size[0]
@@ -11,11 +11,12 @@ class Button(Box):
 
         self._text_size = round(0.6*self._height)
 
+        light_color = self._lighten_color(color)
         self._settings = {
-            'button color': color_pack['intro'],
-            'hover color': color_pack['light'],
+            'button color': color,
+            'hover color': light_color,
             'text color': text_color,
-            'reflection': False,
+            'reflection': False
         }
 
         self.color = self._settings['button color']
@@ -45,6 +46,25 @@ class Button(Box):
 
     def set_text_size(self, value):
         self._text_size = value
+
+    @staticmethod
+    def _lighten_color(color):
+        new_color = [0, 0, 0]
+        extra = 0
+        prime = color.index(max(color))
+        for idx, component in enumerate(color):
+            if idx == prime:
+                new_color[idx] = component + 25
+                if new_color[idx] > 255:
+                    new_color[idx] = 255
+            elif component == 0:
+                extra = 55
+                continue
+            else:
+                backlash = 255 - component
+                new_color[idx] = component + int(round(backlash*0.165)) + extra
+
+        return tuple(new_color)
 
     @property
     def text_size(self):

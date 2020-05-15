@@ -25,7 +25,7 @@ class MainSetup(pg_root._State):
                             colors.WHITE)
 
         # Initialize button
-        self.but_ok = button.Button('OK', colors.RED_PACK, colors.WHITE)
+        self.but_ok = button.Button('OK', colors.LRED, colors.WHITE)
         self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
                             self.win.con_bottom-self.but_ok.height)
 

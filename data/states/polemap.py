@@ -46,10 +46,10 @@ class PoleMap(pg_root._State):
         self.checkbox.set_label('Switch off Controller', margin=5)
 
         # Initialize buttons
-        self.but_set = button.Button('Settings', colors.BLUE_PACK, colors.WHITE)
+        self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
-        self.but_plot = button.Button('Show Plot', colors.RED_PACK,
+        self.but_plot = button.Button('Show Plot', colors.LRED,
                                       colors.WHITE)
         self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
         self.but_plot.activate_reflection()
