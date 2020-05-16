@@ -9,10 +9,9 @@ class Button(Box):
         self._width = size[0]
         self._height = size[1]
 
-        light_color = self._lighten_color(color)
         self._settings = {
             'button color': color,
-            'hover color': light_color,
+            'hover color': self._lighten_color(color),
             'text color': text_color,
             'text size': round(0.6*self._height),
             'text align center': True,
