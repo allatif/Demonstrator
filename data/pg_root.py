@@ -353,7 +353,13 @@ class _State:
             list_tuple = tuple(button
                                for button in list_box_obj.options.values())
             self.draw_buttons(surface, *list_tuple)
+
         self.draw_button(surface, list_box_obj.box_header)
+        for layer in list_box_obj.arrow.layerlines:
+            for line in layer:
+                pg.draw.aaline(surface,
+                               list_box_obj.box_header.settings['text color'],
+                               line[0], line[1], 0)
 
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
@@ -365,8 +371,7 @@ class _State:
             if button_obj.virgin:
                 signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
                 button_obj.run(signal)
-                self._draw_aafilled_polygon(surface,
-                                            button_obj.get_refl_poly(),
+                self._draw_aafilled_polygon(surface, button_obj.get_refl_poly(),
                                             button_obj.settings['hover color'])
 
         # Button Text
