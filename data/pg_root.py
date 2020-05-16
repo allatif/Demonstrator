@@ -277,6 +277,13 @@ class _State:
         else:
             surface.blit(text, instrument.value_label.rect)
 
+    def draw_label(self, surface, label_obj):
+        """Draws label. / # *args = text, font_name, size, color"""
+        label_obj.cache_font(label_obj.text, 'Liberation Sans',
+                             label_obj.size, label_obj.color)
+        text = label_obj.font_cache
+        surface.blit(text, label_obj.pos)
+
     def draw_checkbox_group(self, surface, cbox_group_obj):
         """Draws all checkboxes as a group that where passed through
         as cbox group object."""
@@ -408,11 +415,11 @@ class _State:
         return pg.font.SysFont(name, size)
 
     @staticmethod
-    def render_font(text, name, size, color, center=None):
+    def render_font(text, font_name, size, color, center=None):
         """Returns the rendered font surface and its rect centered on center,
         if required."""
 
-        font = _State.get_font(name, size)
+        font = _State.get_font(font_name, size)
         text = font.render(text, True, color)
         if center is not None:
             rect = text.get_rect(center=center)
