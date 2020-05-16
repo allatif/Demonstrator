@@ -340,6 +340,14 @@ class _State:
                     checkbox_obj.settings['border color']
                 )
 
+    def draw_list_box(self, surface, list_box_obj):
+        """Draws list box by recycling draw_button() method."""
+        if list_box_obj.opened:
+            list_tuple = tuple(button
+                               for button in list_box_obj.options.values())
+            self.draw_buttons(surface, *list_tuple)
+        self.draw_button(surface, list_box_obj.box_header)
+
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
 
@@ -362,6 +370,7 @@ class _State:
         surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
 
     def draw_buttons(self, surface, *args):
+        """Draws buttons by calling draw_button() method."""
         for arg in args:
             self.draw_button(surface, arg)
 
