@@ -22,7 +22,7 @@ class ListBox:
         self._arrow = Arrow(12, 6, color=text_color)
         for element in list_:
             text = self.compress_text(element)
-            self._options[text] = Button(text, box_color, text_color, size)
+            self._options[element] = Button(text, box_color, text_color, size)
         self._update_button_settings()
 
         self.opened = False
@@ -37,9 +37,10 @@ class ListBox:
             button.set_pos(pos_x, pos_y)
 
     def expand(self):
-        margin = self._item_height
+        margin = 2
         for num, button in enumerate(self._options.values()):
-            button.set_pos(self._pos_x, self._pos_y + (num+1)*margin + 2)
+            button.set_pos(self._pos_x,
+                           self._pos_y + (num+1)*self._item_height + margin)
             button.settings['button color'] = self._settings['box color']
         self._box_header.settings['button color'] \
             = self._settings['header open color']
@@ -55,7 +56,7 @@ class ListBox:
 
     def pick_up(self):
         if self.selected is not None:
-            self._box_header.text = self.selected
+            self._box_header.text = self.compress_text(self.selected)
 
     def _update_button_settings(self):
         head = self._box_header
@@ -100,6 +101,10 @@ class ListBox:
     @property
     def options(self):
         return self._options
+
+    @property
+    def choosen_option(self):
+        return self._choosen_option
 
     @property
     def settings(self):
