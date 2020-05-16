@@ -3,7 +3,7 @@ import pygame as pg
 from .. import pg_init, pg_root
 
 from .. components import colors
-from .. interface import button, list_box
+from .. interface import button, list_box, label
 
 
 MODELLIST = [f'Neuro_Model_{num}' for num in range(10)]
@@ -19,8 +19,10 @@ class Neuro(pg_root._State):
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
 
+        self.model_list_label = label.Label(10, 10, 18, "Load Model:")
+
         self.model_list = list_box.ListBox(MODELLIST, colors.TOMATO)
-        self.model_list.set_pos(120, 10)
+        self.model_list.set_pos(110, 10)
 
         self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
@@ -62,12 +64,12 @@ class Neuro(pg_root._State):
                         self.model_list.selected = list_option.text
                         self.model_list.collapse()
                         self.model_list.pick_up()
-
-            if self.model_list.box_header.mouseover:
-                if not self.model_list.opened:
+                    elif (not list_option.mouseover
+                            or self.model_list.box_header.mouseover):
+                        self.model_list.collapse()
+            elif not self.model_list.opened:
+                if self.model_list.box_header.mouseover:
                     self.model_list.expand()
-                elif self.model_list.opened:
-                    self.model_list.collapse()
 
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.but_set)
@@ -84,5 +86,6 @@ class Neuro(pg_root._State):
         self.draw_interface(surface)
 
     def draw_interface(self, surface):
+        self.draw_label(surface, self.model_list_label)
         self.draw_button(surface, self.but_set)
         self.draw_list_box(surface, self.model_list)

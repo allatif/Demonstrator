@@ -34,7 +34,7 @@ class ListBox:
             button.set_pos(pos_x, pos_y)
 
     def expand(self):
-        margin = self._item_height
+        margin = self._item_height+1
         for num, button in enumerate(self._options.values()):
             button.set_pos(self._pos_x, self._pos_y + (num+1)*margin)
         self._box_header.settings['button color'] \
