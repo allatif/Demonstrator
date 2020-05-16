@@ -20,6 +20,8 @@ class Box:
         return in_x and in_y
 
     def cache_font(self, *args, center=None, only_font=False):
+        # *args|get_font = font_name, size
+        # *args|render_font = text, font_name, size, color
         if self.font_cache is None:
             if only_font:
                 self.font_cache = pg_root._State.get_font(args[0], args[1])
