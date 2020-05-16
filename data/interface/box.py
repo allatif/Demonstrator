@@ -15,8 +15,8 @@ class Box:
         self._rect = self._pos_x, self._pos_y, self._width, self._height
 
     def inside(self, point):
-        in_x = point[0] >= self._pos_x and point[0] <= self._pos_x+self._width
-        in_y = point[1] >= self._pos_y and point[1] <= self._pos_y+self._height
+        in_x = point[0] >= self._pos_x and point[0] < self._pos_x+self._width
+        in_y = point[1] >= self._pos_y and point[1] < self._pos_y+self._height
         return in_x and in_y
 
     def cache_font(self, *args, center=None, only_font=False):
