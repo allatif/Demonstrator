@@ -61,7 +61,6 @@ class Neuro(pg_root._State):
                         self.model_box.selected = key
                         self.model_box.collapse()
                         self.model_box.pick_up()
-                        print(self.model_box.selected)
                     elif (not option.mouseover
                             or self.model_box.box_header.mouseover):
                         self.model_box.collapse()
