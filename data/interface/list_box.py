@@ -13,8 +13,8 @@ class ListBox:
         self._settings = {
             'box color': box_color,
             'text color': text_color,
-            'option color': option_color
-        }
+            'option color': option_color,
+            'header open color': Button._darken_color(box_color)}
 
         self._box_header = Button('', box_color, text_color, size)
         for element_name in list_:
@@ -36,10 +36,13 @@ class ListBox:
         margin = self._item_height
         for num, button in enumerate(self._options.values()):
             button.set_pos(self._pos_x, self._pos_y + (num+1)*margin)
+        self._box_header.settings['button color'] \
+            = self._settings['header open color']
         self.opened = True
 
     def collapse(self):
         self.set_pos(self._pos_x, self._pos_y)
+        self._box_header.settings['button color'] = self._settings['box color']
         self.opened = False
 
     def pick_up(self):
