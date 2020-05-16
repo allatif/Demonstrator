@@ -36,6 +36,7 @@ class Neuro(pg_root._State):
         self.done = False
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
+        self.persist["selected model"] = self.model_box.selected
         self.persist["bg_image"] = self.screenshot_imagestr
         return self.persist
 

@@ -24,7 +24,6 @@ class Game(pg_root._State):
             pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.next = "POLEMAP"
         self.bg_img = pg_init.GFX['bg']
 
         # Initialize Control Objects
@@ -32,7 +31,6 @@ class Game(pg_root._State):
         self.force_records = []
         self.user = MouseControl(sensibility=1000)
         self.agent = Agent()
-        # .load_model("sphere_cone_rl_pg.h5")
 
         # Initialize Dynamik Model
         self.sim = setup_sim.SimData(120_000)
@@ -72,9 +70,19 @@ class Game(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+
+        if self.previous == 'POLEMAP':
+            self.Kregs = self.persist["controller"]
+            self.mode = self.persist["mode"]
+            self.next = "POLEMAP"
+        elif self.previous == 'NEURO':
+            self.Kregs = (0, 0, 0, 0)
+            self.mode = 'agent'
+            self.agent_model = self.persist["selected model"]
+            self.next = "NEURO"
+
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
-        self.Kregs = self.persist["controller"]
         self.euler_ministeps = self.persist["euler ministeps"]
         self.frame_step = self.euler_ministeps
 
@@ -85,13 +93,14 @@ class Game(pg_root._State):
 
         self.ruler.marker.set(self.sim_ref_state[0])
 
-        self.mode = self.persist["mode"]
         if self.mode == 'user':
             print(" -- User in control now -- ")
         elif self.mode == 'ss_controller':
             print(self.Kregs)
         elif self.mode == 'agent':
+            self.agent.load_model(self.agent_model)
             print(" -- Agent in control now -- ")
+            print("Loaded TensorFlow model", self.agent_model)
 
         # Reset Euler algorithm
         Game.step = 0
