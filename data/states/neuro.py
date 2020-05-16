@@ -56,12 +56,12 @@ class Neuro(pg_root._State):
                 self.done = True
 
             if self.model_box.opened:
-                for list_option in self.model_box.options.values():
-                    if list_option.mouseover:
-                        self.model_box.selected = list_option.text
+                for option in self.model_box.options.values():
+                    if option.mouseover:
+                        self.model_box.selected = option.text
                         self.model_box.collapse()
                         self.model_box.pick_up()
-                    elif (not list_option.mouseover
+                    elif (not option.mouseover
                             or self.model_box.box_header.mouseover):
                         self.model_box.collapse()
             elif not self.model_box.opened:
@@ -71,8 +71,8 @@ class Neuro(pg_root._State):
     def mouse_logic(self, mouse):
         self.hover_object_logic(mouse, self.but_set)
         self.hover_object_logic(mouse, self.model_box.box_header)
-        for list_option in self.model_box.options.values():
-            self.hover_object_logic(mouse, list_option)
+        for option in self.model_box.options.values():
+            self.hover_object_logic(mouse, option)
 
     def update(self, surface):
         self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
