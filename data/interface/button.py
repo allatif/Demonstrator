@@ -5,7 +5,7 @@ class Button(Box):
 
     def __init__(self, text, color, text_color, size=(90, 30)):
         Box.__init__(self)
-        self.text = text
+        self._text = text
         self._width = size[0]
         self._height = size[1]
 
@@ -65,6 +65,15 @@ class Button(Box):
                 new_color[idx] = component + int(round(backlash*0.165)) + extra
 
         return tuple(new_color)
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, new_text):
+        self.font_cache = None
+        self._text = new_text
 
     @property
     def text_size(self):
