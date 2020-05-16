@@ -18,7 +18,7 @@ class Neuro(pg_root._State):
         self.models = self.get_models()
 
         self.model_box = list_box.ListBox(self.models, colors.TOMATO)
-        self.model_box.set_pos(110, 10)
+        self.model_box.set_pos(100, 10)
         self.model_box_label = label.Label(10, 10, 18, "Load Model:")
 
         self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
