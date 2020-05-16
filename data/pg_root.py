@@ -427,6 +427,15 @@ class _State:
         return text
 
     @staticmethod
+    def get_models():
+        """Returns a list of all TensorFlow model *.h5 file names."""
+        directory = os.path.join('data', 'components', 'rl', 'models')
+        model_list = []
+        for model_file in os.listdir(directory):
+            model_list.append(model_file)
+        return model_list
+
+    @staticmethod
     def _draw_aafilled_polygon(surface, points, color):
         pg.gfxdraw.aapolygon(surface, points, color)
         pg.gfxdraw.filled_polygon(surface, points, color)
