@@ -15,7 +15,7 @@ class ListBox:
             'text color': text_color,
             'text align center': False,
             'option color': option_color,
-            'header open color': Button._darken_color(box_color)}
+            'header open color': Button._darken_color(box_color, 50)}
 
         self._box_header = Button('', box_color, text_color, size)
         self._box_header.settings['text margin left'] = 20

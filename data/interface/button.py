@@ -64,10 +64,10 @@ class Button(Box):
         return tuple(new_color)
 
     @staticmethod
-    def _darken_color(color):
+    def _darken_color(color, value=30):
         new_color = [0, 0, 0]
         for idx, component in enumerate(color):
-            new_color[idx] = component - 30
+            new_color[idx] = component - value
             if new_color[idx] < 0:
                 new_color[idx] = 0
 
