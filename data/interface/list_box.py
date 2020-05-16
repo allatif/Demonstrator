@@ -5,7 +5,7 @@ from .. components import colors
 class ListBox:
 
     def __init__(self, list_, option_color, box_color=colors.LGREY,
-                 text_color=colors.BLACK, size=(160, 30)):
+                 text_color=colors.BLACK, size=(200, 30)):
         self._list = list_
         self._options = {}
         self._item_height = size[1]
@@ -18,9 +18,9 @@ class ListBox:
             'header open color': Button._darken_color(box_color)}
 
         self._box_header = Button('', box_color, text_color, size)
-        for element_name in list_:
-            self._options[element_name] = Button(element_name, box_color,
-                                                 text_color, size)
+        for element in list_:
+            self._options[element] = Button(self.compress_text(element),
+                                            box_color, text_color, size)
         self._update_button_settings()
 
         self.opened = False
@@ -62,6 +62,21 @@ class ListBox:
             but.settings['text color'] = self._settings['text color']
             but.settings['text align center'] \
                 = self._settings['text align center']
+
+    @staticmethod
+    def compress_text(text, maxlen=20, taillen=6):
+        ripoff_pos = maxlen - taillen
+        isfile = '.' in text[-5:]
+        if isfile:
+            file, ext = text.split('.')
+            extlen = len(ext)+1
+            if len(file) > maxlen-extlen:
+                return f'{file[:ripoff_pos-extlen]}...{file[-taillen:]}.{ext}'
+            return text
+        else:
+            if len(text) > maxlen:
+                return f'{text[:ripoff_pos]}...{text[-taillen:]}'
+            return text
 
     @property
     def list(self):
