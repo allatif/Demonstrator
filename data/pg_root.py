@@ -363,7 +363,7 @@ class _State:
                                             button_obj.settings['hover color'])
 
         # Button Text
-        size = button_obj.text_size
+        size = button_obj.settings['text size']
         button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
                               button_obj.settings['text color'],
                               center=button_obj.center)

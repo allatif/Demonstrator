@@ -9,13 +9,13 @@ class Button(Box):
         self._width = size[0]
         self._height = size[1]
 
-        self._text_size = round(0.6*self._height)
-
         light_color = self._lighten_color(color)
         self._settings = {
             'button color': color,
             'hover color': light_color,
             'text color': text_color,
+            'text size': round(0.6*self._height),
+            'text align center': True,
             'reflection': False
         }
 
@@ -43,9 +43,6 @@ class Button(Box):
 
     def get_refl_poly(self):
         return self._refl.get_points()
-
-    def set_text_size(self, value):
-        self._text_size = value
 
     @staticmethod
     def _lighten_color(color):
@@ -84,10 +81,6 @@ class Button(Box):
     def text(self, new_text):
         self.font_cache = None
         self._text = new_text
-
-    @property
-    def text_size(self):
-        return self._text_size
 
     @property
     def center(self):
