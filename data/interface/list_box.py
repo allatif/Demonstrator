@@ -13,6 +13,7 @@ class ListBox:
         self._settings = {
             'box color': box_color,
             'text color': text_color,
+            'text align center': False,
             'option color': option_color,
             'header open color': Button._darken_color(box_color)}
 
@@ -50,13 +51,17 @@ class ListBox:
             self._box_header.text = self.selected
 
     def _update_button_settings(self):
-        self._box_header.settings['button color'] = self._settings['box color']
-        self._box_header.settings['hover color'] = self._settings['option color']
-        self._box_header.settings['text color'] = self._settings['text color']
-        for button in self._options.values():
-            button.settings['button color'] = self._settings['box color']
-            button.settings['hover color'] = self._settings['option color']
-            button.settings['text color'] = self._settings['text color']
+        head = self._box_header
+        head.settings['button color'] = self._settings['box color']
+        head.settings['hover color'] = self._settings['option color']
+        head.settings['text color'] = self._settings['text color']
+        head.settings['text align center'] = self._settings['text align center']
+        for but in self._options.values():
+            but.settings['button color'] = self._settings['box color']
+            but.settings['hover color'] = self._settings['option color']
+            but.settings['text color'] = self._settings['text color']
+            but.settings['text align center'] \
+                = self._settings['text align center']
 
     @property
     def list(self):

@@ -16,6 +16,7 @@ class Button(Box):
             'text color': text_color,
             'text size': round(0.6*self._height),
             'text align center': True,
+            'text margin left': 10,
             'reflection': False
         }
 

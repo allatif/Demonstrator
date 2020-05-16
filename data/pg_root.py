@@ -367,7 +367,12 @@ class _State:
         button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
                               button_obj.settings['text color'],
                               center=button_obj.center)
-        surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
+        if button_obj.settings['text align center']:
+            surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
+        else:
+            pos = button_obj.font_cache[1]
+            pos[0] = button_obj.pos[0] + button_obj.settings['text margin left']
+            surface.blit(button_obj.font_cache[0], pos)
 
     def draw_buttons(self, surface, *args):
         """Draws buttons by calling draw_button() method."""
