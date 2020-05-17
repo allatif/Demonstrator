@@ -158,9 +158,11 @@ class PoleMap(pg_root._State):
         self.draw_coordlines(surface, self.plane.Re_axis, self.plane.Im_axis)
         self.draw_axes(surface, self.plane.Re_axis, self.plane.Im_axis)
 
+        # Animate unstable pole flicker via signal
+        signal_length = self.static_fps // 2
+        signal = self.gen_signal_by_loop(4, signal_length, for_obj='Pole')
         for pole in self.poles:
             pos = pole.get_center()
-
             Re_scale = self.plane.Re_axis.get_scale()
             Im_scale = self.plane.Im_axis.get_scale()
             if Re_scale <= 12 or Im_scale <= 12:
@@ -171,9 +173,7 @@ class PoleMap(pg_root._State):
             dyn_color = colors.LBLUE
             if pole.is_unstable():
                 dyn_color = colors.RED
-
-                # Animate unstable pole flicker
-                signal = self.gen_signal_by_loop(4, 80, for_obj='Pole')
+                # Draw flicker light circle (transparent red)
                 self._draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
                                            colors.ARED)
@@ -250,6 +250,9 @@ class PoleMap(pg_root._State):
             plt.show()
 
     def gen_signal_by_loop(self, amplitude, length, for_obj='Pole'):
+        """Generates sinus signal from loop counter where argument length
+        controls the frequency of flickering. Should vary when fps changed."""
+
         self.run_loop_counter()
         if for_obj == 'Pole':
             return amplitude * m.sin((self._i_/length) * m.pi)**2
