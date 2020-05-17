@@ -368,6 +368,7 @@ class _State:
         pg.gfxdraw.box(surface, button_obj.rect, button_obj.color)
 
         if button_obj.settings['reflection']:
+            button_obj.settings['refl animation speed'] = 120//self.static_fps
             # Button Reflection
             if button_obj.virgin:
                 button_obj.run()

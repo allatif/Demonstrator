@@ -17,7 +17,8 @@ class Button(Box):
             'text align center': True,
             'text margin left': 10,
             'reflection': False,
-            'reflection color': self._lighten_color(color, 2)
+            'reflection color': self._lighten_color(color, 2),
+            'refl animation speed': 1
         }
 
         self.color = self._settings['button color']
@@ -29,7 +30,7 @@ class Button(Box):
         self._refl = Reflection(self.rect)
 
     def run(self):
-        self._refl.flow()
+        self._refl.flow(self._settings['refl animation speed'])
 
     @staticmethod
     def _lighten_color(color, step=1):
@@ -102,33 +103,37 @@ class Reflection:
             self._w
         )
 
+        self._but_w_h_ratio = int(round(self._b_rect[2]/self._b_rect[3]))
+
         self._rrect_v = ReflecRec(self._start_rect_v)
         self._rrect_h = ReflecRec(self._start_rect_h)
 
         self._pause_counter = 0
         self._pause = False
 
-    def flow(self):
+    def flow(self, speed):
+        ver_speed = speed
+        hor_speed = self._but_w_h_ratio * speed
         if not self._pause:
             if self._rrect_v.rect[1]+self._rrect_v.rect[3] \
                     < self._b_rect[1]+self._b_rect[3]:
-                self._rrect_v.stretch_rect(1, axis=0)
+                self._rrect_v.stretch_rect(ver_speed, axis=0)
             else:
-                self._rrect_v.compress_rect(1, axis=0)
+                self._rrect_v.compress_rect(ver_speed, axis=0)
                 if self._rrect_h.rect[0]+self._rrect_h.rect[2] \
                         < self._b_rect[0]+self._b_rect[2]:
-                    self._rrect_h.stretch_rect(3, axis=1)
+                    self._rrect_h.stretch_rect(hor_speed, axis=1)
                 else:
-                    self._rrect_h.compress_rect(3, axis=1)
+                    self._rrect_h.compress_rect(hor_speed, axis=1)
                     if self._rrect_h.rect[2] <= 0:
                         self._pause = True
         elif self._pause:
-            self.hold(500)
+            self.hold(500//speed)
 
     def hold(self, time):
-        frame = time // 10
+        frames = time // 10
         self._pause_counter += 1
-        if self._pause_counter >= frame:
+        if self._pause_counter >= frames:
             self._pause = False
             self._pause_counter = 0
             self.reset()
