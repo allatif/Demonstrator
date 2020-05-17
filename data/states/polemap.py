@@ -173,7 +173,7 @@ class PoleMap(pg_root._State):
                 dyn_color = colors.RED
 
                 # Animate unstable pole flicker
-                signal = self.gen_signal_by_loop(4, 80, forobj='Pole')
+                signal = self.gen_signal_by_loop(4, 80, for_obj='Pole')
                 self._draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
                                            colors.ARED)
@@ -249,9 +249,7 @@ class PoleMap(pg_root._State):
 
             plt.show()
 
-    def gen_signal_by_loop(self, amplitude, length, forobj='Pole'):
+    def gen_signal_by_loop(self, amplitude, length, for_obj='Pole'):
         self.run_loop_counter()
-        if forobj == 'Pole':
+        if for_obj == 'Pole':
             return amplitude * m.sin((self._i_/length) * m.pi)**2
-        elif forobj == 'But_Refl':
-            return not (self._i_ % 1)
