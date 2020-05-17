@@ -1,3 +1,5 @@
+import sys
+
 import pygame as pg
 
 from .. import pg_init, pg_root
@@ -12,7 +14,6 @@ class Splash(pg_root._State):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.next = "POLEMAP"
 
         self.game_fps_bins = [False, True]
         self.euler_ministeps = 10
@@ -47,7 +48,6 @@ class Splash(pg_root._State):
         pg_root._State.startup(self, persistant)
         self.game_fps_bins = self.persist["game fps binaries"]
         self.euler_ministeps = self.persist["euler ministeps"]
-        self.next = "POLEMAP"
 
     def cleanup(self):
         self.done = False
@@ -59,7 +59,8 @@ class Splash(pg_root._State):
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
-                self.done = True
+                pg.quit()
+                sys.exit()
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
             pass

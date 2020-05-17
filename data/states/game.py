@@ -74,12 +74,12 @@ class Game(pg_root._State):
         if self.previous == 'POLEMAP':
             self.Kregs = self.persist["controller"]
             self.mode = self.persist["mode"]
-            self.next = "POLEMAP"
+            self.next = self.previous
         elif self.previous == 'NEURO':
             self.Kregs = (0, 0, 0, 0)
             self.mode = 'agent'
             self.agent_model = self.persist["selected model"]
-            self.next = "NEURO"
+            self.next = self.previous
 
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]

@@ -12,7 +12,7 @@ class Neuro(pg_root._State):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.next = "GAME"
+
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
         self.models = self.get_models()
