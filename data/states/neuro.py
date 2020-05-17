@@ -43,7 +43,8 @@ class Neuro(pg_root._State):
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
-                self.done = True
+                if self.model_box.selected is not None:
+                    self.done = True
             if event.key == pg.K_BACKSPACE:
                 self.next = "SPLASH"
                 self.done = True
