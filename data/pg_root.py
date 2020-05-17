@@ -153,7 +153,7 @@ class _State:
         pass
 
     def hover_object_logic(self, mouse, obj):
-        """Object logic for mouse hovering"""
+        """Object logic for mouse hovering."""
 
         if obj.inside(mouse):
             obj.mouseover = True
@@ -349,6 +349,7 @@ class _State:
 
     def draw_list_box(self, surface, list_box_obj):
         """Draws list box by recycling draw_button() method."""
+
         if list_box_obj.opened:
             list_tuple = tuple(button
                                for button in list_box_obj.options.values())
@@ -395,6 +396,7 @@ class _State:
 
     def draw_buttons(self, surface, *args):
         """Draws buttons by calling draw_button() method."""
+
         for arg in args:
             self.draw_button(surface, arg)
 
