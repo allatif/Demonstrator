@@ -33,8 +33,8 @@ class Button(Box):
 
     @staticmethod
     def _lighten_color(color, step=1):
+        step = 3 if step >= 3 else step
         new_color = [0, 0, 0]
-        extra = 0
         prime = color.index(max(color))
         for idx, component in enumerate(color):
             if idx == prime:
@@ -42,12 +42,11 @@ class Button(Box):
                 if new_color[idx] > 255:
                     new_color[idx] = 255
             elif component == 0:
-                extra = 55
-                continue
+                new_color[idx] = 55
             else:
                 backlash = 255 - component
                 gamma = step * 0.165
-                new_color[idx] = component + int(round(backlash*gamma)) + extra
+                new_color[idx] = component + int(round(backlash*gamma))
 
         return tuple(new_color)
 
