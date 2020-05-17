@@ -16,7 +16,8 @@ class Button(Box):
             'text size': round(0.6*self._height),
             'text align center': True,
             'text margin left': 10,
-            'reflection': False
+            'reflection': False,
+            'reflection color': self._lighten_color(color, 2)
         }
 
         self.color = self._settings['button color']
@@ -25,27 +26,13 @@ class Button(Box):
 
     def activate_reflection(self):
         self._settings['reflection'] = True
-        self._refl = Reflection(self.pos, 10, self.height)
+        self._refl = Reflection(self.rect)
 
-    def run(self, signal):
-        if signal:
-            self._refl.move()
+    def run(self):
         self._refl.flow()
 
-        for pt in range(4):
-            if not self.inside((self._refl.get_points()[pt][0]+self._refl._m,
-                                self._refl.get_points()[pt][1]+self._refl._m)):
-                self._refl.set_fixed_point(pt)
-
-        if not self.inside((self._refl.get_points()[3][0]+self._refl._m,
-                            self._refl.get_points()[3][1])):
-            self._refl.build_control(task='reset')
-
-    def get_refl_poly(self):
-        return self._refl.get_points()
-
     @staticmethod
-    def _lighten_color(color):
+    def _lighten_color(color, step=1):
         new_color = [0, 0, 0]
         extra = 0
         prime = color.index(max(color))
@@ -59,7 +46,8 @@ class Button(Box):
                 continue
             else:
                 backlash = 255 - component
-                new_color[idx] = component + int(round(backlash*0.165)) + extra
+                gamma = step * 0.165
+                new_color[idx] = component + int(round(backlash*gamma)) + extra
 
         return tuple(new_color)
 
@@ -87,122 +75,124 @@ class Button(Box):
         return self._pos_x + (self._width//2), self._pos_y + (self.height//2)
 
     @property
+    def reflection(self):
+        return self._refl
+
+    @property
     def settings(self):
         return self._settings
 
 
 class Reflection:
 
-    def __init__(self, button_pos, deferment, height, width=30):
-        self._b_pos = button_pos
-        self._d = deferment
-        self._h = height
+    def __init__(self, button_rect, width=3):
+        self._b_rect = button_rect
         self._w = width
+        self._start_rect_v = (
+            # x, y, width, height
+            self._b_rect[0],
+            self._b_rect[1],
+            self._w,
+            0
+        )
+        self._start_rect_h = (
+            # x, y, width, height
+            self._b_rect[0],
+            self._b_rect[1] + self._b_rect[3] - self._w,
+            0,
+            self._w
+        )
 
-        # m is the margin between button edge and reflection
-        self._m = 2
+        self._rrect_v = ReflecRec(self._start_rect_v)
+        self._rrect_h = ReflecRec(self._start_rect_h)
 
-        # R is the Ratio of height to deferment
-        self._R = height / deferment
-
-        # Polygon starts on the top right of button rect
-        self._start = [(self._b_pos[0], self._b_pos[1]),
-                       (self._b_pos[0], self._b_pos[1]),
-                       (self._b_pos[0], self._b_pos[1]),
-                       (self._b_pos[0], self._b_pos[1])]
-        self._points = self._start
-
-        self._loc = 0
-        self._step = 0
-        self._steps = [False, False, False]
-        self._fixed_points = [None, None, None, None]
-
-    def move(self):
-        self._loc += 1
+        self._pause_counter = 0
+        self._pause = False
 
     def flow(self):
-        m = self._m
-        R = self._R
-        x = self._loc
-        xs = [x, x, x, x]
+        if not self._pause:
+            if self._rrect_v.rect[1]+self._rrect_v.rect[3] \
+                    < self._b_rect[1]+self._b_rect[3]:
+                self._rrect_v.stretch_rect(1, axis=0)
+            else:
+                self._rrect_v.compress_rect(1, axis=0)
+                if self._rrect_h.rect[0]+self._rrect_h.rect[2] \
+                        < self._b_rect[0]+self._b_rect[2]:
+                    self._rrect_h.stretch_rect(3, axis=1)
+                else:
+                    self._rrect_h.compress_rect(3, axis=1)
+                    if self._rrect_h.rect[2] <= 0:
+                        self._pause = True
+        elif self._pause:
+            self.hold(500)
 
-        for pt in range(4):
-            if self._fixed_points[pt] is not None:
-                xs[pt] = self._fixed_points[pt]
+    def hold(self, time):
+        frame = time // 10
+        self._pause_counter += 1
+        if self._pause_counter >= frame:
+            self._pause = False
+            self._pause_counter = 0
+            self.reset()
 
-        if self._points[1][0] < self._b_pos[0]+self._d:
-            # Growing Triangle
-            self._points = [(self._b_pos[0], self._b_pos[1]),
-                            (self._b_pos[0]+xs[1], self._b_pos[1]),
-                            (self._b_pos[0], self._b_pos[1]+xs[2]*R),
-                            (self._b_pos[0], self._b_pos[1]+xs[3]*R)]
+    def reset(self):
+        self._rrect_v = ReflecRec(self._start_rect_v)
+        self._rrect_h = ReflecRec(self._start_rect_h)
 
-        elif (self._points[1][0] >= self._b_pos[0]+self._d
-              and self._points[1][0] < self._b_pos[0]+self._w):
-            # Building Width of Trapezium
-            self._unfix_point(2)
-            self._unfix_point(3)
-            if self._step == 0:
-                if not self._steps[self._step]:
-                    self.build_control()
-                    x = self._loc
-                    xs = [x, x, x, x]
+    @property
+    def rrect_v(self):
+        return self._rrect_v
 
-            self._points = [(self._b_pos[0], self._b_pos[1]),
-                            (self._b_pos[0]+self._d+xs[1], self._b_pos[1]),
-                            (self._b_pos[0]+xs[2], self._b_pos[1]+self._h-m),
-                            (self._b_pos[0], self._b_pos[1]+self._h-m)]
+    @property
+    def rrect_h(self):
+        return self._rrect_h
 
-        elif (self._points[1][0] >= self._b_pos[0]+self._w
-              and self._points[1][0] < self._b_pos[0]+self._d+self._w):
-            # Building Rhomboid
-            if self._step == 1:
-                if not self._steps[self._step]:
-                    self.build_control()
-                    x = self._loc
-                    xs = [x, x, x, x]
 
-            self._points = [(self._b_pos[0]+xs[0], self._b_pos[1]),
-                            (self._b_pos[0]+self._w+xs[1], self._b_pos[1]),
-                            (self._b_pos[0]+self._w-self._d+xs[2],
-                                self._b_pos[1]+self._h-m),
-                            (self._b_pos[0], self._b_pos[1]+self._h-m),
-                            (self._b_pos[0], self._b_pos[1]+xs[0]*R)]
+class ReflecRec:
 
-        else:
-            # Moving Rhomboid
-            if self._step == 2:
-                if not self._steps[self._step]:
-                    self.build_control()
-                    x = self._loc
-                    xs = [x, x, x, x]
+    def __init__(self, rect):
+        self._rect = rect
 
-            self._points = [(self._b_pos[0]+self._d+xs[0], self._b_pos[1]),
-                            (self._b_pos[0]+self._d+self._w+xs[1],
-                                self._b_pos[1]),
-                            (self._b_pos[0]+self._w+xs[2],
-                                self._b_pos[1]+self._h-m),
-                            (self._b_pos[0]+xs[3], self._b_pos[1]+self._h-m)]
+    def stretch_rect(self, speed, axis=1):
+        self._rect_snake(1, speed, axis)
 
-    def set_fixed_point(self, point):
-        if self._fixed_points[point] is None:
-            self._fixed_points[point] = self._loc
+    def compress_rect(self, speed, axis=1):
+        self._rect_snake(-1, speed, axis)
 
-    def _unfix_point(self, point):
-        self._fixed_points[point] = None
+    def _rect_snake(self, mode, speed, axis):
+        if axis == 0:
+            # y direction
+            follow_x = 0
+            grow_x = 0
+            if mode == 1:
+                follow_y = 0
+                grow_y = speed
+            elif mode == -1:
+                follow_y = speed
+                grow_y = 0
+        elif axis == 1:
+            # x direction
+            follow_y = 0
+            grow_y = 0
+            if mode == 1:
+                follow_x = 0
+                grow_x = speed
+            elif mode == -1:
+                follow_x = speed
+                grow_x = 0
 
-    def build_control(self, task='build'):
-        if task == 'reset':
-            self._loc = 0
-            self._step = 0
-            self._steps = [False, False, False]
-            self._points = self._start
-            self._fixed_points = [None, None, None, None]
-        elif task == 'build':
-            self._loc = 0
-            self._steps[self._step] = True
-            if self._loc == 0:
-                self._step += 1
+        self._rect = (
+            # x, y, width, height
+            self._rect[0] + follow_x,
+            self._rect[1] + follow_y,
+            self._rect[2] + grow_x - follow_x,
+            self._rect[3] + grow_y - follow_y
+        )
 
-    def get_points(self):
-        return self._points
+        if self._rect[2] < 0:
+            self._rect = (self._rect[0], self._rect[1], 0, self._rect[3])
+        if self._rect[3] < 0:
+            self._rect = (self._rect[0], self._rect[1], self._rect[2], 0)
+
+    @property
+    def rect(self):
+        return self._rect

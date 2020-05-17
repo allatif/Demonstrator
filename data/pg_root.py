@@ -369,10 +369,17 @@ class _State:
         if button_obj.settings['reflection']:
             # Button Reflection
             if button_obj.virgin:
-                signal = self.gen_signal_by_loop(4, 80, forobj='But_Refl')
-                button_obj.run(signal)
-                self._draw_aafilled_polygon(surface, button_obj.get_refl_poly(),
-                                            button_obj.settings['hover color'])
+                button_obj.run()
+                # Reflection rect for vertical flow
+                if button_obj.reflection.rrect_v.rect[3] != 0:
+                    pg.draw.rect(surface,
+                                 button_obj.settings['reflection color'],
+                                 button_obj.reflection.rrect_v.rect)
+                # Reflection rect for horizontal flow
+                if button_obj.reflection.rrect_h.rect[2] != 0:
+                    pg.draw.rect(surface,
+                                 button_obj.settings['reflection color'],
+                                 button_obj.reflection.rrect_h.rect)
 
         # Button Text
         size = button_obj.settings['text size']
