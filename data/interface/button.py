@@ -105,8 +105,8 @@ class Reflection:
 
         self._but_w_h_ratio = int(round(self._b_rect[2]/self._b_rect[3]))
 
-        self._rrect_v = ReflecRec(self._start_rect_v)
-        self._rrect_h = ReflecRec(self._start_rect_h)
+        self._rrect_v = ReflecRect(self._start_rect_v)
+        self._rrect_h = ReflecRect(self._start_rect_h)
 
         self._pause_counter = 0
         self._pause = False
@@ -139,8 +139,8 @@ class Reflection:
             self.reset()
 
     def reset(self):
-        self._rrect_v = ReflecRec(self._start_rect_v)
-        self._rrect_h = ReflecRec(self._start_rect_h)
+        self._rrect_v = ReflecRect(self._start_rect_v)
+        self._rrect_h = ReflecRect(self._start_rect_h)
 
     @property
     def rrect_v(self):
@@ -151,7 +151,7 @@ class Reflection:
         return self._rrect_h
 
 
-class ReflecRec:
+class ReflecRect:
 
     def __init__(self, rect):
         self._rect = rect
