@@ -17,8 +17,8 @@ class Agent:
 
         self._force = 0.0
 
-    def load_model(self, name):
-        path = 'data\\components\\rl\\models\\' + name
+    def load_model(self, model_name):
+        path = 'data\\components\\rl\\models\\' + model_name
         self.model = keras.models.load_model(path, compile=False)
         print("Finished loading model")
 
