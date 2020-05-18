@@ -215,7 +215,8 @@ class Game(pg_root._State):
 
         # If-Path for Euler Method
         if not self.ball.falling:
-            self.agent.update()
+            if self.mode == 'agent':
+                self.agent.update()
             self.cone.update(np.float(x1))
             self.ball.update(self.cone.get_points('top'), np.float(x3))
 
