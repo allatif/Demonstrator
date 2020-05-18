@@ -100,7 +100,7 @@ class Game(pg_root._State):
         elif self.mode == 'agent':
             self.agent.load_model(self.agent_model)
             print(" -- Agent in control now -- ")
-            print("Loaded TensorFlow model", self.agent_model)
+            print("Loaded TensorFlow Keras model", self.agent_model)
 
         # Reset Euler algorithm
         Game.step = 0

@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-print(" -- Loading Tensorflow -- ")
+print(" -- Loading TensorFlow -- ")
 from tensorflow import keras
 
 
@@ -19,7 +19,7 @@ class Agent:
 
     def load_model(self, name):
         path = 'data\\components\\rl\\models\\' + name
-        self.model = keras.models.load_model(path)
+        self.model = keras.models.load_model(path, compile=False)
         print("Finished loading model")
 
     def act(self, obs):
