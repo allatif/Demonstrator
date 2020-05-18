@@ -15,7 +15,7 @@ from .. components.rl.agent import Agent
 
 
 class Game(pg_root._State):
-    """This state could represent the actual gameplay phase."""
+    """This state represents the actual gameplay phase of the demonstrator."""
 
     step = 0
 
