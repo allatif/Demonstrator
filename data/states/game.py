@@ -173,26 +173,18 @@ class Game(pg_root._State):
         self.ruler.marker.update()
         self.sim_ref_state = self._update_reference_state()
 
-        # Gathering variables for State Space Euler
-        A_matrix = self.model.system
-        B_matrix = self.model.B
-        x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
-        t_vec = self.sim.t_vec
-
         # Getting inferference from interfrence_load by clicking on ball
         interference = 0.0
         if self.interference_load is not None:
             interference = self.interference_load
             self.interference_load = None
 
-        self.euler_thread = euler.EulerThread(args=(A_matrix, B_matrix,
-                                                    self.sim.state_vec, t_vec,
-                                                    self.static_fps,
-                                                    self.euler_ministeps,
-                                                    Game.step,
-                                                    self.control_object,
-                                                    interference,
-                                                    self.sim_ref_state))
+        self.euler_thread = euler.EulerThread(
+            args=(self.model.system, self.model.B, self.sim.state_vec,
+                  self.sim.t_vec, self.static_fps, self.euler_ministeps,
+                  Game.step, self.control_object, interference,
+                  self.sim_ref_state)
+        )
         self.euler_thread.start()
         x1, x2, x3, x4, self.simover = self.euler_thread.join()
 
@@ -218,7 +210,8 @@ class Game(pg_root._State):
             if self.mode == 'agent':
                 self.agent.update()
             self.cone.update(np.float(x1))
-            self.ball.update(self.cone.get_points('top'), np.float(x3))
+            self.ball.update(self.cone.get_points('top'),
+                             np.float(x3), np.float(x4))
 
             if not self.simover:
                 Game.step += self.frame_step
@@ -237,6 +230,8 @@ class Game(pg_root._State):
         # When event key [ESC]
         # Before state is going to close it will save the results
         if self.predone:
+            x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
+            t_vec = self.sim.t_vec
             result_vec_len = self.sim.sim_length if self.simover else Game.step
             self.results = (x2_vec[:result_vec_len],
                             np.degrees(x3_vec[:result_vec_len]),

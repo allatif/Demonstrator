@@ -68,13 +68,15 @@ class Sphere:
         self._start_pos_x = zero_pos_x
 
         self._ang = 0
+        self._ang_vel = 0
         self.falling = False
         self.touchdown = False
         self.stopped = False
         self.mouseover = False
 
-    def update(self, apex_pos, angle):
+    def update(self, apex_pos, angle, angle_vel):
         self._ang = angle
+        self._ang_vel = angle_vel
 
         # Swinging Sphere according to ss variable x3 (angle).
         # Moving Sphere according to cone apex.
@@ -82,10 +84,11 @@ class Sphere:
         self._c_x = round(apex_pos[0] + self._r*m.cos(polar_angle))
         self._c_y = round(apex_pos[1] - self._r*m.sin(polar_angle))
 
-    def fall(self, x, y, ang, ground):
+    def fall(self, x, y, ang, ang_vel, ground):
         self._c_x = x
         self._c_y = y
         self._ang = ang
+        self._ang_vel = ang_vel
         if self._c_y+self._r >= ground:
             self._c_y = ground - self._r
             self.touchdown = True
@@ -131,6 +134,10 @@ class Sphere:
     @property
     def ang(self):
         return self._ang
+
+    @property
+    def ang_vel(self):
+        return self._ang_vel
 
 
 class Ground:
