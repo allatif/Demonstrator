@@ -167,7 +167,8 @@ class Game(pg_root._State):
         if self.mode == 'user':
             self.control_object = self.user
         elif self.mode == 'agent':
-            self.agent.update()
+            if not self.ball.falling:
+                self.agent.update()
             self.control_object = self.agent
 
         # Update Reference State x via ruler marker
@@ -195,6 +196,7 @@ class Game(pg_root._State):
                                                     self.sim_ref_state))
         self.euler_thread.start()
         x1, x2, x3, x4, self.simover = self.euler_thread.join()
+
         self.agent.observe(np.array([x1, x2, x3, x4]))
 
         if abs(x3) > m.radians(20):
@@ -214,9 +216,7 @@ class Game(pg_root._State):
         # If-Path for Euler Method
         if not self.ball.falling:
             self.cone.update(np.float(x1))
-            self.ball.update(self.cone.get_points('top'),
-                             np.float(x3),
-                             np.float(x4))
+            self.ball.update(self.cone.get_points('top'), np.float(x3))
 
             if not self.simover:
                 Game.step += self.frame_step
