@@ -67,6 +67,7 @@ class Splash(pg_root._State):
 
         if event.type == pg.MOUSEBUTTONUP and event.button == 1:
             if self.but_csd.mouseover:
+                print(self.but_csd.settings['hover color'])
                 self.next = "POLEMAP"
                 self.done = True
 
@@ -98,7 +99,7 @@ class Splash(pg_root._State):
     def draw_header(self, surface, text):
         fontname = 'ARCADECLASSIC'
         center = (self.width//2-42, 85)
-        msg, rect = self.render_font(text, fontname, 128, colors.LRED, center)
+        msg, rect = self.render_font(text, fontname, 128, colors.TOMATO, center)
         pos_x, pos_y, width, height = rect
         alpha_surface = pg.Surface((width+84, height-10), pg.SRCALPHA)
         alpha_surface.fill(colors.TRAN150)
