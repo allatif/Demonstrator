@@ -27,11 +27,16 @@ class ANN:
                 counter += 1
 
     def build(self):
-        neuron_radius = 15
-        layer_distance = 120
-        layer_void = 4*neuron_radius
         layers = len(self._layer_sizes)
         max_dense = max(self._layer_sizes)
+
+        neuron_radius = self._radiusfitter(max_dense)
+
+        layer_distance = 8*neuron_radius
+        if neuron_radius == 1:
+            layer_distance = 16*neuron_radius
+        layer_void = 4*neuron_radius
+
         screen_center_x = pg_init.SCREEN_SIZE[0]//2
         screen_center_y = pg_init.SCREEN_SIZE[1]//2
         nn_width = (layers*2*neuron_radius
@@ -56,6 +61,18 @@ class ANN:
                 neuron_pos_y = layer_margin_top + num*layer_void
                 self._neurons.append(Neuron((neuron_pos_x, neuron_pos_y),
                                             neuron_radius, neuron_color))
+
+    @staticmethod
+    def _radiusfitter(dense):
+        if dense <= 8:
+            return 15
+        elif dense > 8 and dense <= 12:
+            return 11
+        elif dense > 12 and dense <= 18:
+            return 7
+        elif dense > 18 and dense <= 30:
+            return 4
+        return 1
 
     @property
     def neurons(self):
