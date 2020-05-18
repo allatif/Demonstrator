@@ -3,6 +3,7 @@ import pygame as pg
 from .. import pg_init, pg_root
 
 from .. components import colors
+from .. components.rl import neuronal_network
 from .. interface import button, list_box, label
 
 
@@ -23,6 +24,13 @@ class Neuro(pg_root._State):
 
         self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
+
+        # ANN Object
+        self.ann = None
+
+    def _init_ANN(self, model_name):
+        self.ann = neuronal_network.ANN(model_name)
+        self.ann.build()
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
@@ -61,6 +69,7 @@ class Neuro(pg_root._State):
                 for key, option in self.model_box.options.items():
                     if option.mouseover:
                         self.model_box.selected = key
+                        self._init_ANN(model_name=key)
                         self.model_box.collapse()
                         self.model_box.pick_up()
                     elif (not option.mouseover
@@ -82,7 +91,14 @@ class Neuro(pg_root._State):
 
     def draw(self, surface):
         surface.fill(colors.WHITE)
+        self.draw_ann(surface)
         self.draw_interface(surface)
+
+    def draw_ann(self, surface):
+        if self.ann is not None:
+            for neuron in self.ann.neurons:
+                self._draw_aafilled_circle(surface, *neuron.get_center(),
+                                           neuron.r, neuron.color)
 
     def draw_interface(self, surface):
         self.draw_label(surface, self.model_box_label)
