@@ -167,8 +167,6 @@ class Game(pg_root._State):
         if self.mode == 'user':
             self.control_object = self.user
         elif self.mode == 'agent':
-            if not self.ball.falling:
-                self.agent.update()
             self.control_object = self.agent
 
         # Update Reference State x via ruler marker
@@ -181,6 +179,7 @@ class Game(pg_root._State):
         x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
         t_vec = self.sim.t_vec
 
+        # Getting inferference from interfrence_load by clicking on ball
         interference = 0.0
         if self.interference_load is not None:
             interference = self.interference_load
@@ -210,11 +209,13 @@ class Game(pg_root._State):
             # Ball will start falling and shall roll down the cone
             self.ball.falling = True
 
+        # Update state_values for HUD
         self.state_values = (np.float(x1), np.float(x2),
                              np.float(x3), np.float(x4))
 
         # If-Path for Euler Method
         if not self.ball.falling:
+            self.agent.update()
             self.cone.update(np.float(x1))
             self.ball.update(self.cone.get_points('top'), np.float(x3))
 
