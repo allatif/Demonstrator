@@ -2,6 +2,7 @@ import os
 
 import tensorflow as tf
 from tensorflow import keras
+import pygame.image as pgimg
 
 from ... import pg_init
 from ... components import colors
@@ -17,8 +18,6 @@ class ANN:
         path = 'data\\components\\rl\\models\\' + model_name
         model = keras.models.load_model(path, compile=False)
 
-        self._nn_neurons = []
-        self._connections = []
         self._layer_sizes = []
         self._W = []
         self._max_W = []
@@ -32,29 +31,60 @@ class ANN:
                 self._layer_sizes += s_list if counter == 0 else s_list[1:]
                 counter += 1
 
-    def build(self):
+        self._nn_neurons = []
+        self._connections = []
+
+        self._init_img_settings()
+
+        self._image = None
+        self.built = False
+
+    def _init_img_settings(self):
         layers = len(self._layer_sizes)
         max_dense = max(self._layer_sizes)
+        neuron_r = self._radiusfitter(max_dense)
 
-        neuron_radius = self._radiusfitter(max_dense)
+        self._settings = {
+            'neuron radius': neuron_r,
+            'layer distance': 16*neuron_r if neuron_r == 1 else 8*neuron_r,
+            'layer void': 4*neuron_r,
+            'image margin': 25,
+            'max dense': max_dense
+        }
 
-        layer_distance = 8*neuron_radius
-        if neuron_radius == 1:
-            layer_distance = 16*neuron_radius
-        layer_void = 4*neuron_radius
-
+        # Calculate screen centered AAN image rect
         screen_center_x = pg_init.SCREEN_SIZE[0]//2
         screen_center_y = pg_init.SCREEN_SIZE[1]//2
-        nn_width = (layers*2*neuron_radius
-                    + (layers-1)*(layer_distance-2*neuron_radius))
-        nn_height = (max_dense*2*neuron_radius
-                     + (max_dense-1)*(layer_void-2*neuron_radius))
-        input_layer_center_x = screen_center_x - nn_width//2 + neuron_radius
-        max_layer_top_center_y = screen_center_y - nn_height//2 + neuron_radius
+        dist = self._settings['layer distance']
+        void = self._settings['layer void']
+        width = (layers*2*neuron_r + (layers-1)*(dist-2*neuron_r))
+        height = (max_dense*2*neuron_r + (max_dense-1)*(void-2*neuron_r))
+
+        left = screen_center_x - width//2
+        top = screen_center_y - height//2
+
+        img_margin = self._settings['image margin']
+        img_left = left - img_margin
+        img_top = top - img_margin
+        img_width = width + 2*img_margin
+        img_height = height + 2*img_margin
+
+        self._image_rect = (img_left, img_top, img_width, img_height)
+
+    def build(self):
+        neuron_r = self._settings['neuron radius']
+        dist = self._settings['layer distance']
+        void = self._settings['layer void']
+        margin = self._settings['image margin']
+        max_dense = self._settings['max dense']
+
+        # Coords on self._image_rect
+        input_layer_center_x = margin + neuron_r
+        max_layer_top_center_y = margin + neuron_r
 
         # Set pos and color of neurons
         for layer_num, layer_size in enumerate(self._layer_sizes):
-            neuron_pos_x = input_layer_center_x + layer_num*layer_distance
+            neuron_pos_x = input_layer_center_x + layer_num*dist
             neuron_color = colors.LBLUE
             if layer_num == 0:
                 neuron_color = colors.GREEN
@@ -66,11 +96,11 @@ class ANN:
 
             diff_layer_size = max_dense - layer_size
             layer_margin_top = (max_layer_top_center_y
-                                + diff_layer_size*layer_void//2)
+                                + diff_layer_size*void//2)
             for num in range(layer_size):
-                neuron_pos_y = layer_margin_top + num*layer_void
+                neuron_pos_y = layer_margin_top + num*void
                 neurons.append(Neuron((neuron_pos_x, neuron_pos_y),
-                                      neuron_radius, neuron_color))
+                                      neuron_r, neuron_color))
 
         # Set pos of connection lines between layers
         for lay_n, (w, max_w) in enumerate(zip(self._W, self._max_W)):
@@ -81,6 +111,14 @@ class ANN:
                                    self._nn_neurons[lay_n][row_n].get_center(),
                                    self._nn_neurons[lay_n+1][n].get_center())
                     )
+        self.built = True
+
+    def save_image(self, surface):
+        str_ = pgimg.tostring(surface, 'RGB')
+        print(self.image_rect)
+        self._image = pgimg.fromstring(
+            str_, (self.image_rect[2], self.image_rect[3]), 'RGB'
+        )
 
     @staticmethod
     def _radiusfitter(dense):
@@ -105,6 +143,18 @@ class ANN:
     @property
     def connections(self):
         return self._connections
+
+    @property
+    def settings(self):
+        return self._settings
+
+    @property
+    def image(self):
+        return self._image
+
+    @property
+    def image_rect(self):
+        return self._image_rect
 
 
 class Neuron:

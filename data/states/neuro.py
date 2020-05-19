@@ -25,12 +25,12 @@ class Neuro(pg_root._State):
         self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
-        # ANN Object
+        # ANN Objects
         self.ann = None
+        self.ann_surface = None
 
     def _init_ANN(self, model_name):
         self.ann = neuronal_network.ANN(model_name)
-        self.ann.build()
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
@@ -91,18 +91,32 @@ class Neuro(pg_root._State):
 
     def draw(self, surface):
         surface.fill(colors.WHITE)
-        self.draw_ann(surface)
+        if self.ann is not None:
+            self.draw_ann(surface)
         self.draw_interface(surface)
 
     def draw_ann(self, surface):
-        if self.ann is not None:
+        if not self.ann.built:
+            self.ann.build()
+
+            self.ann_surface = pg.Surface(
+                (self.ann.image_rect[2], self.ann.image_rect[3])
+            )
+            self.ann_surface.fill(colors.WHITE)
+
             for connection in self.ann.connections:
-                pg.draw.aaline(surface, connection.color,
+                pg.draw.aaline(self.ann_surface, connection.color,
                                connection.start, connection.end)
 
             for neuron in self.ann.neurons:
-                self._draw_aafilled_circle(surface, *neuron.get_center(),
+                self._draw_aafilled_circle(self.ann_surface,
+                                           *neuron.get_center(),
                                            neuron.r, neuron.color)
+
+            self.ann.save_image(self.ann_surface)
+
+        if self.ann.image is not None:
+            surface.blit(self.ann.image, self.ann.image_rect)
 
     def draw_interface(self, surface):
         self.draw_label(surface, self.model_box_label)
