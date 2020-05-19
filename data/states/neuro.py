@@ -96,6 +96,10 @@ class Neuro(pg_root._State):
 
     def draw_ann(self, surface):
         if self.ann is not None:
+            for connection in self.ann.connections:
+                pg.draw.aaline(surface, connection.color,
+                               connection.start, connection.end)
+
             for neuron in self.ann.neurons:
                 self._draw_aafilled_circle(surface, *neuron.get_center(),
                                            neuron.r, neuron.color)

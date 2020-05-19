@@ -1,5 +1,6 @@
 import os
 
+import tensorflow as tf
 from tensorflow import keras
 
 from ... import pg_init
@@ -16,15 +17,22 @@ class ANN:
         path = 'data\\components\\rl\\models\\' + model_name
         model = keras.models.load_model(path, compile=False)
 
-        self._neurons = []
+        self._nn_neurons = []
+        self._connections = []
         self._layer_sizes = []
+        self._W = []
 
+        max_weights = []
         counter = 0
         for variable in model.weights:
             if variable.name.split('/')[1].split(':')[0] != 'bias':
+                self._W.append(variable)
+                max_weights.append(float(tf.reduce_max(tf.math.abs(variable))))
                 s_list = list(variable.shape)
                 self._layer_sizes += s_list if counter == 0 else s_list[1:]
                 counter += 1
+
+        self._max_w = max(max_weights)
 
     def build(self):
         layers = len(self._layer_sizes)
@@ -46,6 +54,7 @@ class ANN:
         input_layer_center_x = screen_center_x - nn_width//2 + neuron_radius
         max_layer_top_center_y = screen_center_y - nn_height//2 + neuron_radius
 
+        # Set pos and color of neurons
         for layer_num, layer_size in enumerate(self._layer_sizes):
             neuron_pos_x = input_layer_center_x + layer_num*layer_distance
             neuron_color = colors.LBLUE
@@ -54,13 +63,26 @@ class ANN:
             elif layer_num == len(self._layer_sizes)-1:
                 neuron_color = colors.LRED
 
+            neurons = []
+            self._nn_neurons.append(neurons)
+
             diff_layer_size = max_dense - layer_size
             layer_margin_top = (max_layer_top_center_y
                                 + diff_layer_size*layer_void//2)
             for num in range(layer_size):
                 neuron_pos_y = layer_margin_top + num*layer_void
-                self._neurons.append(Neuron((neuron_pos_x, neuron_pos_y),
-                                            neuron_radius, neuron_color))
+                neurons.append(Neuron((neuron_pos_x, neuron_pos_y),
+                                      neuron_radius, neuron_color))
+
+        # Set pos of connection lines between layers
+        for lay_n, w in enumerate(self._W):
+            for row_n, row in enumerate(w.numpy()):
+                for n, value in enumerate(row):
+                    self._connections.append(
+                        Connection(abs(value)/self._max_w,
+                                   self._nn_neurons[lay_n][row_n].get_center(),
+                                   self._nn_neurons[lay_n+1][n].get_center())
+                    )
 
     @staticmethod
     def _radiusfitter(dense):
@@ -74,9 +96,17 @@ class ANN:
             return 4
         return 1
 
+    @staticmethod
+    def flatten_nn(nn_neurons):
+        return [neuron for sublist in nn_neurons for neuron in sublist]
+
     @property
     def neurons(self):
-        return self._neurons
+        return self.flatten_nn(self._nn_neurons)
+
+    @property
+    def connections(self):
+        return self._connections
 
 
 class Neuron:
@@ -100,10 +130,16 @@ class Neuron:
 
 class Connection:
 
-    def __init__(self, value, start, end):
-        self._value = value
+    def __init__(self, rel_value, start, end):
+        self._rel_value = rel_value
         self._start = start
         self._end = end
+        self._color = self._get_color_from_relvalue()
+
+    def _get_color_from_relvalue(self):
+        max = colors.WHITE[0]
+        rbg_intensity = int(round((1-self._rel_value) * max))
+        return (rbg_intensity, rbg_intensity, rbg_intensity)
 
     @property
     def start(self):
@@ -112,3 +148,7 @@ class Connection:
     @property
     def end(self):
         return self._end
+
+    @property
+    def color(self):
+        return self._color
