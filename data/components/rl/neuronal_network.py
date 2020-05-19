@@ -21,18 +21,16 @@ class ANN:
         self._connections = []
         self._layer_sizes = []
         self._W = []
+        self._max_W = []
 
-        max_weights = []
         counter = 0
         for variable in model.weights:
             if variable.name.split('/')[1].split(':')[0] != 'bias':
                 self._W.append(variable)
-                max_weights.append(float(tf.reduce_max(tf.math.abs(variable))))
+                self._max_W.append(float(tf.reduce_max(tf.math.abs(variable))))
                 s_list = list(variable.shape)
                 self._layer_sizes += s_list if counter == 0 else s_list[1:]
                 counter += 1
-
-        self._max_w = max(max_weights)
 
     def build(self):
         layers = len(self._layer_sizes)
@@ -75,11 +73,11 @@ class ANN:
                                       neuron_radius, neuron_color))
 
         # Set pos of connection lines between layers
-        for lay_n, w in enumerate(self._W):
+        for lay_n, (w, max_w) in enumerate(zip(self._W, self._max_W)):
             for row_n, row in enumerate(w.numpy()):
                 for n, value in enumerate(row):
                     self._connections.append(
-                        Connection(abs(value)/self._max_w,
+                        Connection(abs(value)/max_w,
                                    self._nn_neurons[lay_n][row_n].get_center(),
                                    self._nn_neurons[lay_n+1][n].get_center())
                     )
