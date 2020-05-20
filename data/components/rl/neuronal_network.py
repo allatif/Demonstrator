@@ -2,7 +2,6 @@ import os
 
 import tensorflow as tf
 from tensorflow import keras
-import pygame.image as pgimg
 
 from ... import pg_init
 from ... components import colors
@@ -114,10 +113,7 @@ class ANN:
         self.built = True
 
     def save_image(self, surface):
-        str_ = pgimg.tostring(surface, 'RGB')
-        self._image = pgimg.fromstring(
-            str_, (self.image_rect[2], self.image_rect[3]), 'RGB'
-        )
+        self._image = surface
 
     @staticmethod
     def _radiusfitter(dense):
