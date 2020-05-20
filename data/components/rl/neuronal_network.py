@@ -115,7 +115,6 @@ class ANN:
 
     def save_image(self, surface):
         str_ = pgimg.tostring(surface, 'RGB')
-        print(self.image_rect)
         self._image = pgimg.fromstring(
             str_, (self.image_rect[2], self.image_rect[3]), 'RGB'
         )
