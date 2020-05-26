@@ -4,7 +4,7 @@ from .. import pg_init, pg_root
 
 from .. components import colors
 from .. components.rl import neuronal_network
-from .. interface import button, list_box, label
+from .. interface import button, listbox, label
 
 
 class Neuro(pg_root._State):
@@ -18,18 +18,21 @@ class Neuro(pg_root._State):
         self.sim_init_state = (0, 0, 0, 0.3)
         self.models = self.get_models()
 
-        self.model_box = list_box.ListBox(self.models, colors.TOMATO)
+        self.model_box = listbox.ListBox(self.models, hover=colors.TOMATO,
+                                         action=self._init_ANN)
         self.model_box.set_pos(100, 10)
+        # self.model_box.settings['background'] = colors.DGREY
         self.model_box_label = label.Label(10, 10, 18, "Load Model:")
 
-        self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
+        self.but_set = button.Button(text='Settings', bg=colors.LBLUE,
+                                     fg=colors.WHITE, action='SETTINGS')
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
         # ANN Object
         self.ann = None
 
-    def _init_ANN(self, model_name):
-        self.ann = neuronal_network.ANN(model_name)
+    def _init_ANN(self):
+        self.ann = neuronal_network.ANN(self.model_box.selected)
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
@@ -44,7 +47,7 @@ class Neuro(pg_root._State):
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
         self.persist["selected model"] = self.model_box.selected
-        self.persist["bg_image"] = self.screenshot_imagestr
+        self.persist["bg_image"] = self.screenshot
         return self.persist
 
     def get_event(self, event):
@@ -56,36 +59,9 @@ class Neuro(pg_root._State):
                 self.next = "SPLASH"
                 self.done = True
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            pass
-
-        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            if self.but_set.mouseover:
-                self.next = "SETTINGS"
-                self.done = True
-
-            if self.model_box.opened:
-                for key, option in self.model_box.options.items():
-                    if option.mouseover:
-                        self.model_box.selected = key
-                        self._init_ANN(model_name=key)
-                        self.model_box.collapse()
-                        self.model_box.pick_up()
-                    elif (not option.mouseover
-                            or self.model_box.box_header.mouseover):
-                        self.model_box.collapse()
-            elif not self.model_box.opened:
-                if self.model_box.box_header.mouseover:
-                    self.model_box.expand()
-
-    def mouse_logic(self, mouse):
-        self.hover_object_logic(mouse, self.but_set)
-        self.hover_object_logic(mouse, self.model_box.box_header)
-        for option in self.model_box.options.values():
-            self.hover_object_logic(mouse, option)
-
     def update(self, surface):
-        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
+        if self.but_set.pressed:
+            self.save_screen(surface)
         self.draw(surface)
 
     def draw(self, surface):

@@ -1,12 +1,19 @@
-from . box import Box
+import pygame as pg
+
+from . _checkbox_group import _CheckboxGroup
+from . _box import _Box
 from . label import Label
 
 
-class CheckBox(Box):
+class CheckBox(_Box):
+
+    list_ = []
+    groups = {}
+    gr_key = 0
 
     def __init__(self, size, border_width, color, checked=False,
                  name=None, type_='default'):
-        Box.__init__(self)
+        _Box.__init__(self)
         self._size = size
         self._width = size
         self._height = size
@@ -24,6 +31,8 @@ class CheckBox(Box):
             'box color': None,
             'text color': color
         }
+
+        CheckBox.list_.append(self)
 
     def set_label(self, text, margin=2):
         self._label = Label(self._pos_x+self._width+margin, self._pos_y,
@@ -45,6 +54,23 @@ class CheckBox(Box):
             r = round(size * (self._r-self._border_width+1))
             return c_x, c_y, r
         return 0, 0, 0
+
+    def group(self, pos=(20, 20), gap=None, header_text=None, header_color=None,
+              header_size=None):
+        CheckBox.gr_key += 1
+        key = CheckBox.gr_key
+        CheckBox.groups[key] = _CheckboxGroup(CheckBox.list_,
+                                              header_text=header_text,
+                                              header_color=header_color,
+                                              header_size=header_size)
+        CheckBox.groups[key].arrange(*pos, gap=gap)
+        CheckBox.list_ = []
+
+    def _event_logic(self, state, event):
+
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if self.mouseover:
+                self.checked = not self.checked
 
     @property
     def border_width(self):

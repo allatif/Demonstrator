@@ -1,13 +1,14 @@
-from . instrument import Instrument
+from . _instrument import _Instrument
 from . label import Label
 from .. components import colors
 
 
-class Slider(Instrument):
+class Slider(_Instrument):
 
-    def __init__(self, value, range_, width, length, color_pack,
-                 name=None, margin=10, unit=None):
-        Instrument.__init__(self, value, range_, name, color_pack, margin, unit)
+    def __init__(self, range_, width, length, color_pack, name=None, margin=10,
+                 unit=None, default=None):
+        _Instrument.__init__(self, range_, name, color_pack, margin, unit,
+                             default)
         self._width = width
         self._length0 = length
         self._thumb_r = round(1.5*self._width)

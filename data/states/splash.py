@@ -5,7 +5,7 @@ import pygame as pg
 from .. import pg_init, pg_root
 
 from .. components import colors
-from .. interface import button
+from .. interface.button import Button
 
 
 class Splash(pg_root._State):
@@ -18,31 +18,29 @@ class Splash(pg_root._State):
         self.game_fps_bins = [False, True]
         self.euler_ministeps = 10
 
-        # Initialize Mode Buttons
+        # Initialize splash menu mode buttons
         margin = 50
         button_size = (425, 250)
         pos_y = 175
         text_size = 42
 
-        self.but_csd = button.Button('Control System Design',
-                                     colors.LLGREEN, colors.BLACK,
-                                     size=button_size)
+        self.but_csd = Button(text='Control System Design', bg=colors.LLGREEN,
+                              fg=colors.BLACK, action='POLEMAP',
+                              size=button_size)
         self.but_csd.set_pos(margin, pos_y)
         self.but_csd.settings['text size'] = text_size
 
-        self.but_rl = button.Button('Reinforcement Learning',
-                                    colors.LRED, colors.WHITE,
-                                    size=button_size)
+        self.but_rl = Button(text='Reinforcement Learning', bg=colors.LRED,
+                             fg=colors.WHITE, action='NEURO', size=button_size)
         self.but_rl.set_pos(self.width-self.but_rl.width-margin, pos_y)
         self.but_rl.settings['text size'] = text_size
 
-        # Initialize Setup Settings Button
-        self.but_set = button.Button('Main Settings', colors.LBLUE,
-                                     colors.WHITE, size=(button_size[0], 75))
+        # Initialize setup settings button
+        self.but_set = Button(text='Main Settings', bg=colors.LBLUE,
+                              fg=colors.WHITE, action='MAINSETTINGS',
+                              size=(button_size[0], 75))
         self.but_set.set_pos(margin, button_size[1]+pos_y+margin)
         self.but_set.settings['text size'] = text_size - 6
-
-        self.splashscreen_imagestr = ''
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
@@ -53,7 +51,7 @@ class Splash(pg_root._State):
         self.done = False
         self.persist["game fps binaries"] = self.game_fps_bins
         self.persist["euler ministeps"] = self.euler_ministeps
-        self.persist["bg_image"] = self.screenshot_imagestr
+        self.persist["bg_image"] = self.screenshot
         return self.persist
 
     def get_event(self, event):
@@ -62,30 +60,9 @@ class Splash(pg_root._State):
                 pg.quit()
                 sys.exit()
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            pass
-
-        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            if self.but_csd.mouseover:
-                print(self.but_csd.settings['hover color'])
-                self.next = "POLEMAP"
-                self.done = True
-
-            if self.but_rl.mouseover:
-                self.next = "NEURO"
-                self.done = True
-
-            if self.but_set.mouseover:
-                self.next = "MAINSETTINGS"
-                self.done = True
-
-    def mouse_logic(self, mouse):
-        self.hover_object_logic(mouse, self.but_csd)
-        self.hover_object_logic(mouse, self.but_rl)
-        self.hover_object_logic(mouse, self.but_set)
-
     def update(self, surface):
-        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
+        if self.but_set.pressed:
+            self.save_screen(surface)
         self.draw(surface)
 
     def draw(self, surface):

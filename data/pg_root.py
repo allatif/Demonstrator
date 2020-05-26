@@ -4,6 +4,7 @@ import pygame as pg
 import pygame.gfxdraw
 
 from . import pg_init
+from . import ui_engine
 
 
 class PygameApp:
@@ -25,6 +26,7 @@ class PygameApp:
         self.state_dict = {}
         self.state_name = None
         self.state = None
+        self.ui = ui_engine.InterfaceEngine()
 
     def setup_states(self, state_dict, start_state):
         """Given a dictionary of States and a State to start with,
@@ -41,6 +43,9 @@ class PygameApp:
         if self.state.quit:
             self.done = True
         elif self.state.done:
+            self.state._loaded = False
+            self.ui.clear_classes()
+            self.ui.clear_dict()
             self.flip_state()
 
         if "game fps binaries" in self.state.persist:
@@ -72,11 +77,14 @@ class PygameApp:
             elif event.type == pg.KEYDOWN:
                 self.toggle_show_fps(event.key)
 
+            self.ui.state_events(self.state, event)
+
             self.state.get_event(event)
 
     def mouse_handler(self, mouse):
-        """Process mouse position and pass it down to current State"""
+        """Process mouse position and pass it down to current State."""
 
+        self.ui.logic(mouse)
         self.state.mouse_logic(mouse)
 
     def toggle_show_fps(self, key):
@@ -94,9 +102,13 @@ class PygameApp:
             self.clock.tick(self.fps)
             mouse = pg.mouse.get_pos()
 
+            if not self.state._loaded:
+                self.ui.load_objects(self.state)
+
             self.event_handler()
             self.mouse_handler(mouse)
             self.update()
+
             pg.display.update()
             if self.show_fps:
                 fps = self.clock.get_fps()
@@ -122,6 +134,9 @@ class _State:
 
         self.hudfont = pg.font.SysFont('Consolas', 12)
         self.static_fps = None
+        self.screenshot = None
+
+        self._loaded = False
 
         # Temporary variabeles usefull to hold intermediate values
         self._temp_0 = 0
@@ -136,7 +151,7 @@ class _State:
         pass
 
     def startup(self, persistant):
-        """Add variables passed in persistant to the proper attributes"""
+        """Add variables passed in persistant to the proper attributes."""
 
         self.persist = persistant
 
@@ -147,52 +162,34 @@ class _State:
         self.done = False
         return self.persist
 
+    def save_screen(self, surface):
+        """Saves the screenshot of a State to self.screenshot variable."""
+
+        i_str = pg.image.tostring(surface, 'RGB')
+        self.screenshot = pg.image.fromstring(i_str, pg_init.SCREEN_SIZE, 'RGB')
+
     def mouse_logic(self, mouse):
         """Process mouse position that were passed from the main event loop.
         Must be overrided in children."""
         pass
 
-    def hover_object_logic(self, mouse, obj):
-        """Object logic for mouse hovering."""
-
-        if obj.inside(mouse):
-            obj.mouseover = True
-            if hasattr(obj, 'color'):
-                obj.color = obj.settings['hover color']
-            if hasattr(obj, 'virgin'):
-                obj.virgin = False
-        else:
-            obj.mouseover = False
-            if hasattr(obj, 'color'):
-                obj.color = obj.settings['button color']
-
-    def instrument_logic(self, mouse, instrument):
-        """Instrument logic when mouse grabs thumb of instrument."""
-
-        thumb = instrument.thumb
-        self.hover_object_logic(mouse, thumb)
-
-        if thumb.grabbed:
-            instrument.slide(mouse)
-        instrument.update()
-
     def update(self, surface):
         """Update method for state. Must be overrided in children."""
         pass
 
-    def draw_slider_group(self, surface, slider_group_obj):
+    def draw_instrument_group(self, surface, instr_group_obj):
         """Draws all sliders as a group that where passed through
         as slider group object."""
 
         # Group Header
-        header = slider_group_obj.header_label
+        header = instr_group_obj.header_label
         if header is not None:
-            header.cache_font(slider_group_obj.header_text, 'Liberation Sans',
-                              header.size, slider_group_obj.header_color)
+            header.cache_font(instr_group_obj.header_text, 'Liberation Sans',
+                              header.size, instr_group_obj.header_color)
             surface.blit(header.font_cache, header.rect)
 
-        for slider in slider_group_obj.sliders:
-            self.draw_instrument(surface, slider)
+        for instrument in instr_group_obj.instruments:
+            self.draw_instrument(surface, instrument)
 
     def draw_instrument(self, surface, instrument):
         """Draws instrument with all its components and name label
@@ -359,8 +356,14 @@ class _State:
         for layer in list_box_obj.arrow.layerlines:
             for line in layer:
                 pg.draw.aaline(surface,
-                               list_box_obj.box_header.settings['text color'],
+                               list_box_obj.box_header.settings['foreground'],
                                line[0], line[1], 0)
+
+    def draw_buttons(self, surface, *args):
+        """Draws buttons by calling draw_button() method."""
+
+        for arg in args:
+            self.draw_button(surface, arg)
 
     def draw_button(self, surface, button_obj):
         """Draws button with text and reflection if activated."""
@@ -386,7 +389,7 @@ class _State:
         # Button Text
         size = button_obj.settings['text size']
         button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
-                              button_obj.settings['text color'],
+                              button_obj.settings['foreground'],
                               center=button_obj.center)
         if button_obj.settings['text align center']:
             surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
@@ -394,12 +397,6 @@ class _State:
             pos = button_obj.font_cache[1]
             pos[0] = button_obj.pos[0] + button_obj.settings['text margin left']
             surface.blit(button_obj.font_cache[0], pos)
-
-    def draw_buttons(self, surface, *args):
-        """Draws buttons by calling draw_button() method."""
-
-        for arg in args:
-            self.draw_button(surface, arg)
 
     def render_hud(self, width, height, margin, pos):
         """Returns the rect of hud field. Rect is always in bottom left or
@@ -444,6 +441,7 @@ class _State:
     @staticmethod
     def get_models():
         """Returns a list of all TensorFlow model *.h5 file names."""
+
         directory = os.path.join('data', 'components', 'rl', 'models')
         model_list = []
         for model_file in os.listdir(directory):

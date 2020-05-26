@@ -1,15 +1,16 @@
 import math as m
 
-from . instrument import Instrument
+from . _instrument import _Instrument
 from . label import Label
 from .. components import colors
 
 
-class ControlKnob(Instrument):
+class ControlKnob(_Instrument):
 
-    def __init__(self, value, range_, radius, label_size, color_pack,
-                 name=None, margin=10, unit=None):
-        Instrument.__init__(self, value, range_, name, color_pack, margin, unit)
+    def __init__(self, range_, radius, label_size, color_pack, name=None,
+                 margin=10, unit=None, default=None):
+        _Instrument.__init__(self, range_, name, color_pack, margin, unit,
+                             default)
         self._r = radius
 
         # Square inside ring
@@ -64,7 +65,7 @@ class ControlKnob(Instrument):
         self.pointer._end_y = round(self._ring._c_y
                                     + (self._r_i-1)*m.cos(self._ang))
 
-        Instrument.update(self)
+        _Instrument.update(self)
 
     @property
     def ring(self):

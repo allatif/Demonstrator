@@ -1,28 +1,35 @@
-from . box import Box
+import pygame as pg
+
+from . _box import _Box
+from .. components import colors
 
 
-class Button(Box):
+class Button(_Box):
 
-    def __init__(self, text, color, text_color, size=(90, 30)):
-        Box.__init__(self)
+    def __init__(self, text='', fg=colors.BLACK, bg=colors.WHITE, action=None,
+                 done=False, size=(90, 30)):
+        _Box.__init__(self)
         self._text = text
+        self._action = action
+        self._done = done
         self._width = size[0]
         self._height = size[1]
 
         self._settings = {
-            'button color': color,
-            'hover color': self._lighten_color(color),
-            'text color': text_color,
+            'background': bg,
+            'hover': self._lighten_color(bg),
+            'foreground': fg,
             'text size': round(0.6*self._height),
             'text align center': True,
             'text margin left': 10,
             'reflection': False,
-            'reflection color': self._lighten_color(color, 2),
+            'reflection color': self._lighten_color(bg, 2),
             'refl animation speed': 1
         }
 
-        self.color = self._settings['button color']
+        self.color = self._settings['background']
 
+        self.pressed = False
         self.virgin = True
 
     def activate_reflection(self):
@@ -31,6 +38,22 @@ class Button(Box):
 
     def run(self):
         self._refl.flow(self._settings['refl animation speed'])
+
+    def _event_logic(self, state, event):
+
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            if self.mouseover:
+                self.pressed = True
+
+        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
+            if self.mouseover and self.pressed:
+                self.pressed = False
+                if type(self.action) == str:
+                    state.next = self.action
+                    state.done = True
+                else:
+                    self.action()
+                    state.done = self.done
 
     @staticmethod
     def _lighten_color(color, step=1):
@@ -71,6 +94,14 @@ class Button(Box):
     def text(self, new_text):
         self.font_cache = None
         self._text = new_text
+
+    @property
+    def action(self):
+        return self._action
+
+    @property
+    def done(self):
+        return self._done
 
     @property
     def center(self):

@@ -1,7 +1,9 @@
+import pygame as pg
+
 from . label import Label
 
 
-class CheckboxGroup:
+class _CheckboxGroup:
 
     def __init__(self, list_of_checkboxes, header_text=None,
                  header_color=None, header_size=None):
@@ -52,6 +54,14 @@ class CheckboxGroup:
 
     def select_checkbox(self, num):
         self._selected_num = num
+
+    def _event_logic(self, state, event):
+
+        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+            for num, cbox in enumerate(self._cboxes):
+                if cbox.mouseover:
+                    self.select_checkbox(num)
+                    break
 
     @property
     def cboxes(self):

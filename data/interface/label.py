@@ -1,12 +1,12 @@
-from . box import Box
+from . _box import _Box
 from .. components import colors
 
 
-class Label(Box):
+class Label(_Box):
 
     def __init__(self, pos_x, pos_y, size, text='',
                  color=colors.BLACK, center=False):
-        Box.__init__(self)
+        _Box.__init__(self)
         self._pos_x = pos_x
         self._pos_y = pos_y
         self._rect = self._pos_x, self._pos_y

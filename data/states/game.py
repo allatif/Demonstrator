@@ -70,6 +70,7 @@ class Game(pg_root._State):
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self.__init__(mother=False)
 
         if self.previous == 'POLEMAP':
             self.Kregs = self.persist["controller"]
@@ -85,8 +86,6 @@ class Game(pg_root._State):
         self.sim_init_state = self.persist["sim initial state"]
         self.euler_ministeps = self.persist["euler ministeps"]
         self.frame_step = self.euler_ministeps
-
-        self.__init__(mother=False)
 
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
@@ -152,7 +151,11 @@ class Game(pg_root._State):
                 self.ruler.marker.snap()
 
     def mouse_logic(self, mouse):
-        self.hover_object_logic(mouse, self.ball)
+        if self.ball.inside(mouse):
+            self.ball.mouseover = True
+        else:
+            self.ball.mouseover = False
+
         if self.ruler.marker.inside(mouse):
             self.ruler.marker.mouseover = True
         else:

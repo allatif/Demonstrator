@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 from .. import pg_init, pg_root, setup_sim
 
 from .. components import colors, gaussian
-from .. interface import slider_group, slider, button, checkbox
+from .. interface import slider, button, checkbox
 
 
 class PoleMap(pg_root._State):
 
-    def __init__(self):
+    def __init__(self, mother=True):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
@@ -25,17 +25,7 @@ class PoleMap(pg_root._State):
         self.results = None
 
         self.Kregs = [-1296.6, -3161.2, -31800, -9831]
-
-        # Initialize sliders
-        self.sliders = []
-        slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
-        for slider_range, val in zip(slider_ranges, self.Kregs):
-            self.sliders.append(slider.Slider(val, slider_range, 2, 200,
-                                              colors.CORAL_PACK))
-        self.slider_group = slider_group \
-            .SliderGroup(self.sliders, header_text='Controller Settings',
-                         header_size=16)
-        self.slider_group.arrange(20, 20)
+        self._init_reg_sliders()
 
         # Initialize checkbox
         # # Checkbox position depends on last slider
@@ -46,11 +36,12 @@ class PoleMap(pg_root._State):
         self.checkbox.set_label('Switch off Controller', margin=5)
 
         # Initialize buttons
-        self.but_set = button.Button('Settings', colors.LBLUE, colors.WHITE)
+        self.but_set = button.Button(text='Settings', bg=colors.LBLUE,
+                                     fg=colors.WHITE, action='SETTINGS')
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
-        self.but_plot = button.Button('Show Plot', colors.LRED,
-                                      colors.WHITE)
+        self.but_plot = button.Button(text='Show Plot', bg=colors.LRED,
+                                      fg=colors.WHITE, action=self._plot)
         self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
         self.but_plot.activate_reflection()
 
@@ -58,8 +49,23 @@ class PoleMap(pg_root._State):
 
         self.polemap_imagestr = ''
 
+    def _init_reg_sliders(self):
+        # Initialize sliders
+        self.sliders = []
+        slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
+        for r in slider_ranges:
+            self.sliders.append(slider.Slider(r, 2, 200, colors.CORAL_PACK))
+        # # Group up sliders
+        self.sliders[-1].group((20, 20), header_text='Controller Settings',
+                               header_size=16)
+        # # Set sliders according to Kreg
+        for slider_, value in zip(self.sliders, self.Kregs):
+            slider_.set(value)
+
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
+        self._init_reg_sliders()
+
         self.next = "GAME"
         if self.previous == 'GAME':
             self.but_plot.virgin = True
@@ -79,7 +85,7 @@ class PoleMap(pg_root._State):
         self.persist["mode"] = 'ss_controller'
         if self.checkbox.checked:
             self.persist["mode"] = 'user'
-        self.persist["bg_image"] = self.screenshot_imagestr
+        self.persist["bg_image"] = self.screenshot
         return self.persist
 
     def get_event(self, event):
@@ -100,37 +106,6 @@ class PoleMap(pg_root._State):
                 self.plane.Re_axis.zoom(dir='out')
                 self.plane.Im_axis.zoom(dir='out')
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            if self.checkbox.mouseover:
-                self.checkbox.checked = not self.checkbox.checked
-
-            if not self.checkbox.checked:
-                for sldr in self.sliders:
-                    if sldr.thumb.mouseover:
-                        sldr.thumb.grab()
-                        break
-
-        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            if not self.checkbox.checked:
-                for sldr in self.sliders:
-                    if sldr.thumb.grabbed:
-                        sldr.thumb.release()
-                        break
-
-            if self.but_set.mouseover:
-                self.next = "SETTINGS"
-                self.done = True
-
-            if self.but_plot.mouseover:
-                self.plot()
-
-    def mouse_logic(self, mouse):
-        for instr in self.sliders:
-            self.instrument_logic(mouse, instr)
-        self.hover_object_logic(mouse, self.checkbox)
-        self.hover_object_logic(mouse, self.but_set)
-        self.hover_object_logic(mouse, self.but_plot)
-
     def update(self, surface):
         if self.checkbox.checked:
             self.Kregs = [0, 0, 0, 0]
@@ -139,7 +114,7 @@ class PoleMap(pg_root._State):
         else:
             for sldr in self.sliders:
                 sldr.active = True
-            self.Kregs = self.slider_group.get_values()
+            self.Kregs = slider.Slider.groups[1].get_values()
 
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
@@ -149,7 +124,8 @@ class PoleMap(pg_root._State):
             pos = self.plane.get_pos_from_point((pole.real, pole.imag))
             self.poles.append(gaussian.Pole(pos, 15, pole.real, pole.imag))
 
-        self.screenshot_imagestr = pg.image.tostring(surface, 'RGB')
+        if self.but_set.pressed:
+            self.save_screen(surface)
 
         self.draw(surface)
 
@@ -205,7 +181,7 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
-        self.draw_slider_group(surface, self.slider_group)
+        self.draw_instrument_group(surface, slider.Slider.groups[1])
         self.draw_checkbox(surface, self.checkbox)
         self.draw_button(surface, self.but_set)
 
@@ -229,7 +205,15 @@ class PoleMap(pg_root._State):
             surface.blit(text, (rect[0] + text_margin,
                                 rect[1] + text_margin + num*line_margin))
 
-    def plot(self):
+    def gen_signal_by_loop(self, amplitude, length, for_obj='Pole'):
+        """Generates sinus signal from loop counter where argument length
+        controls the frequency of flickering. Should vary when fps changed."""
+
+        self.run_loop_counter()
+        if for_obj == 'Pole':
+            return amplitude * m.sin((self._i_/length) * m.pi)**2
+
+    def _plot(self):
         if self.results is not None:
             x, ang, time = self.results
             plt.figure(figsize=(12, 8), dpi=80,
@@ -248,11 +232,3 @@ class PoleMap(pg_root._State):
             plt.grid(True)
 
             plt.show()
-
-    def gen_signal_by_loop(self, amplitude, length, for_obj='Pole'):
-        """Generates sinus signal from loop counter where argument length
-        controls the frequency of flickering. Should vary when fps changed."""
-
-        self.run_loop_counter()
-        if for_obj == 'Pole':
-            return amplitude * m.sin((self._i_/length) * m.pi)**2

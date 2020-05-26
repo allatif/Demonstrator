@@ -7,7 +7,7 @@ import pygame.gfxdraw
 from .. import pg_init, pg_root
 
 from .. components import colors
-from .. interface import window, slider_group, slider, button, knob
+from .. interface import window, slider, knob, button
 
 
 class SetupMenu(pg_root._State):
@@ -16,14 +16,16 @@ class SetupMenu(pg_root._State):
         pg_root._State.__init__(self)
         self.width = pg_init.SCREEN_RECT[2]
         self.height = pg_init.SCREEN_RECT[3]
-        self.predone = False
+        self.next = "POLEMAP"
 
+        # Initialize menu window
         self.win = window.MenuWindow('Settings Menu')
         self.win.cache_font(self.win.header, 'Liberation Sans', 32,
                             colors.WHITE)
 
         # Initialize button
-        self.but_ok = button.Button('OK', colors.LRED, colors.WHITE)
+        self.but_ok = button.Button(text='OK', bg=colors.LRED, fg=colors.WHITE,
+                                    action=self._save_settings, done=True)
         self.but_ok.set_pos(self.win.con_right-self.but_ok.width,
                             self.win.con_bottom-self.but_ok.height)
 
@@ -34,25 +36,12 @@ class SetupMenu(pg_root._State):
         self.sim_init_state = self.persist["sim initial state"]
 
         self._init_cond_sliders()
-        self.slider_group_a = slider_group \
-            .SliderGroup(self.cond_sliders, header_text='Initial Conditions',
-                         header_size=26)
-        self.slider_group_a.arrange(self.win.con_pos[0]+10,
-                                    self.win.con_pos[1]+75)
-
         self._init_ref_instruments()
-        self.slider_group_b = slider_group \
-            .SliderGroup(self.ref_instrs, header_text='Reference State',
-                         header_size=26)
-        self.slider_group_b.arrange(self.win.con_pos[0]+435,
-                                    self.win.con_pos[1]+75)
 
-        self.bg_img = pg.image.fromstring(self.persist["bg_image"],
-                                          (self.width, self.height), 'RGB')
+        self.bg_img = self.persist["bg_image"]
 
     def cleanup(self):
         self.done = False
-        self.predone = False
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
         return self.persist
@@ -61,86 +50,66 @@ class SetupMenu(pg_root._State):
         # Initialize sliders for initial conditions
         self.cond_sliders = []
         slider_ranges = [(-2, 2), (-2, 2), (-10, 10), (-20, 20)]
-        zipped = zip(slider_ranges, self.sim_init_state)
         slider_names = ['x', 'v', 'φ', 'ω']
         units = ['m', 'm/s', '°', '°/s']
-        for num, (slider_range, val) in enumerate(zipped):
+        for r, n, u in zip(slider_ranges, slider_names, units):
+            self.cond_sliders.append(slider.Slider(r, 4, 250, colors.GREEN_PACK,
+                                                   name=n, margin=15, unit=u))
+        # # Group up sliders
+        pos = (self.win.con_pos[0]+10, self.win.con_pos[1]+75)
+        self.cond_sliders[-1].group(pos, header_text='Initial Conditions',
+                                    header_size=26)
+        # # Set sliders according to sim_init_state
+        zipped = zip(self.cond_sliders, self.sim_init_state)
+        for num, (slider_, value) in enumerate(zipped):
             if num > 1:
-                val = m.degrees(val)
-            self.cond_sliders.append(slider.Slider(val, slider_range, 4, 250,
-                                                   colors.GREEN_PACK,
-                                                   name=slider_names[num],
-                                                   margin=15, unit=units[num]))
+                value = m.degrees(value)
+            slider_.set(value)
 
     def _init_ref_instruments(self):
         # Initialize sliders and control knob for reference state
-        self.ref_instrs = []
-        vel, ang = self.sim_ref_state
         ranges = [(-2, 2), (9.9, -9.9)]
         names = ['x', 'φ']
         units = ['m', '°']
-        self.ref_instrs.append(
-            slider.Slider(vel, ranges[0], 4, 250, colors.ORANGE_PACK,
-                          name=names[0], margin=15, unit=units[0]))
+        self.ref_slider = slider.Slider(ranges[0], 4, 250, colors.ORANGE_PACK,
+                                        name=names[0], margin=15, unit=units[0])
 
-        self.ref_instrs.append(
-            knob.ControlKnob(m.degrees(ang), ranges[1], 51, 32,
-                             colors.ORANGE_PACK, name=names[1], margin=24,
-                             unit=units[1]))
+        self.ref_knob = knob.ControlKnob(ranges[1], 51, 32, colors.ORANGE_PACK,
+                                         name=names[1], margin=24,
+                                         unit=units[1])
+        # # Group up instruments
+        pos = (self.win.con_pos[0]+435, self.win.con_pos[1]+75)
+        self.ref_knob.group(pos, header_text='Reference State', header_size=26)
+        # # Set instruments according to sim_ref_state
+        vel, ang = self.sim_ref_state
+        self.ref_slider.set(vel)
+        self.ref_knob.set(m.degrees(ang))
 
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 self.done = True
 
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-            for instr in self.cond_sliders+self.ref_instrs:
-                if instr.thumb.mouseover:
-                    instr.thumb.grab()
-                    break
-
-        if event.type == pg.MOUSEBUTTONUP and event.button == 1:
-            for instr in self.cond_sliders+self.ref_instrs:
-                if instr.thumb.grabbed:
-                    instr.thumb.release()
-                    break
-
-            if self.but_ok.mouseover:
-                self.predone = True
-
-        if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
-            for instr in self.cond_sliders+self.ref_instrs:
-                if instr.thumb.mouseover:
-                    instr.zeroize()
-
-    def mouse_logic(self, mouse):
-        for instr in self.cond_sliders+self.ref_instrs:
-            self.instrument_logic(mouse, instr)
-        self.hover_object_logic(mouse, self.but_ok)
-
     def update(self, surface):
         self.draw(surface)
-
-        # When press OK-button
-        # Before state is going to close it will save the new initial cond.
-        if self.predone:
-            init_state = self.slider_group_a.get_values()
-            ref_state = self.slider_group_b.get_values()
-            self.sim_init_state = list(self._state_in_rad(init_state))
-            self.sim_ref_state = list(self._state_in_rad(ref_state))
-            self.done = True
 
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
         pg.gfxdraw.box(surface, self.win.rect, colors.TRAN225)
 
         self.draw_heading(surface)
-        self.draw_slider_group(surface, self.slider_group_a)
-        self.draw_slider_group(surface, self.slider_group_b)
+        self.draw_instrument_group(surface, slider.Slider.groups[1])
+        self.draw_instrument_group(surface, slider.Slider.groups[2])
         self.draw_button(surface, self.but_ok)
 
     def draw_heading(self, surface):
         surface.blit(self.win.font_cache, self.win.con_pos)
+
+    def _save_settings(self):
+        init_state = slider.Slider.groups[1].get_values()
+        ref_state = slider.Slider.groups[2].get_values()
+        self.sim_init_state = list(self._state_in_rad(init_state))
+        self.sim_ref_state = list(self._state_in_rad(ref_state))
 
     def _state_in_rad(self, state):
         for num, value in enumerate(state):

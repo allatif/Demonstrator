@@ -1,7 +1,7 @@
 from .. import pg_root
 
 
-class Box:
+class _Box:
 
     def __init__(self):
         self._pos_x = 0

@@ -1,11 +1,11 @@
-from . box import Box
+from . _box import _Box
 from .. import pg_init
 
 
-class MenuWindow(Box):
+class MenuWindow(_Box):
 
     def __init__(self, header, frame=85, inner_margin=20):
-        Box.__init__(self)
+        _Box.__init__(self)
         self._header = header
         self._frame = frame
         self._margin = inner_margin
