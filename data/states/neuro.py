@@ -32,7 +32,8 @@ class Neuro(pg_root._State):
         self.ann = None
 
     def _init_ANN(self):
-        self.ann = neuronal_network.ANN(self.model_box.selected)
+        if self.model_box.selected is not None:
+            self.ann = neuronal_network.ANN(self.model_box.selected)
 
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
