@@ -49,6 +49,9 @@ class InterfaceEngine:
             if condition is None:
                 setattr(obj, attribute, value)
 
+            if condition:
+                setattr(obj, attribute, value)
+
     def state_events(self, state, event):
         """Process all interface events."""
 
