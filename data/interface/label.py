@@ -18,6 +18,11 @@ class Label(_Box):
         self._color = color
         self.text = text
 
+    def draw(self, surface):
+        self.cache_font(self.text, 'Liberation Sans', self.size, self.color)
+        text = self.font_cache
+        surface.blit(text, self.pos)
+
     @property
     def pos(self):
         return self._pos_x, self._pos_y

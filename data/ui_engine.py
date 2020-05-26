@@ -17,7 +17,6 @@ class InterfaceEngine:
         del self._dict['InterfaceEngine']
         for _key in [key for key in self._dict.keys() if '_' == key[0]]:
             del self._dict[_key]
-        self._state_cache = {}
 
     def load_objects(self, state):
         for cl in state.__dict__.values():
@@ -35,6 +34,20 @@ class InterfaceEngine:
     def clear_dict(self):
         for key in self._dict.keys():
             self._dict[key] = []
+
+    def manipulate(self, obj_name, attribute, value, condition=None):
+        for obj in self._dict[obj_name]:
+
+            if condition is not None:
+                if type(condition) == tuple:
+                    if getattr(obj, condition[0])[condition[1]]:
+                        setattr(obj, attribute, value)
+                elif type(condition) == str:
+                    if getattr(obj, condition):
+                        setattr(obj, attribute, value)
+
+            if condition is None:
+                setattr(obj, attribute, value)
 
     def state_events(self, state, event):
         """Process all interface events."""
@@ -100,7 +113,7 @@ class InterfaceEngine:
             instrument.slide(mouse)
         instrument.update()
 
-    @staticmethod
+    @ staticmethod
     def clear_classes():
         _Instrument.list_ = []
         _Instrument.groups = {}
@@ -109,6 +122,6 @@ class InterfaceEngine:
         CheckBox.groups = {}
         CheckBox.gr_key = 0
 
-    @property
+    @ property
     def dict(self):
         return self._dict

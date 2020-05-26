@@ -76,11 +76,13 @@ class MainSetup(pg_root._State):
     def draw(self, surface):
         surface.blit(self.bg_img, pg_init.SCREEN_RECT)
         pg.gfxdraw.box(surface, self.win.rect, colors.TRAN225)
-
         self.draw_heading(surface)
-        self.draw_checkbox_group(surface, checkbox.CheckBox.groups[1])
-        self.draw_instrument_group(surface, slider.Slider.groups[1])
-        self.draw_button(surface, self.but_ok)
+        self.draw_interface(surface)
+
+    def draw_interface(self, surface):
+        checkbox.CheckBox.groups[1].draw(surface)
+        slider.Slider.groups[1].draw(surface)
+        self.but_ok.draw(surface)
 
     def draw_heading(self, surface):
         surface.blit(self.win.font_cache, self.win.con_pos)

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from .. import pg_init, pg_root, setup_sim
 
-from .. components import colors, gaussian
+from .. components import colors, tools, gaussian
 from .. interface import slider, button, checkbox
 
 
@@ -150,13 +150,13 @@ class PoleMap(pg_root._State):
             if pole.is_unstable():
                 dyn_color = colors.RED
                 # Draw flicker light circle (transparent red)
-                self._draw_aafilled_circle(surface, *pos,
+                tools.draw_aafilled_circle(surface, *pos,
                                            pole.r + round(signal),
                                            colors.ARED)
             elif pole.is_marginal_stable():
                 dyn_color = colors.CORAL
 
-            self._draw_aafilled_circle(surface, *pos, pole.r, dyn_color)
+            tools.draw_aafilled_circle(surface, *pos, pole.r, dyn_color)
 
         self.draw_interface(surface)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
@@ -181,12 +181,12 @@ class PoleMap(pg_root._State):
                 pg.draw.line(surface, linecolor, *line, thickness)
 
     def draw_interface(self, surface):
-        self.draw_instrument_group(surface, slider.Slider.groups[1])
-        self.draw_checkbox(surface, self.checkbox)
-        self.draw_button(surface, self.but_set)
+        slider.Slider.groups[1].draw(surface)
+        self.checkbox.draw(surface)
+        self.but_set.draw(surface)
 
         if self.results is not None:
-            self.draw_button(surface, self.but_plot)
+            self.but_plot.draw(surface)
 
     def draw_hud(self, surface, width, height, margin=4, pos='left'):
         text_margin = 5

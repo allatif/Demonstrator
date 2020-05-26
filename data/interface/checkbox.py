@@ -3,6 +3,7 @@ import pygame as pg
 from . _checkbox_group import _CheckboxGroup
 from . _box import _Box
 from . label import Label
+from .. components import tools
 
 
 class CheckBox(_Box):
@@ -65,6 +66,51 @@ class CheckBox(_Box):
                                               header_size=header_size)
         CheckBox.groups[key].arrange(*pos, gap=gap)
         CheckBox.list_ = []
+
+    def draw(self, surface):
+        rect = self.rect
+        width = self.border_width
+
+        # Box / Radio
+        border_color = self.settings['border color']
+        box_color = self.settings['box color']
+        if self.type_ == 'default':
+            if box_color is None:
+                pg.draw.rect(surface, border_color, rect, width)
+            else:
+                pg.draw.rect(surface, box_color, rect)
+                pg.draw.rect(surface, border_color, rect, width)
+        elif self.type_ == 'radio':
+            x = rect[0] + self.r
+            y = rect[1] + self.r
+            r = self.r
+            w = width//2
+            if box_color is None:
+                tools.draw_aafilled_ring(surface, x, y, r, w, border_color)
+            else:
+                tools.draw_aafilled_circle(surface, x, y, r, box_color)
+                tools.draw_aafilled_ring(surface, x, y, r, w, border_color)
+
+        # Label Text
+        text_color = self.settings['text color']
+        if text_color is None:
+            text_color = self.settings['border color']
+
+        self.cache_font(self.label.text, 'Liberation Sans', self.height,
+                        text_color)
+        surface.blit(self.font_cache, self.label.rect)
+
+        # Checkbox Cross / Radio
+        if self.type_ == 'default':
+            if self.checked:
+                for line in self.gen_cross():
+                    pg.draw.line(surface, self.settings['border color'], *line,
+                                 self.cross_width)
+        elif self.type_ == 'radio':
+            if self.checked:
+                x, y, r = self.gen_radio()
+                tools.draw_aafilled_circle(surface, x, y, r,
+                                           self.settings['border color'])
 
     def _event_logic(self, state, event):
 

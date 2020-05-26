@@ -6,7 +6,7 @@ import numpy as np
 
 from .. import pg_init, pg_root, setup_sim, euler
 
-from .. components import colors
+from .. components import colors, tools
 from .. components import gphysics
 from .. components.mousecontrol import MouseControl
 from .. components.objects import Cone, Sphere, Ground, Ruler
@@ -288,7 +288,7 @@ class Game(pg_root._State):
         point_right = (self.cone.get_points('top')[0] + (self.ground.w//2),
                        self.ground.pos+1)
 
-        self._draw_aafilled_polygon(surface,
+        tools.draw_aafilled_polygon(surface,
                                     (point_bottom, point_left, point_right),
                                     colors.GREY)
 
@@ -300,7 +300,7 @@ class Game(pg_root._State):
         point_b = marker.rec_x + marker.width, marker.rec_y
         point_c = marker.rec_x, marker.rec_y + marker.length
         point_d = marker.rec_x + marker.width, marker.rec_y + marker.length
-        self._draw_aafilled_polygon(surface, (point_top, point_a, point_c,
+        tools.draw_aafilled_polygon(surface, (point_top, point_a, point_c,
                                               point_d, point_b), marker.color)
         # Draw shadow
         pg.draw.aalines(surface, colors.ORANGE_PACK['shadow'], False,
@@ -379,7 +379,7 @@ class Game(pg_root._State):
                                           rgb)
 
         # pg.draw.line(surface, color.DGREY, *self.ball.get_equator_line(10)
-        self._draw_aafilled_polygon(surface,
+        tools.draw_aafilled_polygon(surface,
                                     self.ball.get_equator_tape(width=10),
                                     colors.DGREY)
 

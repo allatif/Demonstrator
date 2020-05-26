@@ -104,6 +104,9 @@ class PygameApp:
 
             if not self.state._loaded:
                 self.ui.load_objects(self.state)
+                self.ui.manipulate('Button', 'static_fps',
+                                   self.state.static_fps,
+                                   condition=('settings', '_reflection'))
 
             self.event_handler()
             self.mouse_handler(mouse)
@@ -112,7 +115,8 @@ class PygameApp:
             pg.display.update()
             if self.show_fps:
                 fps = self.clock.get_fps()
-                with_fps = "{} - {:.2f} FPS".format(self.caption, fps)
+                with_fps = "{} - {:.2f} FPS [{}]" \
+                    .format(self.caption, fps, self.state.static_fps)
                 pg.display.set_caption(with_fps)
 
 
@@ -177,227 +181,6 @@ class _State:
         """Update method for state. Must be overrided in children."""
         pass
 
-    def draw_instrument_group(self, surface, instr_group_obj):
-        """Draws all sliders as a group that where passed through
-        as slider group object."""
-
-        # Group Header
-        header = instr_group_obj.header_label
-        if header is not None:
-            header.cache_font(instr_group_obj.header_text, 'Liberation Sans',
-                              header.size, instr_group_obj.header_color)
-            surface.blit(header.font_cache, header.rect)
-
-        for instrument in instr_group_obj.instruments:
-            self.draw_instrument(surface, instrument)
-
-    def draw_instrument(self, surface, instrument):
-        """Draws instrument with all its components and name label
-        if available."""
-
-        if instrument.name is not None:
-            # Instrument Name Label
-            name_label = instrument.name_label
-            name_label.cache_font(instrument.name, 'Liberation Sans',
-                                  name_label.size,
-                                  instrument.settings['active value color'])
-            surface.blit(name_label.font_cache, name_label.rect)
-
-        if type(instrument).__name__ == 'Slider':
-            slider = instrument
-
-            # Slider Track
-            pg.gfxdraw.box(surface, slider.track.rect,
-                           slider.settings['track color'])
-
-            # Slider Filled Track
-            slid_color = slider.settings['active filled color']
-            if not slider.active:
-                slid_color = slider.settings['deactive filled color']
-            pg.gfxdraw.box(surface, slider.get_slid_rect(), slid_color)
-
-            # Slider Thumb
-            thumb_color = slider.settings['active thumb color']
-            if not slider.active:
-                thumb_color = slider.settings['deactive thumb color']
-            self._draw_aafilled_circle(surface, slider.thumb.c_x,
-                                       slider.thumb.c_y,
-                                       slider.thumb.r,
-                                       thumb_color)
-
-        if type(instrument).__name__ == 'ControlKnob':
-            knob = instrument
-
-            # Control Knob Ring
-            self._draw_aafilled_ring(surface, knob.ring.c_x, knob.ring.c_y,
-                                     knob.ring.r, knob.ring.w,
-                                     knob.settings['track color'])
-
-            # Control Knob Cone Thumb
-            thumb = knob.thumb
-            thumb_color = knob.settings['active thumb color']
-            if not knob.active:
-                thumb_color = knob.settings['deactive thumb color']
-            pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
-            pg.draw.polygon(surface, thumb_color, thumb.points)
-
-            # Control Knob Pointer
-            pointer_color = knob.settings['active pointer color']
-            if not knob.active:
-                pointer_color = knob.settings['deactive pointer color']
-            pygame.draw.aaline(surface, pointer_color,
-                               knob.pointer.start, knob.pointer.end)
-
-        # Instrument Value Label
-        text_color = instrument.settings['active value color']
-        if not instrument.active:
-            text_color = instrument.settings['deactive value color']
-        instrument.value_label.cache_font('Liberation Sans',
-                                          instrument.value_label.size,
-                                          only_font=True)
-        font = instrument.value_label.font_cache
-
-        text_str = f'{round(instrument.value, 1)}'
-        if instrument.unit is not None:
-            text_str = f'{round(instrument.value, 1)} {instrument.unit}'
-
-            if type(instrument).__name__ == 'ControlKnob':
-                # No space between instrument value and instrument unit
-                text_str = f'{round(instrument.value, 1)}{instrument.unit}'
-
-        text = font.render(text_str, True, text_color)
-
-        if type(instrument).__name__ == 'ControlKnob':
-            rect = text.get_rect(center=instrument.ring.center)
-            surface.blit(text, rect)
-
-        else:
-            surface.blit(text, instrument.value_label.rect)
-
-    def draw_label(self, surface, label_obj):
-        """Draws label. / # *args = text, font_name, size, color"""
-        label_obj.cache_font(label_obj.text, 'Liberation Sans',
-                             label_obj.size, label_obj.color)
-        text = label_obj.font_cache
-        surface.blit(text, label_obj.pos)
-
-    def draw_checkbox_group(self, surface, cbox_group_obj):
-        """Draws all checkboxes as a group that where passed through
-        as cbox group object."""
-
-        # Group Header
-        header = cbox_group_obj.header_label
-        if header is not None:
-            header.cache_font(cbox_group_obj.header_text, 'Liberation Sans',
-                              header.size, cbox_group_obj.header_color)
-            surface.blit(header.font_cache, header.rect)
-
-        for cbox in cbox_group_obj.cboxes:
-            self.draw_checkbox(surface, cbox)
-
-    def draw_checkbox(self, surface, checkbox_obj):
-        """Draws checkbox with text label and cross if checked."""
-
-        rect = checkbox_obj.rect
-        width = checkbox_obj.border_width
-
-        # Box / Radio
-        border_color = checkbox_obj.settings['border color']
-        box_color = checkbox_obj.settings['box color']
-        if checkbox_obj.type_ == 'default':
-            if box_color is None:
-                pg.draw.rect(surface, border_color, rect, width)
-            else:
-                pg.draw.rect(surface, box_color, rect)
-                pg.draw.rect(surface, border_color, rect, width)
-        elif checkbox_obj.type_ == 'radio':
-            x = rect[0] + checkbox_obj.r
-            y = rect[1] + checkbox_obj.r
-            r = checkbox_obj.r
-            w = width//2
-            if box_color is None:
-                self._draw_aafilled_ring(surface, x, y, r, w, border_color)
-            else:
-                self._draw_aafilled_circle(surface, x, y, r, box_color)
-                self._draw_aafilled_ring(surface, x, y, r, w, border_color)
-
-        # Label Text
-        text_color = checkbox_obj.settings['text color']
-        if text_color is None:
-            text_color = checkbox_obj.settings['border color']
-
-        checkbox_obj.cache_font(checkbox_obj.label.text, 'Liberation Sans',
-                                checkbox_obj.height, text_color)
-        surface.blit(checkbox_obj.font_cache, checkbox_obj.label.rect)
-
-        # Checkbox Cross / Radio
-        if checkbox_obj.type_ == 'default':
-            if checkbox_obj.checked:
-                for line in checkbox_obj.gen_cross():
-                    pg.draw.line(surface, checkbox_obj.settings['border color'],
-                                 *line, checkbox_obj.cross_width)
-        elif checkbox_obj.type_ == 'radio':
-            if checkbox_obj.checked:
-                x, y, r = checkbox_obj.gen_radio()
-                self._draw_aafilled_circle(
-                    surface, x, y, r,
-                    checkbox_obj.settings['border color']
-                )
-
-    def draw_list_box(self, surface, list_box_obj):
-        """Draws list box by recycling draw_button() method."""
-
-        if list_box_obj.opened:
-            list_tuple = tuple(button
-                               for button in list_box_obj.options.values())
-            self.draw_buttons(surface, *list_tuple)
-
-        self.draw_button(surface, list_box_obj.box_header)
-        for layer in list_box_obj.arrow.layerlines:
-            for line in layer:
-                pg.draw.aaline(surface,
-                               list_box_obj.box_header.settings['foreground'],
-                               line[0], line[1], 0)
-
-    def draw_buttons(self, surface, *args):
-        """Draws buttons by calling draw_button() method."""
-
-        for arg in args:
-            self.draw_button(surface, arg)
-
-    def draw_button(self, surface, button_obj):
-        """Draws button with text and reflection if activated."""
-
-        pg.gfxdraw.box(surface, button_obj.rect, button_obj.color)
-
-        if button_obj.settings['reflection']:
-            button_obj.settings['refl animation speed'] = 120//self.static_fps
-            # Button Reflection
-            if button_obj.virgin:
-                button_obj.run()
-                # Reflection rect for vertical flow
-                if button_obj.reflection.rrect_v.rect[3] != 0:
-                    pg.draw.rect(surface,
-                                 button_obj.settings['reflection color'],
-                                 button_obj.reflection.rrect_v.rect)
-                # Reflection rect for horizontal flow
-                if button_obj.reflection.rrect_h.rect[2] != 0:
-                    pg.draw.rect(surface,
-                                 button_obj.settings['reflection color'],
-                                 button_obj.reflection.rrect_h.rect)
-
-        # Button Text
-        size = button_obj.settings['text size']
-        button_obj.cache_font(button_obj.text, 'Liberation Sans', size,
-                              button_obj.settings['foreground'],
-                              center=button_obj.center)
-        if button_obj.settings['text align center']:
-            surface.blit(button_obj.font_cache[0], button_obj.font_cache[1])
-        else:
-            pos = button_obj.font_cache[1]
-            pos[0] = button_obj.pos[0] + button_obj.settings['text margin left']
-            surface.blit(button_obj.font_cache[0], pos)
-
     def render_hud(self, width, height, margin, pos):
         """Returns the rect of hud field. Rect is always in bottom left or
         bottom right position of the screen."""
@@ -447,24 +230,6 @@ class _State:
         for model_file in os.listdir(directory):
             model_list.append(model_file)
         return model_list
-
-    @staticmethod
-    def _draw_aafilled_polygon(surface, points, color):
-        pg.gfxdraw.aapolygon(surface, points, color)
-        pg.gfxdraw.filled_polygon(surface, points, color)
-
-    @staticmethod
-    def _draw_aafilled_circle(surface, x, y, r, color):
-        pg.gfxdraw.aacircle(surface, x, y, r, color)
-        pg.gfxdraw.filled_circle(surface, x, y, r, color)
-
-    @staticmethod
-    def _draw_aafilled_ring(surface, x, y, r, w, color):
-        pg.gfxdraw.aacircle(surface, x, y, r-w-1, color)
-        pg.gfxdraw.aacircle(surface, x, y, r-w, color)
-        pg.gfxdraw.aacircle(surface, x, y, r-1, color)
-        pg.gfxdraw.aacircle(surface, x, y, r, color)
-        pg.draw.circle(surface, color, (x, y), r, w)
 
     @property
     def _i_(self):

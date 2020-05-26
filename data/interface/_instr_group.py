@@ -38,6 +38,16 @@ class _InstrumentGroup:
     def get_values(self):
         return [instrument.value for instrument in self._instrs]
 
+    def draw(self, surface):
+        header = self.header_label
+        if header is not None:
+            header.cache_font(self.header_text, 'Liberation Sans', header.size,
+                              self.header_color)
+            surface.blit(header.font_cache, header.rect)
+
+        for instr in self._instrs:
+            instr.draw(surface)
+
     @property
     def instruments(self):
         return self._instrs

@@ -22,7 +22,7 @@ class Button(_Box):
             'text size': round(0.6*self._height),
             'text align center': True,
             'text margin left': 10,
-            'reflection': False,
+            '_reflection': False,
             'reflection color': self._lighten_color(bg, 2),
             'refl animation speed': 1
         }
@@ -33,11 +33,39 @@ class Button(_Box):
         self.virgin = True
 
     def activate_reflection(self):
-        self._settings['reflection'] = True
+        self._settings['_reflection'] = True
         self._refl = Reflection(self.rect)
 
     def run(self):
         self._refl.flow(self._settings['refl animation speed'])
+
+    def draw(self, surface):
+        pg.gfxdraw.box(surface, self.rect, self.color)
+
+        if self.settings['_reflection']:
+            self.settings['refl animation speed'] = 120//self.static_fps
+            # Button Reflection
+            if self.virgin:
+                self.run()
+                # Reflection rect for vertical flow
+                if self.reflection.rrect_v.rect[3] != 0:
+                    pg.draw.rect(surface, self.settings['reflection color'],
+                                 self.reflection.rrect_v.rect)
+                # Reflection rect for horizontal flow
+                if self.reflection.rrect_h.rect[2] != 0:
+                    pg.draw.rect(surface, self.settings['reflection color'],
+                                 self.reflection.rrect_h.rect)
+
+        # Button Text
+        size = self.settings['text size']
+        self.cache_font(self.text, 'Liberation Sans', size,
+                        self.settings['foreground'], center=self.center)
+        if self.settings['text align center']:
+            surface.blit(self.font_cache[0], self.font_cache[1])
+        else:
+            pos = self.font_cache[1]
+            pos[0] = self.pos[0] + self.settings['text margin left']
+            surface.blit(self.font_cache[0], pos)
 
     def _event_logic(self, state, event):
 
@@ -75,6 +103,11 @@ class Button(_Box):
                 new_color[idx] = component + int(round(backlash*gamma)) + extra
 
         return tuple(new_color)
+
+    @classmethod
+    def multidraw(cls, surface, *args):
+        for arg in args:
+            arg.draw(surface)
 
     @staticmethod
     def _darken_color(color, value=30):

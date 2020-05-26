@@ -1,7 +1,7 @@
 import pygame as pg
 
 from . _instr_group import _InstrumentGroup
-from .. components import colors
+from .. components import colors, tools
 
 
 class _Instrument:
@@ -96,6 +96,84 @@ class _Instrument:
                                                    header_size=header_size)
         _Instrument.groups[key].arrange(*pos, gap=gap)
         _Instrument.list_ = []
+
+    def draw(self, surface):
+        if self.name is not None:
+            # Instrument Name Label
+            name_label = self.name_label
+            name_label.cache_font(self.name, 'Liberation Sans',
+                                  name_label.size,
+                                  self.settings['active value color'])
+            surface.blit(name_label.font_cache, name_label.rect)
+
+        if type(self).__name__ == 'Slider':
+            slider = self
+
+            # Slider Track
+            pg.gfxdraw.box(surface, slider.track.rect,
+                           slider.settings['track color'])
+
+            # Slider Filled Track
+            slid_color = slider.settings['active filled color']
+            if not slider.active:
+                slid_color = slider.settings['deactive filled color']
+            pg.gfxdraw.box(surface, slider.get_slid_rect(), slid_color)
+
+            # Slider Thumb
+            thumb_color = slider.settings['active thumb color']
+            if not slider.active:
+                thumb_color = slider.settings['deactive thumb color']
+            tools.draw_aafilled_circle(surface, slider.thumb.c_x,
+                                       slider.thumb.c_y,
+                                       slider.thumb.r,
+                                       thumb_color)
+
+        if type(self).__name__ == 'ControlKnob':
+            knob = self
+
+            # Control Knob Ring
+            tools.draw_aafilled_ring(surface, knob.ring.c_x, knob.ring.c_y,
+                                     knob.ring.r, knob.ring.w,
+                                     knob.settings['track color'])
+
+            # Control Knob Cone Thumb
+            thumb = knob.thumb
+            thumb_color = knob.settings['active thumb color']
+            if not knob.active:
+                thumb_color = knob.settings['deactive thumb color']
+            pg.gfxdraw.aatrigon(surface, *thumb.get_coords(), thumb_color)
+            pg.draw.polygon(surface, thumb_color, thumb.points)
+
+            # Control Knob Pointer
+            pointer_color = knob.settings['active pointer color']
+            if not knob.active:
+                pointer_color = knob.settings['deactive pointer color']
+            pg.draw.aaline(surface, pointer_color,
+                           knob.pointer.start, knob.pointer.end)
+
+        # Instrument Value Label
+        text_color = self.settings['active value color']
+        if not self.active:
+            text_color = self.settings['deactive value color']
+        self.value_label.cache_font('Liberation Sans', self.value_label.size,
+                                    only_font=True)
+        font = self.value_label.font_cache
+
+        text_str = f'{round(self.value, 1)}'
+        if self.unit is not None:
+            text_str = f'{round(self.value, 1)} {self.unit}'
+
+            if type(self).__name__ == 'ControlKnob':
+                # No space between instrument value and instrument unit
+                text_str = f'{round(self.value, 1)}{self.unit}'
+
+        text = font.render(text_str, True, text_color)
+
+        if type(self).__name__ == 'ControlKnob':
+            rect = text.get_rect(center=self.ring.center)
+            surface.blit(text, rect)
+        else:
+            surface.blit(text, self.value_label.rect)
 
     def _check_zero(self):
         start = int(round(self._start))

@@ -2,7 +2,7 @@ import pygame as pg
 
 from .. import pg_init, pg_root
 
-from .. components import colors
+from .. components import colors, tools
 from .. components.rl import neuronal_network
 from .. interface import button, listbox, label
 
@@ -84,7 +84,7 @@ class Neuro(pg_root._State):
                                connection.start, connection.end)
 
             for neuron in self.ann.neurons:
-                self._draw_aafilled_circle(ann_surface, *neuron.get_center(),
+                tools.draw_aafilled_circle(ann_surface, *neuron.get_center(),
                                            neuron.r, neuron.color)
 
             self.ann.save_image(ann_surface)
@@ -93,6 +93,6 @@ class Neuro(pg_root._State):
             surface.blit(self.ann.image, self.ann.image_rect)
 
     def draw_interface(self, surface):
-        self.draw_label(surface, self.model_box_label)
-        self.draw_button(surface, self.but_set)
-        self.draw_list_box(surface, self.model_box)
+        self.model_box_label.draw(surface)
+        self.but_set.draw(surface)
+        self.model_box.draw(surface)

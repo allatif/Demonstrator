@@ -63,6 +63,17 @@ class ListBox:
         if self.selected is not None:
             self._box_header.text = self.compress_text(self.selected)
 
+    def draw(self, surface):
+        if self.opened:
+            list_tuple = tuple(button for button in self.options.values())
+            Button.multidraw(surface, *list_tuple)
+
+        self.box_header.draw(surface)
+        for layer in self.arrow.layerlines:
+            for line in layer:
+                pg.draw.aaline(surface, self.box_header.settings['foreground'],
+                               line[0], line[1], 0)
+
     def _update_button_settings(self):
         head = self._box_header
         for key in self._settings.keys():

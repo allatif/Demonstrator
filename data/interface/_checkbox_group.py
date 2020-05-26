@@ -55,6 +55,16 @@ class _CheckboxGroup:
     def select_checkbox(self, num):
         self._selected_num = num
 
+    def draw(self, surface):
+        header = self.header_label
+        if header is not None:
+            header.cache_font(self.header_text, 'Liberation Sans',
+                              header.size, self.header_color)
+            surface.blit(header.font_cache, header.rect)
+
+        for cbox in self._cboxes:
+            cbox.draw(surface)
+
     def _event_logic(self, state, event):
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
