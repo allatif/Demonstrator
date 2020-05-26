@@ -71,7 +71,6 @@ class MainSetup(pg_root._State):
                 self.done = True
 
     def update(self, surface):
-        checkbox.CheckBox.groups[1].update()
         self.draw(surface)
 
     def draw(self, surface):

@@ -61,6 +61,7 @@ class _CheckboxGroup:
             for num, cbox in enumerate(self._cboxes):
                 if cbox.mouseover:
                     self.select_checkbox(num)
+                    self.update()
                     break
 
     @property
