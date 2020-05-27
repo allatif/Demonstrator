@@ -59,6 +59,7 @@ TRAN150 = (*_RGB, 150)
 TRAN200 = (*_RGB, 200)
 TRAN225 = (*_RGB, 225)
 
+A64RED = (*RED, 64)
 ARED = (*RED, 128)
 ADDBLUE = (*BLUE_PACK['night'], 128)
 

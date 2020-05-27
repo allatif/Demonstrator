@@ -34,9 +34,11 @@ class SetupMenu(pg_root._State):
         self.next = self.previous
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
+        self.limitations = self.persist["limitations"]
 
         self._init_cond_sliders()
         self._init_ref_instruments()
+        self._init_lim_sliders()
 
         self.bg_img = self.persist["bg_image"]
 
@@ -44,6 +46,7 @@ class SetupMenu(pg_root._State):
         self.done = False
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
+        self.persist["limitations"] = self.limitations
         return self.persist
 
     def _init_cond_sliders(self):
@@ -85,6 +88,26 @@ class SetupMenu(pg_root._State):
         self.ref_slider.set(vel)
         self.ref_knob.set(m.degrees(ang))
 
+    def _init_lim_sliders(self):
+        # Initialize sliders for location limitions
+        self.lim_sliders = []
+        slider_ranges = [(0, 1.56), (0, 1.56)]
+        slider_names = ['L', 'R']
+        units = ['m', 'm']
+        for r, n, u in zip(slider_ranges, slider_names, units):
+            self.lim_sliders.append(slider.Slider(r, 4, 250, colors.RED_PACK,
+                                                  name=n, margin=15, unit=u,
+                                                  default=0.56))
+        # # Group up sliders
+        pos = (self.win.con_pos[0]+10, self.win.con_pos[1]+285)
+        self.lim_sliders[-1].group(pos, header_text='Limitations',
+                                   header_size=26)
+        # # Set sliders according to sim_init_state
+        zipped = zip(self.lim_sliders, self.limitations)
+        for slider_, value in zipped:
+            slider_.settings["decimal places"] = 2
+            slider_.set(value)
+
     def get_event(self, event):
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
@@ -102,6 +125,7 @@ class SetupMenu(pg_root._State):
     def draw_interface(self, surface):
         slider.Slider.groups[1].draw(surface)
         slider.Slider.groups[2].draw(surface)
+        slider.Slider.groups[3].draw(surface)
         self.but_ok.draw(surface)
 
     def draw_heading(self, surface):
@@ -110,8 +134,10 @@ class SetupMenu(pg_root._State):
     def _save_settings(self):
         init_state = slider.Slider.groups[1].get_values()
         ref_state = slider.Slider.groups[2].get_values()
+        limits = slider.Slider.groups[3].get_values()
         self.sim_init_state = list(self._state_in_rad(init_state))
         self.sim_ref_state = list(self._state_in_rad(ref_state))
+        self.limitations = list(limits)
 
     def _state_in_rad(self, state):
         for num, value in enumerate(state):

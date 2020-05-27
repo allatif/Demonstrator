@@ -16,6 +16,7 @@ class Neuro(pg_root._State):
 
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
+        self.limitations = (0.56, 0.56)
         self.models = self.get_models()
 
         self.model_box = listbox.ListBox(self.models, hover=colors.TOMATO,
@@ -42,11 +43,13 @@ class Neuro(pg_root._State):
         if self.previous is not 'SPLASH':
             self.sim_ref_state = self.persist["sim reference state"]
             self.sim_init_state = self.persist["sim initial state"]
+            self.limitations = self.persist["limitations"]
 
     def cleanup(self):
         self.done = False
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
+        self.persist["limitations"] = self.limitations
         self.persist["selected model"] = self.model_box.selected
         self.persist["bg_image"] = self.screenshot
         return self.persist

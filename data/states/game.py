@@ -9,7 +9,7 @@ from .. import pg_init, pg_root, setup_sim, euler
 from .. components import colors, tools
 from .. components import gphysics
 from .. components.mousecontrol import MouseControl
-from .. components.objects import Cone, Sphere, Ground, Ruler
+from .. components.objects import Cone, Sphere, Ground, Ruler, Wall
 from .. components.animations import Impulse
 from .. components.rl.agent import Agent
 
@@ -71,6 +71,7 @@ class Game(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.__init__(mother=False)
+        self._temp_1 = None
 
         if self.previous == 'POLEMAP':
             self.Kregs = self.persist["controller"]
@@ -85,7 +86,11 @@ class Game(pg_root._State):
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
         self.euler_ministeps = self.persist["euler ministeps"]
+        self.limitations = self.persist["limitations"]
         self.frame_step = self.euler_ministeps
+
+        self.left_wall = Wall(self.limitations[0], self.ground.pos, 3, 'left')
+        self.right_wall = Wall(self.limitations[1], self.ground.pos, 3, 'right')
 
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
@@ -193,6 +198,20 @@ class Game(pg_root._State):
 
         self.agent.observe(np.array([x1, x2, x3, x4]))
 
+        # Location limit check
+        x_max = (self.width//2) / pg_init.SCALE
+        cone_len = self.cone.size / pg_init.SCALE
+        x_limit_left = x_max - self.limitations[0] - cone_len/2
+        x_limit_right = x_max - self.limitations[1] - cone_len/2
+        if (x1 < -x_limit_left) or (x1 > x_limit_right):
+            # If cone touches wall, cone will stop
+            if self._temp_1 is None:
+                self._temp_1 = x1
+            x1 = self._temp_1
+            self.model.set_Kregs(0, 0, 0, 0)
+            self.model.update()
+
+        # Ball tilting check
         if abs(x3) > m.radians(20):
             # If ball tilt angle > 20°
             # System stops controlling, controller values set to zero
@@ -223,7 +242,7 @@ class Game(pg_root._State):
                 self.force_records.append(self.control_object.force)
 
         # Else-Path for simulating ball drop
-        elif self.ball.falling:
+        else:
             if self.physics is None:
                 self.physics = gphysics.gPhysics(cone=self.cone,
                                                  ball=self.ball,
@@ -249,6 +268,8 @@ class Game(pg_root._State):
         self.draw_ruler(surface)
         self.draw_cone(surface, reflection=True)
         self.draw_ball(surface)
+        if self.mode is not 'user':
+            self.draw_walls(surface)
         self.draw_hud(surface, 115, 66, pos=self.options["Hud position"])
         if self.control_object is not None:
             self.draw_force_hud(surface, 160, 36)
@@ -261,6 +282,11 @@ class Game(pg_root._State):
 
         if self.simover:
             self.draw_message(surface, 'Finished')
+
+    def draw_walls(self, surface):
+        for wall in [self.left_wall, self.right_wall]:
+            pg.gfxdraw.box(surface, wall.get_zone(), colors.A64RED)
+            pg.gfxdraw.box(surface, wall.rect, colors.ARED)
 
     def draw_ground(self, surface):
         pg.draw.line(surface, colors.BLACK,

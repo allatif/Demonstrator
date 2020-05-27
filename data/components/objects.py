@@ -299,3 +299,34 @@ class RulerMarker:
     @property
     def rec_y(self):
         return self._rec_y
+
+
+class Wall:
+
+    def __init__(self, pos, height, thickness, orientation):
+        self._pos = pos
+        self._h = height
+        self._t = thickness
+        self._ori = orientation
+
+        WIDTH, HEIGHT = pg_init.SCREEN_SIZE
+        if self._ori == 'left':
+            x = int(round(self._pos*SCALE))
+            self._rect = (x-self._t, 0, self._t, self._h+1)
+        elif self._ori == 'right':
+            x = WIDTH - int(round(self._pos*SCALE))
+            self._rect = (x, 0, self._t, self._h+1)
+
+    def get_zone(self):
+        rect = (self._rect[0], 0, int(round(self._pos*SCALE)), self._h+1)
+        if self._ori == 'left':
+            rect = rect[0], rect[1], -rect[2], rect[3]
+        return rect
+
+    @ property
+    def t(self):
+        return self._t
+
+    @ property
+    def rect(self):
+        return self._rect

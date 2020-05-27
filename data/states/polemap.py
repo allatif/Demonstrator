@@ -20,6 +20,7 @@ class PoleMap(pg_root._State):
 
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
+        self.limitations = (0.56, 0.56)
         self.model = setup_sim.StateSpaceModel()
         self.poles = None
         self.results = None
@@ -73,6 +74,7 @@ class PoleMap(pg_root._State):
         if self.previous is not 'SPLASH':
             self.sim_ref_state = self.persist["sim reference state"]
             self.sim_init_state = self.persist["sim initial state"]
+            self.limitations = self.persist["limitations"]
 
         if "result" in self.persist:
             self.results = self.persist["result"]
@@ -81,6 +83,7 @@ class PoleMap(pg_root._State):
         self.done = False
         self.persist["sim reference state"] = self.sim_ref_state
         self.persist["sim initial state"] = self.sim_init_state
+        self.persist["limitations"] = self.limitations
         self.persist["controller"] = self.Kregs
         self.persist["mode"] = 'ss_controller'
         if self.checkbox.checked:
