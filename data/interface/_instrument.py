@@ -79,7 +79,7 @@ class _Instrument:
         dec = self._settings['decimal places']
         self._value = round(pixel_value*self._ratio + self._start, dec)
         if self._settings['integer']:
-            self._value = int(self._value)
+            self._value = int(round(self._value))
 
     def get_thumb_from_value(self, value=None):
         if value is not None:
@@ -159,13 +159,14 @@ class _Instrument:
                                     only_font=True)
         font = self.value_label.font_cache
 
-        text_str = f'{round(self.value, 1)}'
+        dec = self._settings['decimal places']
+        text_str = f'{round(self.value, dec)}'
         if self.unit is not None:
-            text_str = f'{round(self.value, 1)} {self.unit}'
+            text_str = f'{round(self.value, dec)} {self.unit}'
 
             if type(self).__name__ == 'ControlKnob':
                 # No space between instrument value and instrument unit
-                text_str = f'{round(self.value, 1)}{self.unit}'
+                text_str = f'{round(self.value, dec)}{self.unit}'
 
         text = font.render(text_str, True, text_color)
 
@@ -194,7 +195,7 @@ class _Instrument:
 
         if event.type == pg.MOUSEBUTTONDOWN and event.button == 3:
             if self.thumb.mouseover:
-                if self.haszero:
+                if self.haszero and (self._default == self._start):
                     self.zeroize()
                 else:
                     self.neutralize()
