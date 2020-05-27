@@ -16,6 +16,7 @@ class Agent:
         self._sens = sensibility
 
         self._force = 0.0
+        self._running = True
 
     def load_model(self, model_name):
         path = 'data\\components\\rl\\models\\' + model_name
@@ -34,7 +35,13 @@ class Agent:
         self._obs = obs
 
     def update(self):
-        self._force = self.act(self._obs)
+        if self._running:
+            self._force = self.act(self._obs)
+        elif not self._running:
+            self._force = 0.0
+
+    def stop(self):
+        self._running = False
 
     @property
     def force(self):

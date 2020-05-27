@@ -40,24 +40,6 @@ class gPhysics:
             if self.coast.is_stillstand(ang_Vel):
                 self.ball.stopped = True
 
-    def check_collision(self):
-        # Not used for now
-        if self.cone is not None:
-            lef_x, lef_y, rig_x, rig_y, top_x, top_y = self.cone.get_coords()
-            slope_lef = (lef_x - top_x) / (lef_y - top_y)
-            slope_rig = -slope_lef
-
-        if self.ball is not None and self.cone is not None:
-            base_y = lef_y
-            for y in range(top_y, base_y):
-                x_lef = slope_lef*(y-top_y) + top_x
-                x_rig = slope_rig*(y-top_y) + top_x
-                if (self.ball.inside((x_lef, y))
-                        or self.ball.inside((x_rig, y))):
-                    return True
-                return False
-        return
-
 
 class _State:
 
@@ -155,3 +137,37 @@ class CoastModel(_State):
             if self.ang_vel_1_2[1] > self.ang_vel_1_2[0]:
                 return True
             self.ang_vel_1_2 = []
+
+
+class CrashHandler:
+
+    def __init__(self, ball_obj):
+        self._ball = ball_obj
+        self._crash_loc = None
+        self._crash_impuls = None
+        self.crashed = False
+
+    def record(self, x1, x2, x3, x4):
+        if self.crashed:
+            if self._crash_loc is None:
+                self._crash_loc = x1
+            if self._crash_impuls is None:
+                # calculated crash_impuls still not realistic
+                self._crash_impuls = x2 / self._ball.r
+
+    def reset(self):
+        self._crash_loc = None
+        self._crash_impuls = None
+        self.crashed = False
+
+    @property
+    def ball(self):
+        return self._ball
+
+    @property
+    def crash_loc(self):
+        return self._crash_loc
+
+    @property
+    def crash_impuls(self):
+        return self._crash_impuls

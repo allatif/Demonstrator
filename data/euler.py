@@ -2,7 +2,8 @@ from threading import Thread
 
 
 def euler_method(A, B, state_vec, t_vec, fps, steps_per_frame, game_step,
-                 control_object=None, interference=0, reference=(0, 0)):
+                 control_object=None, interference=0, reference=(0, 0),
+                 extra_physics=None):
     over = False
     step = 0
     dt = 1 / (fps*steps_per_frame)
@@ -11,9 +12,18 @@ def euler_method(A, B, state_vec, t_vec, fps, steps_per_frame, game_step,
 
     while True:
         k = game_step + step
+
         if k >= sim_length - 1:
             over = True
             return x1[k], x2[k], x3[k], x4[k], over
+
+        if extra_physics is not None:
+            extra_physics.record(x1[k], x2[k], x3[k], x4[k])
+            if extra_physics.crashed:
+                x1[k] = extra_physics.crash_loc
+                x2[k] = 0
+                if control_object is not None:
+                    control_object.stop()
 
         step += 1
         if step == 1:

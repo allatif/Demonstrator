@@ -19,15 +19,13 @@ class Cone:
 
     def update(self, x1):
         self._real_location = x1
+        self.move(x1)
 
-        # Moving Cone according to ss variable x1 (traveled distance).
+    def move(self, x1):
         self._basis_c_x = self._start_pos_x + x1*SCALE
         self._point_left = self._basis_c_x - (self.size/2), self._basis_y
         self._point_right = self._basis_c_x + (self.size/2), self._basis_y
         self._point_top = self._basis_c_x, self._basis_y - self.size*self.ratio
-
-    def move(self, x1):
-        pass
 
     def get_points(self, point=None):
         if point is None:

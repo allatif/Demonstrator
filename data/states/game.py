@@ -7,7 +7,7 @@ import numpy as np
 from .. import pg_init, pg_root, setup_sim, euler
 
 from .. components import colors, tools
-from .. components import gphysics
+from .. components import newton
 from .. components.mousecontrol import MouseControl
 from .. components.objects import Cone, Sphere, Ground, Ruler, Wall
 from .. components.animations import Impulse
@@ -61,6 +61,7 @@ class Game(pg_root._State):
         self.interference_load = None
         self.wave = None
         self.physics = None
+        self.crasher = newton.CrashHandler(self.ball)
         self.simover = False
         self.predone = False
         self.results = None
@@ -71,7 +72,6 @@ class Game(pg_root._State):
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
         self.__init__(mother=False)
-        self._temp_1 = None
 
         if self.previous == 'POLEMAP':
             self.Kregs = self.persist["controller"]
@@ -99,6 +99,8 @@ class Game(pg_root._State):
 
         if self.mode == 'user':
             print(" -- User in control now -- ")
+            # No limitations, even can go off screen
+            self.limitations = (-9, -9)
         elif self.mode == 'ss_controller':
             print(self.Kregs)
         elif self.mode == 'agent':
@@ -191,7 +193,7 @@ class Game(pg_root._State):
             args=(self.model.system, self.model.B, self.sim.state_vec,
                   self.sim.t_vec, self.static_fps, self.euler_ministeps,
                   Game.step, self.control_object, interference,
-                  self.sim_ref_state)
+                  self.sim_ref_state, self.crasher)
         )
         self.euler_thread.start()
         x1, x2, x3, x4, self.simover = self.euler_thread.join()
@@ -205,9 +207,7 @@ class Game(pg_root._State):
         x_limit_right = x_max - self.limitations[1] - cone_len/2
         if (x1 < -x_limit_left) or (x1 > x_limit_right):
             # If cone touches wall, cone will stop
-            if self._temp_1 is None:
-                self._temp_1 = x1
-            x1 = self._temp_1
+            self.crasher.crashed = True
             self.model.set_Kregs(0, 0, 0, 0)
             self.model.update()
 
@@ -244,9 +244,9 @@ class Game(pg_root._State):
         # Else-Path for simulating ball drop
         else:
             if self.physics is None:
-                self.physics = gphysics.gPhysics(cone=self.cone,
-                                                 ball=self.ball,
-                                                 ground=self.ground)
+                self.physics = newton.gPhysics(cone=self.cone,
+                                               ball=self.ball,
+                                               ground=self.ground)
             self.physics.update()
 
         # When event key [ESC]

@@ -9,6 +9,7 @@ class MouseControl:
 
         self._mouse = (0, 0)
         self._force = 0
+        self._active = True
         self.input = False
 
     def update(self, mouse):
@@ -17,10 +18,13 @@ class MouseControl:
 
         if len(MouseControl._pos_list) >= 3:
             del MouseControl._pos_list[0]
-        if self.input:
+        if self.input and self._active:
             self._force = self._calc_horizontal_force()
         else:
             self._force = 0
+
+    def stop(self):
+        self._active = False
 
     def _calc_horizontal_force(self):
         max_force = 50_000
