@@ -86,9 +86,17 @@ class PoleMap(pg_root._State):
         self.persist["limitations"] = self.limitations
         self.persist["controller"] = self.Kregs
         self.persist["mode"] = 'ss_controller'
+
         if self.checkbox.checked:
             self.persist["mode"] = 'user'
+
         self.persist["bg_image"] = self.screenshot
+
+        if self.next == 'SPLASH':
+            if "result" in self.persist:
+                del self.persist["result"]
+                self.results = None
+
         return self.persist
 
     def get_event(self, event):

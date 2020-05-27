@@ -52,6 +52,12 @@ class Neuro(pg_root._State):
         self.persist["limitations"] = self.limitations
         self.persist["selected model"] = self.model_box.selected
         self.persist["bg_image"] = self.screenshot
+
+        if self.next == 'SPLASH':
+            if "result" in self.persist:
+                del self.persist["result"]
+                self.results = None
+
         return self.persist
 
     def get_event(self, event):
