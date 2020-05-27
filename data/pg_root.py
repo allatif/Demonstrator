@@ -143,9 +143,9 @@ class _State:
         self._loaded = False
 
         # Temporary variabeles usefull to hold intermediate values
-        self._temp_0 = 0
-        self._temp_1 = 0
-        self._temp_2 = 0
+        self._temp_0 = None
+        self._temp_1 = None
+        self._temp_2 = None
 
         self._loop_counter = 0
 
