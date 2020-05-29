@@ -26,7 +26,18 @@ class PoleMap(pg_root._State):
         self.results = None
 
         self.Kregs = [-1296.6, -3161.2, -31800, -9831]
-        self._init_reg_sliders()
+
+        # Initialize sliders
+        self.sliders = []
+        slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
+        for r in slider_ranges:
+            self.sliders.append(slider.Slider(r, 2, 200, colors.CORAL_PACK))
+        # # Group up sliders
+        self.sliders[-1].group((20, 20), header_text='Controller Settings',
+                               header_size=16)
+        # # Set sliders according to Kreg
+        for slider_, value in zip(self.sliders, self.Kregs):
+            slider_.set(value)
 
         # Initialize checkbox
         # # Checkbox position depends on last slider
@@ -50,22 +61,8 @@ class PoleMap(pg_root._State):
 
         self.polemap_imagestr = ''
 
-    def _init_reg_sliders(self):
-        # Initialize sliders
-        self.sliders = []
-        slider_ranges = [(0, -10000), (0, -20000), (0, -180000), (0, -60000)]
-        for r in slider_ranges:
-            self.sliders.append(slider.Slider(r, 2, 200, colors.CORAL_PACK))
-        # # Group up sliders
-        self.sliders[-1].group((20, 20), header_text='Controller Settings',
-                               header_size=16)
-        # # Set sliders according to Kreg
-        for slider_, value in zip(self.sliders, self.Kregs):
-            slider_.set(value)
-
     def startup(self, persistant):
         pg_root._State.startup(self, persistant)
-        self._init_reg_sliders()
 
         self.next = "GAME"
         if self.previous == 'GAME':

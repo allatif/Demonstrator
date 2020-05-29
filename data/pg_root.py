@@ -26,15 +26,20 @@ class PygameApp:
         self.state_dict = {}
         self.state_name = None
         self.state = None
+
         self.ui = ui_engine.InterfaceEngine()
 
     def setup_states(self, state_dict, start_state):
         """Given a dictionary of States and a State to start with,
         builds the self.state_dict."""
 
+        self.ui.preset(state_dict)
+
         self.state_dict = state_dict
         self.state_name = start_state
         self.state = self.state_dict[self.state_name]
+
+        self.ui.load_objects(self.state)
 
     def update(self):
         """Checks if a state is done or has called for a game quit.
@@ -44,7 +49,7 @@ class PygameApp:
             self.done = True
         elif self.state.done:
             self.state._loaded = False
-            self.ui.clear_classes()
+            self.ui.clear_groupables()
             self.ui.clear_dict()
             self.flip_state()
 
@@ -66,6 +71,11 @@ class PygameApp:
         self.state = self.state_dict[self.state_name]
         self.state.previous = previous
         self.state.startup(persist)
+
+        if not self.state._loaded:
+            self.ui.load_objects(self.state)
+            self.ui.manipulate('Button', 'static_fps', self.state.static_fps,
+                               condition=('settings', '_reflection'))
 
     def event_handler(self):
         """Process all events and pass them down to current State. The F5 key
@@ -101,17 +111,9 @@ class PygameApp:
         while not self.done:
             self.clock.tick(self.fps)
             mouse = pg.mouse.get_pos()
-
-            if not self.state._loaded:
-                self.ui.load_objects(self.state)
-                self.ui.manipulate('Button', 'static_fps',
-                                   self.state.static_fps,
-                                   condition=('settings', '_reflection'))
-
             self.event_handler()
             self.mouse_handler(mouse)
             self.update()
-
             pg.display.update()
             if self.show_fps:
                 fps = self.clock.get_fps()
@@ -198,6 +200,8 @@ class _State:
         return rect
 
     def run_loop_counter(self, increment=1):
+        """Counts up by a specific increment when called in loop."""
+
         self._loop_counter += increment
 
     @staticmethod

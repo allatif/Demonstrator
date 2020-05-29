@@ -200,36 +200,36 @@ class _Instrument:
                 else:
                     self.neutralize()
 
-    @ property
+    @property
     def value(self):
         return self._value
 
-    @ property
+    @property
     def default(self):
         return self._default
 
-    @ property
+    @property
     def unit(self):
         return self._unit
 
-    @ property
+    @property
     def pos(self):
         if self.name is None:
             return self._ins_x, self._ins_y
         return self._pos_x, self._pos_y
 
-    @ property
+    @property
     def thumb(self):
         return self._thumb
 
-    @ property
+    @property
     def value_label(self):
         return self._value_label
 
-    @ property
+    @property
     def name_label(self):
         return self._name_label
 
-    @ property
+    @property
     def settings(self):
         return self._settings
