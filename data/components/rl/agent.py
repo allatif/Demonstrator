@@ -15,7 +15,7 @@ class Agent:
     def __init__(self, sensibility=10000):
         self._sens = sensibility
 
-        self._force = 0.0
+        self._force = 0
         self._running = True
 
     def load_model(self, model_name):
@@ -38,7 +38,7 @@ class Agent:
         if self._running:
             self._force = self.act(self._obs)
         elif not self._running:
-            self._force = 0.0
+            self._force = 0
 
     def stop(self):
         self._running = False
