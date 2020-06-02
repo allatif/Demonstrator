@@ -43,6 +43,12 @@ class Agent:
     def stop(self):
         self._running = False
 
+    def _trainact(self, action):
+        if action == 0:
+            self._force = -self._sens
+        elif action == 1:
+            self._force = self._sens
+
     @property
     def force(self):
         return self._force
