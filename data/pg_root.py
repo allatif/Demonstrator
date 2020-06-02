@@ -232,7 +232,9 @@ class _State:
         directory = os.path.join('data', 'components', 'rl', 'models')
         model_list = []
         for model_file in os.listdir(directory):
-            model_list.append(model_file)
+            # Ignore all files that start with underscore
+            if model_file[0] is not '_':
+                model_list.append(model_file)
         return model_list
 
     @property
