@@ -19,6 +19,11 @@ class Environment:
     def reset(self):
         Environment.step_ = 0
         rand_init_state = (np.random.rand(4) - 0.5) / 2.5
+
+        # Manually overwrite rand init state:
+        # rand_init_state[0] = 0.
+        # rand_init_state[2] = 0.
+
         init_state_tuple = tuple(rand_init_state.tolist())
         self._sim = setup_sim.SimData(120_000, init_state_tuple)
         return rand_init_state
@@ -39,9 +44,9 @@ class Environment:
 
         if abs(x3) > m.radians(20) or abs(x1) > 1.5:
             done = True
-            reward = 0.
+            # reward = 0.
 
-        reward = self.rewarder(x1, x3, ratio=0.75)
+        reward = self.rewarder(x1, x3)
 
         Environment.step_ += spf
 
