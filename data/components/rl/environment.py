@@ -18,11 +18,14 @@ class Environment:
 
     def reset(self):
         Environment.step_ = 0
-        rand_init_state = (np.random.rand(4) - 0.5) / 2.5
 
-        # Manually overwrite rand init state:
-        # rand_init_state[0] = 0.
-        # rand_init_state[2] = 0.
+        rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
+        rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
+        rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
+        rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
+        rand_init_state = np.concatenate(
+            (rand_init_x1, rand_init_x2, rand_init_x3, rand_init_x4), axis=0
+        )
 
         init_state_tuple = tuple(rand_init_state.tolist())
         self._sim = setup_sim.SimData(120_000, init_state_tuple)
