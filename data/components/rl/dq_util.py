@@ -12,15 +12,15 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 replay_buffer = deque(maxlen=2000)
 
 
-def epsilon_greedy_policy(state, epsilon=0):
+def epsilon_greedy_policy(state, model, epsilon=0):
     if np.random.rand() < epsilon:
-        return np.random_randint(2)
+        return np.random.randint(2)
     else:
         Q_values = model.predict(state[np.newaxis])
         return np.argmax(Q_values[0])
 
 
-def sample_experience(batch_size):
+def sample_experiences(batch_size):
     indices = np.random.randint(len(replay_buffer), size=batch_size)
     batch = [replay_buffer[index] for index in indices]
     states, actions, rewards, next_states, dones = [
@@ -30,8 +30,8 @@ def sample_experience(batch_size):
     return states, actions, rewards, next_states, dones
 
 
-def play_one_step(env, state, epsilon):
-    action = epsilon_greedy_policy(state, epsilon)
+def play_one_step(env, state, model, epsilon):
+    action = epsilon_greedy_policy(state, model, epsilon)
     next_state, reward, done = env.step(action)
     replay_buffer.append((state, action, reward, next_state, done))
     return next_state, reward, done

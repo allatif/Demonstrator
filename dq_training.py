@@ -25,6 +25,8 @@ obs = env.reset()
 
 batch_size = 32
 discount_factor = 0.95
+n_max_steps = 200
+max_eps = 600
 
 optimizer = keras.optimizers.Adam(lr=1e-3)
 loss_fn = keras.losses.mean_squared_error
@@ -37,7 +39,7 @@ def training_step(batch_size):
     max_next_Q_values = np.max(next_Q_values, axis=1)
     target_Q_values = (rewards
                        + (1 - dones)*discount_factor*max_next_Q_values)
-    mask = tf.one_hot(action, n_outputs)
+    mask = tf.one_hot(actions, n_outputs)
     with tf.GradientTape() as tape:
         all_Q_values = model(states)
         Q_values = tf.reduce_sum(all_Q_values*mask, axis=1, keepdims=True)
@@ -46,12 +48,32 @@ def training_step(batch_size):
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
 
-for episode in range(600):
+episode_reward_progress = []
+for episode in range(max_eps):
     obs = env.reset()
-    for step in range(200):
+
+    episode_rewards = []
+    for step in range(n_max_steps):
         epsilon = max(1 - episode/500, 0.01)
-        obs, reward, done = play_one_step(env, obs, epsilon)
+        obs, reward, done = play_one_step(env, obs, model, epsilon)
+        episode_rewards.append(reward)
         if done:
             break
+
+    episode_total_reward = sum(episode_rewards)
+    print(f'done episode {episode+1} of {max_eps} - r[{episode_total_reward}]')
+    episode_reward_progress.append(episode_total_reward)
     if episode > 50:
         training_step(batch_size)
+
+jsondumb = episode_reward_progress
+
+
+modelname = f'deepq_s{n_max_steps}_ep{max_eps}'
+
+print('conserving plot data to json')
+with open(f"tools\\conserved_plots\\{modelname}.json", 'w') as f:
+    json.dump(jsondumb, f)
+
+print('saving model:', modelname)
+model.save(f"{modelname}.h5")
