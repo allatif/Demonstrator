@@ -5,7 +5,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 from data.components.rl import environment as env
-from data.components.rl.util import *
+from data.components.rl.pg_util import *
 
 
 # Just disables the warning, doesn't enable AVX/FMA
@@ -30,21 +30,19 @@ discount_factor = 0.95
 optimizer = keras.optimizers.Adam(lr=0.01)
 loss_fn = keras.losses.binary_crossentropy
 
-loss_progress = []
 total_reward_progress = []
 for iteration in range(n_iterations):
     print("start iter", iteration+1, "of total", n_iterations)
 
-    all_rewards, all_grads, total_loss = play_multiple_episodes(
+    all_rewards, all_grads = play_multiple_episodes(
         env, n_eps_per_update, n_max_steps, model, loss_fn
     )
     all_final_rewards = discount_and_normalize_rewards(all_rewards,
                                                        discount_factor)
 
-    loss_progress.append(float(total_loss))
     flat_all_rewards = [i for ep_rewards in all_rewards for i in ep_rewards]
     total_reward_progress.append(float(sum(flat_all_rewards)))
-    jsondumb = (loss_progress, total_reward_progress)
+    jsondumb = total_reward_progress
 
     all_mean_grads = []
     for var_index in range(len(model.trainable_variables)):

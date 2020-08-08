@@ -16,30 +16,25 @@ def play_one_step(env, obs, model, loss_fn):
         loss = tf.reduce_mean(loss_fn(y_target, left_proba))
     grads = tape.gradient(loss, model.trainable_variables)
     obs, reward, done = env.step(int(action[0, 0].numpy()))
-    return obs, reward, done, grads, loss
+    return obs, reward, done, grads
 
 
 def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn):
     all_rewards = []
     all_grads = []
-    total_loss = 0
     for ep in range(n_eps):
         current_rewards = []
         current_grads = []
-        episode_loss = 0
         obs = env.reset()
         for step in range(n_max_steps):
-            obs, reward, done, grads, loss = play_one_step(env, obs,
-                                                           model, loss_fn)
+            obs, reward, done, grads = play_one_step(env, obs, model, loss_fn)
             current_rewards.append(reward)
             current_grads.append(grads)
-            episode_loss += loss
             if done:
                 break
         all_rewards.append(current_rewards)
         all_grads.append(current_grads)
-        total_loss += episode_loss
-    return all_rewards, all_grads, total_loss
+    return all_rewards, all_grads
 
 
 def discount_rewards(rewards, discount_factor):
