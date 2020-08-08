@@ -23,9 +23,9 @@ model = keras.models.Sequential([
 env = env.Environment()
 obs = env.reset()
 
-batch_size = 32
+batch_size = 64
 discount_factor = 0.95
-n_max_steps = 200
+n_max_steps = 500
 max_eps = 600
 
 optimizer = keras.optimizers.Adam(lr=1e-3)
@@ -63,7 +63,7 @@ for episode in range(max_eps):
     episode_total_reward = sum(episode_rewards)
     print(f'done episode {episode+1} of {max_eps} - r[{episode_total_reward}]')
     episode_reward_progress.append(episode_total_reward)
-    if episode > 50:
+    if episode > 100:
         training_step(batch_size)
 
 jsondumb = episode_reward_progress
