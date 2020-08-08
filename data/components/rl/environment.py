@@ -10,11 +10,12 @@ class Environment:
 
     step_ = 0
 
-    def __init__(self, euler_stepsize=0.001):
+    def __init__(self, euler_stepsize=0.001, adv_reward=False):
         self._euler_stepsize = euler_stepsize
 
+        self._adv_reward = adv_reward
         self._model = setup_sim.StateSpaceModel()
-        self._agent = agent.Agent(sensibility=10000)
+        self._agent = agent.Agent(sensibility=20000)
 
     def reset(self):
         Environment.step_ = 0
@@ -35,7 +36,7 @@ class Environment:
         self._agent._trainact(action)
 
         done = False
-        # reward = 1.0
+        reward = 0
 
         spf = 30
         fakefps = 1 / (self._euler_stepsize*spf)
@@ -47,9 +48,13 @@ class Environment:
 
         if abs(x3) > m.radians(20) or abs(x1) > 1.5:
             done = True
-            # reward = 0.
 
-        reward = self.rewarder(x1, x3)
+        if self._adv_reward:
+            reward = self.rewarder(x1, x3)
+        else:
+            reward = 1
+            if done:
+                reward = 0
 
         Environment.step_ += spf
 
