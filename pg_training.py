@@ -42,7 +42,6 @@ for iteration in range(n_iterations):
 
     flat_all_rewards = [i for ep_rewards in all_rewards for i in ep_rewards]
     total_reward_progress.append(float(sum(flat_all_rewards)))
-    jsondumb = total_reward_progress
 
     all_mean_grads = []
     for var_index in range(len(model.trainable_variables)):
@@ -53,6 +52,8 @@ for iteration in range(n_iterations):
         all_mean_grads.append(mean_grads)
 
     optimizer.apply_gradients(zip(all_mean_grads, model.trainable_variables))
+
+jsondumb = total_reward_progress
 
 
 modelname = f'pg_r50_s{n_max_steps}_i{n_iterations}'
