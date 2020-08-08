@@ -1,11 +1,10 @@
 import os
+import json
 
 import tensorflow as tf
 from tensorflow import keras
-import matplotlib.pyplot as plt
 
 from data.components.rl import environment as env
-from data.components import colors
 from data.components.rl.util import *
 
 
@@ -23,14 +22,13 @@ model = keras.models.Sequential([
 env = env.Environment()
 obs = env.reset()
 
-n_iterations = 750
+n_iterations = 10
 n_eps_per_update = 10
 n_max_steps = 500
 discount_factor = 0.95
 
 optimizer = keras.optimizers.Adam(lr=0.01)
 loss_fn = keras.losses.binary_crossentropy
-
 
 loss_progress = []
 total_reward_progress = []
@@ -43,10 +41,10 @@ for iteration in range(n_iterations):
     all_final_rewards = discount_and_normalize_rewards(all_rewards,
                                                        discount_factor)
 
-    loss_progress.append(total_loss)
-
-    flatten_all_rewards = [i for ep_rewards in all_rewards for i in ep_rewards]
-    total_reward_progress.append(sum(flatten_all_rewards))
+    loss_progress.append(float(total_loss))
+    flat_all_rewards = [i for ep_rewards in all_rewards for i in ep_rewards]
+    total_reward_progress.append(float(sum(flat_all_rewards)))
+    jsondumb = (loss_progress, total_reward_progress)
 
     all_mean_grads = []
     for var_index in range(len(model.trainable_variables)):
@@ -59,27 +57,11 @@ for iteration in range(n_iterations):
     optimizer.apply_gradients(zip(all_mean_grads, model.trainable_variables))
 
 
-modelname = 'pg_r2_ang20_env15_500_i750'
+modelname = f'pg_r50_s{n_max_steps}_i{n_iterations}'
 
-print('saving model')
+print('conserving plot data to json')
+with open(f"tools\\conserved_plots\\{modelname}.json", 'w') as f:
+    json.dump(jsondumb, f)
+
+print('saving model:', modelname)
 model.save(f"{modelname}.h5")
-
-
-# Plot Loss and rewards
-print('plotting loss and rewards')
-plt.figure(figsize=(12, 8), dpi=80, facecolor=(colors.get_pp(colors.WHITE)))
-
-plt.subplot(211)
-plt.plot(loss_progress, color=colors.get_pp(colors.LBLUE))
-plt.xlabel('Iterations')
-plt.ylabel('Loss')
-plt.grid(True)
-
-plt.subplot(212)
-plt.plot(total_reward_progress, color=colors.get_pp(colors.TOMATO))
-plt.xlabel('Iterations')
-plt.ylabel('Total Rewards')
-plt.grid(True)
-
-print('saving plot')
-plt.savefig(f"{modelname}.png")
