@@ -3,6 +3,7 @@ import json
 
 import tensorflow as tf
 from tensorflow import keras
+import gym
 
 from data.components.rl import environment as env
 from data.components.rl.dq_util import *
@@ -20,12 +21,15 @@ model = keras.models.Sequential([
     keras.layers.Dense(n_outputs),
 ])
 
-env = env.Environment()
+# env = env.Environment()
+# obs = env.reset()
+
+env = gym.make("CartPole-v1")
 obs = env.reset()
 
-batch_size = 64
+batch_size = 32
 discount_factor = 0.95
-n_max_steps = 500
+n_max_steps = 200
 max_eps = 600
 
 optimizer = keras.optimizers.Adam(lr=1e-3)
@@ -55,7 +59,7 @@ for episode in range(max_eps):
     episode_rewards = []
     for step in range(n_max_steps):
         epsilon = max(1 - episode/500, 0.01)
-        obs, reward, done = play_one_step(env, obs, model, epsilon)
+        obs, reward, done = play_one_step(env, obs, model, epsilon, gym=True)
         episode_rewards.append(reward)
         if done:
             break
@@ -63,13 +67,14 @@ for episode in range(max_eps):
     episode_total_reward = sum(episode_rewards)
     print(f'done episode {episode+1} of {max_eps} - r[{episode_total_reward}]')
     episode_reward_progress.append(episode_total_reward)
-    if episode > 100:
+
+    if episode > 50:
         training_step(batch_size)
 
 jsondumb = episode_reward_progress
 
 
-modelname = f'deepq_s{n_max_steps}_ep{max_eps}'
+modelname = f'deepq_cartpole_s{n_max_steps}_ep{max_eps}'
 
 print('conserving plot data to json')
 with open(f"tools\\conserved_plots\\{modelname}.json", 'w') as f:
