@@ -15,15 +15,19 @@ class Environment:
 
         self._adv_reward = adv_reward
         self._model = setup_sim.StateSpaceModel()
-        self._agent = agent.Agent(sensibility=20000)
+        self._agent = agent.Agent(sensibility=10000)
 
     def reset(self):
         Environment.step_ = 0
 
-        rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
-        rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
+        # rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
+        # rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
+        # rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
+        # rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
+        rand_init_x1 = np.random.uniform(low=-0.2, high=0.2, size=1)
+        rand_init_x2 = np.random.uniform(low=-0.2, high=0.2, size=1)
         rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
-        rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
+        rand_init_x4 = np.random.uniform(low=-0.2, high=0.2, size=1)
         rand_init_state = np.concatenate(
             (rand_init_x1, rand_init_x2, rand_init_x3, rand_init_x4), axis=0
         )
