@@ -8,18 +8,21 @@ import numpy as np
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 
-def play_one_step(env, obs, model, loss_fn):
+def play_one_step(env, obs, model, loss_fn, gym=False):
     with tf.GradientTape() as tape:
         left_proba = model(obs[np.newaxis])
         action = (tf.random.uniform([1, 1]) > left_proba)
         y_target = tf.constant([[1.]]) - tf.cast(action, tf.float32)
         loss = tf.reduce_mean(loss_fn(y_target, left_proba))
     grads = tape.gradient(loss, model.trainable_variables)
-    obs, reward, done = env.step(int(action[0, 0].numpy()))
+    if gym:
+        obs, reward, done, info = env.step(int(action[0, 0].numpy()))
+    else:
+        obs, reward, done = env.step(int(action[0, 0].numpy()))
     return obs, reward, done, grads
 
 
-def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn):
+def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn, gym=False):
     all_rewards = []
     all_grads = []
     for ep in range(n_eps):
@@ -27,7 +30,8 @@ def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn):
         current_grads = []
         obs = env.reset()
         for step in range(n_max_steps):
-            obs, reward, done, grads = play_one_step(env, obs, model, loss_fn)
+            obs, reward, done, grads = play_one_step(env, obs, model,
+                                                     loss_fn, gym)
             current_rewards.append(reward)
             current_grads.append(grads)
             if done:
