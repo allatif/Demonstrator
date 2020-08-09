@@ -1,7 +1,7 @@
 from data.components.rl import environment as env
 
 
-env = env.Environment(adv_reward=True)
+env = env.Environment(adv_reward=False)
 obs = env.reset()
 print(obs)
 
