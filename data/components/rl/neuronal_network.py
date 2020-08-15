@@ -123,7 +123,7 @@ class ANN:
             return 11
         elif dense > 12 and dense <= 18:
             return 7
-        elif dense > 18 and dense <= 30:
+        elif dense > 18 and dense <= 32:
             return 4
         return 1
 
