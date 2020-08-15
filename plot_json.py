@@ -5,7 +5,7 @@ from data.components import colors
 
 
 # Load modelname and rewards from json
-modelname = 'deepq_cartpole_s200_ep600'
+modelname = 'deepq3216_b64_s200_ep1000(100)_sc200'
 jsonpath = 'tools\\conserved_plots\\' + modelname + '.json'
 total_reward_progress = json.load(open(jsonpath, 'r'))
 
