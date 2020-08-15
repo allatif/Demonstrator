@@ -1,5 +1,7 @@
 import pygame as pg
 
+import matplotlib.pyplot as plt
+
 from .. import pg_init, pg_root
 
 from .. components import colors, tools
@@ -17,6 +19,9 @@ class Neuro(pg_root._State):
         self.sim_ref_state = (0.5, 0)
         self.sim_init_state = (0, 0, 0, 0.3)
         self.limitations = (0.56, 0.56)
+
+        self.results = None
+
         self.models = self.get_models()
 
         self.model_box = listbox.ListBox(self.models, hover=colors.TOMATO,
@@ -29,6 +34,11 @@ class Neuro(pg_root._State):
                                      fg=colors.WHITE, action='SETTINGS')
         self.but_set.set_pos(self.width-self.but_set.width-15, 10)
 
+        self.but_plot = button.Button(text='Show Plot', bg=colors.LRED,
+                                      fg=colors.WHITE, action=self._plot)
+        self.but_plot.set_pos(self.but_set.pos[0]-self.but_plot.width-15, 10)
+        self.but_plot.activate_reflection()
+
         # ANN Object
         self.ann = None
 
@@ -40,10 +50,16 @@ class Neuro(pg_root._State):
         pg_root._State.startup(self, persistant)
         self.next = "GAME"
 
+        if self.previous == 'GAME':
+            self.but_plot.virgin = True
+
         if self.previous is not 'SPLASH':
             self.sim_ref_state = self.persist["sim reference state"]
             self.sim_init_state = self.persist["sim initial state"]
             self.limitations = self.persist["limitations"]
+
+        if "result" in self.persist:
+            self.results = self.persist["result"]
 
     def cleanup(self):
         self.done = False
@@ -105,3 +121,26 @@ class Neuro(pg_root._State):
         self.model_box_label.draw(surface)
         self.but_set.draw(surface)
         self.model_box.draw(surface)
+
+        if self.results is not None:
+            self.but_plot.draw(surface)
+
+    def _plot(self):
+        if self.results is not None:
+            x, ang, time = self.results
+            plt.figure(figsize=(12, 8), dpi=80,
+                       facecolor=(colors.get_pp(colors.PUREWHITE)))
+
+            plt.subplot(211)
+            plt.plot(time, x, color=colors.get_pp(colors.BLACK))
+            plt.xlabel('Time [s]')
+            plt.ylabel('Location [m]')
+            plt.grid(True)
+
+            plt.subplot(212)
+            plt.plot(time, ang, color=colors.get_pp(colors.BLACK))
+            plt.xlabel('Time [s]')
+            plt.ylabel('Angle [°]')
+            plt.grid(True)
+
+            plt.show()
