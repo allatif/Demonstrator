@@ -25,6 +25,7 @@ def play_one_step(env, obs, model, loss_fn, gym=False):
 def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn, gym=False):
     all_rewards = []
     all_grads = []
+    ep_rewards = []
     for ep in range(n_eps):
         current_rewards = []
         current_grads = []
@@ -36,9 +37,13 @@ def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn, gym=False):
             current_grads.append(grads)
             if done:
                 break
+
         all_rewards.append(current_rewards)
         all_grads.append(current_grads)
-    return all_rewards, all_grads
+        ep_rewards.append(sum(current_rewards))
+
+    best_ep_reward = max(ep_rewards)
+    return all_rewards, all_grads, best_ep_reward
 
 
 def discount_rewards(rewards, discount_factor):
@@ -53,6 +58,7 @@ def discount_and_normalize_rewards(all_rewards, discount_factor):
                               for rewards in all_rewards]
     flat_rewards = np.concatenate(all_discounted_rewards)
     reward_mean = flat_rewards.mean()
-    reward_std = flat_rewards.std()
+    reward_std = flat_rewards.std()  # + 1e-9
+    # print("std:", reward_std)
     return [(discount_rewards - reward_mean) / reward_std
             for discount_rewards in all_discounted_rewards]
