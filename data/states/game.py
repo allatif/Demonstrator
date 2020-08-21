@@ -57,7 +57,7 @@ class Game(pg_root._State):
         self.interference_load = None
         self.wave = None
         self.physics = None
-        self.crasher = newton.CrashHandler(self.ball)
+        self.crasher = newton.CrashHandler(self.cone)
         self.simover = False
         self.predone = False
         self.results = None
