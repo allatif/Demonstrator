@@ -141,19 +141,19 @@ class CoastModel(_State):
 
 class CrashHandler:
 
-    def __init__(self, ball_obj):
-        self._ball = ball_obj
+    def __init__(self, cone_obj):
+        self._cone_obj = cone_obj
         self._crash_loc = None
-        self._crash_impuls = None
+        self._impuls = None
         self.crashed = False
 
     def record(self, x1, x2, x3, x4):
         if self.crashed:
             if self._crash_loc is None:
                 self._crash_loc = x1
-            if self._crash_impuls is None:
+            if self._impuls is None:
                 # calculated crash_impuls still not realistic
-                self._crash_impuls = x2 / self._ball.r
+                self._impuls = x2 / self._cone_obj.height
 
     def reset(self):
         self._crash_loc = None
@@ -169,5 +169,5 @@ class CrashHandler:
         return self._crash_loc
 
     @property
-    def crash_impuls(self):
-        return self._crash_impuls
+    def impuls(self):
+        return self._impuls
