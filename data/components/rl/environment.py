@@ -10,27 +10,40 @@ class Environment:
 
     step_ = 0
 
-    def __init__(self, euler_stepsize=0.001, adv_reward=False):
+    def __init__(self, euler_stepsize=0.001, ref=False, adv_reward=False):
         self._euler_stepsize = euler_stepsize
 
         self._adv_reward = adv_reward
+        self._ref = ref
+        self._ref_state = 0.0
         self._model = setup_sim.StateSpaceModel()
         self._agent = agent.Agent(sensibility=10000)
 
     def reset(self):
         Environment.step_ = 0
 
+        if self._ref:
+            self._ref_state = np.random.randint(low=-2, high=3, size=1)/4
         # rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
         # rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
         # rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
         # rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
-        rand_init_x1 = np.random.uniform(low=-0.2, high=0.2, size=1)
+        rand_init_x1 = np.random.uniform(low=-0.2, high=0.2, size=1) \
+            + self._ref_state
         rand_init_x2 = np.random.uniform(low=-0.2, high=0.2, size=1)
         rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
         rand_init_x4 = np.random.uniform(low=-0.2, high=0.2, size=1)
-        rand_init_state = np.concatenate(
-            (rand_init_x1, rand_init_x2, rand_init_x3, rand_init_x4), axis=0
-        )
+        if self._ref:
+            rand_init_state = np.concatenate(
+                (rand_init_x1, rand_init_x2,
+                    rand_init_x3, rand_init_x4, self._ref_state),
+                axis=0
+            )
+        else:
+            rand_init_state = np.concatenate(
+                (rand_init_x1, rand_init_x2, rand_init_x3, rand_init_x4),
+                axis=0
+            )
 
         init_state_tuple = tuple(rand_init_state.tolist())
         self._sim = setup_sim.SimData(120_000, init_state_tuple)
@@ -40,9 +53,9 @@ class Environment:
         self._agent._trainact(action)
 
         done = False
-        reward = 0
+        reward = 0.0
 
-        spf = 30
+        spf = 50  # 30
         fakefps = 1 / (self._euler_stepsize*spf)
         _obs_ = euler.euler_method(self._model.A, self._model.B,
                                    self._sim.state_vec, self._sim.t_vec,
@@ -54,21 +67,28 @@ class Environment:
             done = True
 
         if self._adv_reward:
-            reward = self.rewarder(x1, x3)
-        else:
-            reward = 1
+            reward = self.rewarder(x1, x3, ratio=0.75)
             if done:
-                reward = 0
+                reward = reward - 100.0
+        else:
+            reward = 1.0
+            if done:
+                reward = 0.0
 
         Environment.step_ += spf
 
-        return np.array([np.float(x1),
-                         np.float(x2),
-                         np.float(x3),
-                         np.float(x4)]), reward, done
+        if self._ref:
+            obs = np.array([np.float(x1), np.float(x2),
+                            np.float(x3), np.float(x4),
+                            np.float(self._ref_state)])
+        else:
+            obs = np.array([np.float(x1), np.float(x2),
+                            np.float(x3), np.float(x4)])
+
+        return obs, reward, done
 
     def rewarder(self, location, angle, ratio=0.5):
-        reward = ratio*self._loc_rewardf(location, m=2) \
+        reward = ratio*self._loc_rewardf(location, m=2, ref=self._ref_state) \
             + (1-ratio)*self._ang_rewardf(angle)
         return reward
 
@@ -80,5 +100,5 @@ class Environment:
         return ((m.exp(-(ang/sigma)**2/2)) / (sigma*m.sqrt(2*m.pi)))*multi + b
 
     @staticmethod
-    def _loc_rewardf(loc, m=1):
-        return 1 - m*abs(loc)
+    def _loc_rewardf(loc, m=1, ref=0.0):
+        return 1 - m*abs(loc-ref)
