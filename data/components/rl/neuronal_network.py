@@ -97,6 +97,8 @@ class ANN:
             layer_margin_top = (max_layer_top_center_y
                                 + diff_layer_size*void//2)
             for num in range(layer_size):
+                if layer_num == 0 and num > 3:
+                    neuron_color = colors.ORANGE
                 neuron_pos_y = layer_margin_top + num*void
                 neurons.append(Neuron((neuron_pos_x, neuron_pos_y),
                                       neuron_r, neuron_color))
