@@ -27,7 +27,7 @@ def euler_method(A, B, state_vec, t_vec, fps, steps_per_frame, game_step,
 
         step += 1
         if step == 1:
-            if extra_physics.crashed:
+            if extra_physics is not None and extra_physics.crashed:
                 x3[k] += extra_physics.impuls
             x4[k] += interference
 
