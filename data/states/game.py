@@ -1,4 +1,5 @@
 import math as m
+import json
 
 import pygame as pg
 import pygame.gfxdraw
@@ -34,10 +35,6 @@ class Game(pg_root._State):
 
         # Initialize Dynamik Model
         self.sim = setup_sim.SimData(120_000)
-        if hasattr(self, 'sim_init_state'):
-            self.sim = setup_sim.SimData(120_000, self.sim_init_state)
-            self.agent.observe(np.array([*self.sim_init_state]))
-
         self.model = setup_sim.StateSpaceModel()
 
         # Initialize Game Objects
@@ -85,6 +82,8 @@ class Game(pg_root._State):
 
         self.sim_ref_state = self.persist["sim reference state"]
         self.sim_init_state = self.persist["sim initial state"]
+        print("Init:", self.sim_init_state, "Ref.:", self.sim_ref_state)
+
         self.euler_ministeps = self.persist["euler ministeps"]
         self.limitations = self.persist["limitations"]
         self.frame_step = self.euler_ministeps
@@ -92,6 +91,7 @@ class Game(pg_root._State):
         self.left_wall = Wall(self.limitations[0], self.ground.pos, 3, 'left')
         self.right_wall = Wall(self.limitations[1], self.ground.pos, 3, 'right')
 
+        self.sim = setup_sim.SimData(120_000, self.sim_init_state)
         self.model.set_Kregs(*self.Kregs)
         self.model.update()
 
@@ -104,7 +104,9 @@ class Game(pg_root._State):
         elif self.mode == 'ss_controller':
             print(self.Kregs)
         elif self.mode == 'agent':
+            ref_x = np.array([self.sim_ref_state[0]])
             self.agent.load_model(self.agent_model)
+            self.agent.observe(np.array([*self.sim_init_state, ref_x]))
             print(" -- Agent in control now -- ")
             print("Loaded TensorFlow Keras model", self.agent_model)
 
@@ -198,7 +200,9 @@ class Game(pg_root._State):
         self.euler_thread.start()
         x1, x2, x3, x4, self.simover = self.euler_thread.join()
 
-        self.agent.observe(np.array([x1, x2, x3, x4]))
+        if self.mode == 'agent':
+            ref_x = np.array([self.sim_ref_state[0]])
+            self.agent.observe(np.array([x1, x2, x3, x4, ref_x]))
 
         # Location limit check
         x_max = (self.width//2) / pg_init.SCALE
@@ -255,7 +259,7 @@ class Game(pg_root._State):
             x1_vec, x2_vec, x3_vec, x4_vec = self.sim.state_vec
             t_vec = self.sim.t_vec
             result_vec_len = self.sim.sim_length if self.simover else Game.step
-            self.results = (x2_vec[:result_vec_len],
+            self.results = (x1_vec[:result_vec_len],
                             np.degrees(x3_vec[:result_vec_len]),
                             t_vec[:result_vec_len])
             self.done = True
