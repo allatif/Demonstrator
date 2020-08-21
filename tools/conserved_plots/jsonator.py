@@ -2,7 +2,7 @@ import json
 
 
 # Load modelname and rewards from json
-modelname = 'pg_R751e2_58x6_spf50_g99_ag10k_s200_eps10_i1000'
+modelname = 'pg_refplus_R751e2_5866_spf50_g99_ag10k_s200_eps25_i600'
 jsonpath = '' + modelname + '.json'
 total_reward_progress = json.load(open(jsonpath, 'r'))
 
