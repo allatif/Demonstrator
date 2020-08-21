@@ -39,11 +39,16 @@ def argparser():
                         help="length of episode, default: 200",
                         type=int)
 
+    parser.add_argument("-v", "--variance", metavar="",
+                        help="variance of initial state, default: 0 (low) \
+                                options: 1 (med) and 2 (high)",
+                        type=int)
+
     parser.add_argument("-g", "--gamma",
                         help="discount factor gamma, default: 0.99",
                         type=float)
 
-    parser.add_argument("-v", "--adv_reward",
+    parser.add_argument("-a", "--adv_reward",
                         help="use environment with advanced reward function",
                         action="store_true")
 
@@ -77,7 +82,11 @@ def main():
     if not args.openai_gym:
         model = get_ann(inputs=args.inputs, shape=args.shape)
 
-    env = env_.Environment(adv_reward=args.adv_reward, ref=args.reference)
+    variance = 0
+    if args.variance is not None:
+        variance = args.variance
+    env = env_.Environment(adv_reward=args.adv_reward, ref=args.reference,
+                           variance=variance)
     obs = env.reset()
 
     if args.openai_gym:
@@ -113,10 +122,12 @@ def main():
         discount_factor = 0.95
 
     treshhold_factor = 0.9995
-    if args.adv_reward:
+    if args.variance == 0:
         treshhold_factor = 0.94
-    if args.reference:
+    elif args.variance == 1:
         treshhold_factor = 0.90
+    elif args.variance == 2:
+        treshhold_factor = 0.80
 
     optimizer = keras.optimizers.Adam(lr=0.01)
     loss_fn = keras.losses.binary_crossentropy
@@ -125,6 +136,7 @@ def main():
     i = 0
     smash_counter = 0
     best_score = n_max_steps*n_eps_per_update*0.85
+    best_weights = None
     for iteration in range(n_iterations):
         all_rewards, all_grads, best_ep_reward = play_multiple_episodes(
             env, n_eps_per_update, n_max_steps, model, loss_fn,
@@ -166,13 +178,20 @@ def main():
 
     jsondumb = total_reward_progress
 
+    if args.variance == 0:
+        v_str = 'low'
+    elif args.variance == 1:
+        v_str = 'med'
+    elif args.variance == 2:
+        v_str = 'high'
+
     if args.openai_gym:
         inputs_str = '4'
         annshape_str = '5'
     else:
         inputs_str = args.inputs
         annshape_str = ''.join(args.shape)
-    modelname = f'pg_testing_ref{int(args.reference)}_R{int(args.adv_reward)}' \
+    modelname = f'pg_{v_str}_ref{int(args.reference)}_R{int(args.adv_reward)}' \
                 + f'_{inputs_str}{annshape_str}_g{int(discount_factor*100)}' \
                 + f'_s{n_max_steps}_eps{n_eps_per_update}_i{i}'
     if args.openai_gym:
@@ -181,7 +200,8 @@ def main():
     if smash_counter > 0:
         modelname = modelname + f'({smash_counter})'
 
-    model.set_weights(best_weights)
+    if best_weights is not None:
+        model.set_weights(best_weights)
 
     print('conserving plot data to json')
     with open(f"tools\\conserved_plots\\{modelname}.json", 'w') as f:

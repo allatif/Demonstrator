@@ -10,11 +10,13 @@ class Environment:
 
     step_ = 0
 
-    def __init__(self, euler_stepsize=0.001, ref=False, adv_reward=False):
+    def __init__(self, euler_stepsize=0.001, ref=False, adv_reward=False,
+                 variance=0):
         self._euler_stepsize = euler_stepsize
 
         self._adv_reward = adv_reward
         self._ref = ref
+        self._variance = variance
         self._ref_state = 0.0
         self._model = setup_sim.StateSpaceModel()
         self._agent = agent.Agent(sensibility=10000)
@@ -24,15 +26,29 @@ class Environment:
 
         if self._ref:
             self._ref_state = np.random.randint(low=-2, high=3, size=1)/4
-        # rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
-        # rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
-        # rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
-        # rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
-        rand_init_x1 = np.random.uniform(low=-0.2, high=0.2, size=1) \
-            + self._ref_state
-        rand_init_x2 = np.random.uniform(low=-0.2, high=0.2, size=1)
-        rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
-        rand_init_x4 = np.random.uniform(low=-0.2, high=0.2, size=1)
+
+        if self._variance == 0:
+            # low variance
+            rand_init_x1 = np.random.uniform(low=-0.02, high=0.02, size=1) \
+                + self._ref_state
+            rand_init_x2 = np.random.uniform(low=-0.02, high=0.02, size=1)
+            rand_init_x3 = np.random.uniform(low=-0.02, high=0.02, size=1)
+            rand_init_x4 = np.random.uniform(low=-0.02, high=0.02, size=1)
+        elif self._variance == 1:
+            # med variance
+            rand_init_x1 = np.random.uniform(low=-0.2, high=0.2, size=1) \
+                + self._ref_state
+            rand_init_x2 = np.random.uniform(low=-0.2, high=0.2, size=1)
+            rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
+            rand_init_x4 = np.random.uniform(low=-0.2, high=0.2, size=1)
+        elif self._variance == 2:
+            # high variance
+            rand_init_x1 = np.random.uniform(low=-1.0, high=1.0, size=1)
+            rand_init_x2 = np.random.uniform(low=-2.0, high=2.0, size=1)
+            rand_init_x3 = np.random.uniform(low=-0.2, high=0.2, size=1)
+            rand_init_x4 = np.random.uniform(low=-0.5, high=0.5, size=1)
+            self._ref_state = np.random.randint(low=-4, high=5, size=1)/8
+
         if self._ref:
             rand_init_state = np.concatenate(
                 (rand_init_x1, rand_init_x2,
