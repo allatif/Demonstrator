@@ -17,11 +17,19 @@ class Agent:
 
         self._force = 0
         self._running = True
+        self._type = None
+        self._input_size = None
 
     def load_model(self, model_name):
         path = 'data\\components\\rl\\models\\' + model_name
         self.model = keras.models.load_model(path, compile=False)
-        print("Finished loading model")
+        self._input_size = self.model.input.shape[1]
+        outputsize = self.model.output.shape[1]
+        if outputsize == 1:
+            self._type = 'REINFORCE'
+        elif outputsize == 2:
+            self._type = 'DQL'
+        print(f"Finished loading {self._type} model")
 
     def act(self, obs):
         left_proba = self.model.predict(obs.reshape(1, -1))
@@ -31,14 +39,30 @@ class Agent:
         elif action == 1:
             return self._sens
 
+    def qact(self, obs):
+        Q_values = self.model.predict(obs.T)
+        action = np.argmax(Q_values[0])
+        if action == 0:
+            return -self._sens
+        elif action == 1:
+            return self._sens
+
     def observe(self, obs):
         self._obs = obs
+        if self._input_size < obs.size:
+            self._obs = np.delete(obs, self._input_size, 0)
 
     def update(self):
-        if self._running:
-            self._force = self.act(self._obs)
-        elif not self._running:
-            self._force = 0
+        if self._type == 'DQL':
+            if self._running:
+                self._force = self.qact(self._obs)
+            elif not self._running:
+                self._force = 0
+        elif self._type == 'REINFORCE':
+            if self._running:
+                self._force = self.act(self._obs)
+            elif not self._running:
+                self._force = 0
 
     def stop(self):
         self._running = False
