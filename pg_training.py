@@ -135,7 +135,7 @@ def main():
     total_reward_progress = []
     i = 0
     smash_counter = 0
-    best_score = n_max_steps*n_eps_per_update*0.85
+    best_score = n_max_steps*n_eps_per_update*treshhold_factor*0.90
     best_weights = None
     for iteration in range(n_iterations):
         all_rewards, all_grads, best_ep_reward = play_multiple_episodes(
