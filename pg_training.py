@@ -121,13 +121,13 @@ def main():
         n_max_steps = 200
         discount_factor = 0.95
 
-    treshhold_factor = 0.9995
+    threshold_factor = 0.9995
     if args.variance == 0:
-        treshhold_factor = 0.94
+        threshold_factor = 0.94
     elif args.variance == 1:
-        treshhold_factor = 0.90
+        threshold_factor = 0.90
     elif args.variance == 2:
-        treshhold_factor = 0.80
+        threshold_factor = 0.80
 
     optimizer = keras.optimizers.Adam(lr=0.01)
     loss_fn = keras.losses.binary_crossentropy
@@ -135,7 +135,7 @@ def main():
     total_reward_progress = []
     i = 0
     smash_counter = 0
-    best_score = n_max_steps*n_eps_per_update*treshhold_factor*0.90
+    best_score = n_max_steps*n_eps_per_update*threshold_factor*0.90
     best_weights = None
     for iteration in range(n_iterations):
         all_rewards, all_grads, best_ep_reward = play_multiple_episodes(
@@ -166,7 +166,7 @@ def main():
             best_weights = model.get_weights()
             best_score = total_iter_reward
 
-        if total_iter_reward > n_max_steps*n_eps_per_update*treshhold_factor:
+        if total_iter_reward > n_max_steps*n_eps_per_update*threshold_factor:
             smash_counter += 1
 
         print(f'done iter {iteration+1} of {n_iterations} \
