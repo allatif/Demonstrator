@@ -1,5 +1,4 @@
 import math as m
-import json
 
 import pygame as pg
 import pygame.gfxdraw
