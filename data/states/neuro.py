@@ -129,16 +129,16 @@ class Neuro(pg_root._State):
         if self.results is not None:
             x, ang, time = self.results
             plt.figure(figsize=(12, 8), dpi=80,
-                       facecolor=(colors.get_pp(colors.PUREWHITE)))
+                       facecolor=(colors.get_pp(colors.WHITE)))
 
             plt.subplot(211)
-            plt.plot(time, x, color=colors.get_pp(colors.BLACK))
+            plt.plot(time, x, color=colors.get_pp(colors.LBLUE))
             plt.xlabel('Time [s]')
             plt.ylabel('Location [m]')
             plt.grid(True)
 
             plt.subplot(212)
-            plt.plot(time, ang, color=colors.get_pp(colors.BLACK))
+            plt.plot(time, ang, color=colors.get_pp(colors.TOMATO))
             plt.xlabel('Time [s]')
             plt.ylabel('Angle [°]')
             plt.grid(True)
