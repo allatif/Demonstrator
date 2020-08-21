@@ -1,11 +1,11 @@
 from data.components.rl import environment as env
 
 
-env = env.Environment(adv_reward=False)
+env = env.Environment(adv_reward=True, ref=True)
 obs = env.reset()
 print(obs)
 
-action = 0
+action = 1
 
 for step in range(100):
     obs, r, done = env.step(action)

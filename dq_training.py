@@ -3,6 +3,7 @@ import json
 
 import tensorflow as tf
 from tensorflow import keras
+# from tensorflow.keras import backend as K
 import gym
 
 from data.components.rl import environment as env
@@ -18,19 +19,21 @@ n_outputs = 2
 model = keras.models.Sequential([
     keras.layers.Dense(32, activation="elu", input_shape=input_shape),
     keras.layers.Dense(32, activation="elu"),
+    keras.layers.Dense(24, activation="elu"),
     keras.layers.Dense(n_outputs),
 ])
 
-# env = env.Environment()
-# obs = env.reset()
-
-env = gym.make("CartPole-v1")
+env = env.Environment(adv_reward=False)
 obs = env.reset()
 
-batch_size = 32
-discount_factor = 0.95
+# env = gym.make("CartPole-v0")
+# obs = env.reset()
+
+batch_size = 128
+discount_factor = 0.99
 n_max_steps = 200
-max_eps = 600
+ep_trainbegin = 200
+max_eps = 1000
 
 optimizer = keras.optimizers.Adam(lr=1e-3)
 loss_fn = keras.losses.mean_squared_error
@@ -43,6 +46,7 @@ def training_step(batch_size):
     max_next_Q_values = np.max(next_Q_values, axis=1)
     target_Q_values = (rewards
                        + (1 - dones)*discount_factor*max_next_Q_values)
+    target_Q_values = target_Q_values.reshape(-1, 1)
     mask = tf.one_hot(actions, n_outputs)
     with tf.GradientTape() as tape:
         all_Q_values = model(states)
@@ -52,29 +56,42 @@ def training_step(batch_size):
     optimizer.apply_gradients(zip(grads, model.trainable_variables))
 
 
+# env.seed(42)
+# np.random.seed(42)
+# tf.random.set_seed(42)
+
 episode_reward_progress = []
+best_score = 0
 for episode in range(max_eps):
+    # new_lr = (1 - episode/500, 0.0001)
+    # K.set_value(model.optimizer.learning_rate, new_lr)
     obs = env.reset()
 
     episode_rewards = []
     for step in range(n_max_steps):
-        epsilon = max(1 - episode/500, 0.01)
-        obs, reward, done = play_one_step(env, obs, model, epsilon, gym=True)
+        epsilon = 1 if episode < 200 else max(epsilon*0.9997, 0.01)
+        obs, reward, done = play_one_step(env, obs, model, epsilon, gym=False)
         episode_rewards.append(reward)
         if done:
             break
 
-    episode_total_reward = sum(episode_rewards)
-    print(f'done episode {episode+1} of {max_eps} - r[{episode_total_reward}]')
+    episode_total_reward = round(np.float(sum(episode_rewards)), 2)
     episode_reward_progress.append(episode_total_reward)
+    if episode_total_reward > best_score:
+        best_weights = model.get_weights()
+        best_score = episode_total_reward
+    print(f'done episode {episode+1} of {max_eps} e={epsilon}'
+          + f'- r[{episode_total_reward}]({best_score})')
 
-    if episode > 50:
+    if episode > ep_trainbegin:
         training_step(batch_size)
 
 jsondumb = episode_reward_progress
 
+model.set_weights(best_weights)
+modelname = f'deepq3216_b{batch_size}_s{n_max_steps}_ep{max_eps}' \
+    + f'({ep_trainbegin})_sc{int(best_score)}'
 
-modelname = f'deepq_cartpole_s{n_max_steps}_ep{max_eps}'
 
 print('conserving plot data to json')
 with open(f"tools\\conserved_plots\\{modelname}.json", 'w') as f:
