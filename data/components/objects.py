@@ -16,6 +16,7 @@ class Cone:
         self.ratio = ratio
 
         self._real_location = 0
+        self._height = self.size*self.ratio
 
     def update(self, x1):
         self._real_location = x1
@@ -55,6 +56,10 @@ class Cone:
     @property
     def loc(self):
         return self._real_location
+
+    @property
+    def height(self):
+        return self._height
 
 
 class Sphere:
