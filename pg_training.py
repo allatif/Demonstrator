@@ -87,12 +87,12 @@ def main():
         variance = args.variance
     env = env_.Environment(adv_reward=args.adv_reward, ref=args.reference,
                            variance=variance)
-    obs = env.reset()
+    _ = env.reset()
 
     if args.openai_gym:
         model = get_ann()
         env = gym.make("CartPole-v1")
-        obs = env.reset()
+        _ = env.reset()
 
     # number of training iterations
     n_iterations = 600
@@ -127,7 +127,7 @@ def main():
     elif args.variance == 1:
         threshold_factor = 0.90
     elif args.variance == 2:
-        threshold_factor = 0.80
+        threshold_factor = 0.60
 
     optimizer = keras.optimizers.Adam(lr=0.01)
     loss_fn = keras.losses.binary_crossentropy
