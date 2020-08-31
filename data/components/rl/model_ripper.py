@@ -1,7 +1,8 @@
 import re
 
 
-file = 'pg_high_ref1_R1_5866_g99_s200_eps80_i472_Gt11483.h5'
+# example
+FILE = 'pg_high_ref1_R1_5866_g99_s200_eps80_i472_Gt11483.h5'
 
 
 def get_variance_code(varstr):
@@ -40,4 +41,4 @@ def model_ripper(filename):
 
 
 if __name__ == '__main__':
-    print(model_ripper(file))
+    print(model_ripper(FILE))
