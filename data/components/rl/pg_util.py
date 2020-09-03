@@ -42,7 +42,7 @@ def play_multiple_episodes(env, n_eps, n_max_steps, model, loss_fn, gym=False):
         all_grads.append(current_grads)
         ep_rewards.append(sum(current_rewards))
 
-    best_ep_reward = max(ep_rewards)
+    best_ep_reward = max(ep_rewards)[0]
     return all_rewards, all_grads, best_ep_reward
 
 
