@@ -50,7 +50,7 @@ def argparser():
                         type=float)
 
     parser.add_argument("-c", "--continue_", metavar="",
-                        help="loads an old model and continue training",
+                        help="load an old model and continue training",
                         type=str)
 
     parser.add_argument("-a", "--adv_reward",
@@ -149,14 +149,12 @@ def main():
     elif hypers['variance'] == 1:
         threshold_factor = 0.90
     elif hypers['variance'] == 2:
-        threshold_factor = 0.60
+        threshold_factor = 0.65
 
-    optimizer = keras.optimizers.Adam(lr=0.01)
+    optimizer = keras.optimizers.Adam(lr=0.001)  # 0.01
     loss_fn = keras.losses.binary_crossentropy
 
     total_reward_progress = []
-    smash_counter = 0
-
     total_steps = hypers['steps per episode'] * hypers['episodes per iteration']
     best_score = total_steps * threshold_factor * 0.90
 
@@ -194,21 +192,21 @@ def main():
             zip(all_mean_grads, model.trainable_variables)
         )
 
+        # Backing up
         if total_iter_reward > best_score:
             print('< < best score, keeping weights, backup model > >')
             best_weights = model.get_weights()
             best_score = total_iter_reward
             i_best = i
-            model.save(f"_BAK_{best_score}_at_i{i_best}.h5")
-
-        if total_iter_reward > total_steps*threshold_factor:
-            smash_counter += 1
+            backup_name = f'_BAK_{round(best_score)}_at_i{i_best}'
+            model.save(f"{backup_name}.h5")
 
         print(f"done iter {i+1} of {hypers['iterations']} \
               - G_t={total_iter_reward} (G_best_ep: {best_ep_reward}) \
-              <score: {best_score}> ({smash_counter})")
+              <score: {best_score}>")
 
-        if smash_counter > 5:
+        # Training termination condition
+        if total_iter_reward > total_steps*threshold_factor:
             break
 
     jsondumb = total_reward_progress
@@ -232,8 +230,11 @@ def main():
 
     _disc = hypers["discount"]
     _steps = hypers["steps per episode"]
-    _eps = hypers["episodes per interation"]
-    modelname = f'pg_{v_str}_ref{int(args.reference)}_R{int(args.adv_reward)}' \
+    _eps = hypers["episodes per iteration"]
+    _adv_reward = hypers['advanced reward']
+    _ref = hypers['reference']
+
+    modelname = f'pg_{v_str}_ref{int(_ref)}_R{int(_adv_reward)}' \
                 + f'_{inputs_str}{annshape_str}_g{int(_disc*100)}' \
                 + f'_s{_steps}_eps{_eps}_i{i_best+old_i}' \
                 + f'_Gt{round(best_score)}'
@@ -241,9 +242,7 @@ def main():
     if args.openai_gym:
         modelname = f'pg_CartPole_{inputs_str}{annshape_str}_i{i_best+old_i}'
 
-    if smash_counter > 0:
-        modelname = modelname + f'({smash_counter})'
-
+    # Final save
     if best_weights is not None:
         model.set_weights(best_weights)
 
